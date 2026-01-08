@@ -1,0 +1,103 @@
+# ML Network Anomaly Detection Configuration
+
+project:
+  name: "yhlas-ml-detect-anomalies"
+  version: "1.0.0"
+  author: "Yhlas"
+
+# Data Configuration
+data:
+  raw_path: "data/raw"
+  processed_path: "data/processed"
+  dataset: "cicids2017"
+  
+  # Train/Val/Test split ratios
+  train_ratio: 0.7
+  val_ratio: 0.15
+  test_ratio: 0.15
+  
+  # Sampling for development (set to 1.0 for full data)
+  sample_ratio: 0.1
+
+# Feature Configuration
+features:
+  # Columns to drop
+  drop_columns:
+    - "Flow ID"
+    - "Source IP"
+    - "Destination IP"
+    - "Timestamp"
+  
+  # Target column
+  target_column: "Label"
+  
+  # Numeric feature scaling
+  scaling: "standard"  # standard, minmax, robust
+
+# Model Configuration
+models:
+  # XGBoost
+  xgboost:
+    n_estimators: 200
+    max_depth: 8
+    learning_rate: 0.1
+    subsample: 0.8
+    colsample_bytree: 0.8
+    random_state: 42
+    n_jobs: -1
+    use_gpu: true
+    
+  # Random Forest
+  random_forest:
+    n_estimators: 100
+    max_depth: 20
+    min_samples_split: 5
+    random_state: 42
+    n_jobs: -1
+    
+  # LSTM Autoencoder
+  lstm_autoencoder:
+    input_dim: 78
+    hidden_dim: 64
+    latent_dim: 32
+    num_layers: 2
+    dropout: 0.2
+
+# Training Configuration
+training:
+  epochs: 100
+  batch_size: 256
+  learning_rate: 0.001
+  optimizer: "adamw"
+  scheduler: "cosine"
+  early_stopping_patience: 10
+  
+  # Mixed precision training
+  mixed_precision: true
+  
+  # Gradient clipping
+  max_grad_norm: 1.0
+
+# Hardware Configuration
+hardware:
+  device: "cuda"  # cuda, cpu
+  num_workers: 4
+  pin_memory: true
+  
+  # Memory limits
+  max_ram_gb: 12
+
+# Logging
+logging:
+  level: "INFO"
+  save_logs: true
+  log_dir: "logs"
+  
+  # Tensorboard
+  tensorboard: true
+
+# Dashboard
+dashboard:
+  host: "localhost"
+  port: 8501
+  theme: "dark"
