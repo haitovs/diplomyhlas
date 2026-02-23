@@ -12,59 +12,49 @@ from datetime import datetime
 import tempfile
 import os
 
-# Add parent to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from dashboard.theme import inject_theme, COLORS
 
 st.set_page_config(page_title="PCAP Analysis", page_icon="📁", layout="wide")
+inject_theme()
 
-# Theme CSS
-st.markdown("""
+st.title("📁 File Analysis")
+st.markdown("Upload packet capture datasets (PCAP/PCAPNG) for offline forensic analysis.")
+
+st.markdown(f"""
 <style>
-    .stApp { background: linear-gradient(135deg, #0a0f1a 0%, #111827 100%); }
-    .upload-box {
-        border: 2px dashed #6366f1;
+    .upload-box {{
+        border: 2px dashed {COLORS['primary']};
         border-radius: 16px;
-        padding: 3rem;
+        padding: 4rem;
         text-align: center;
-        background: rgba(99, 102, 241, 0.05);
+        background: {COLORS['bg_tertiary']};
         margin: 2rem 0;
-    }
-    .result-card {
-        background: rgba(31, 41, 55, 0.8);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-    }
-    h1, h2, h3 { color: #f8fafc !important; }
+        transition: all 0.3s ease;
+    }}
+    .upload-box:hover {{
+        border-color: {COLORS['accent']};
+        background: rgba(99, 102, 241, 0.1);
+    }}
 </style>
 """, unsafe_allow_html=True)
 
-st.title("📁 PCAP File Analysis")
-st.markdown("Upload network capture files to analyze traffic patterns and detect anomalies")
-
-# File upload
 uploaded_file = st.file_uploader(
     "Upload PCAP/PCAPNG file",
     type=['pcap', 'pcapng', 'cap'],
-    help="Drag and drop or click to upload network capture files"
+    help="Drag and drop or click to upload network capture files",
+    label_visibility="hidden"
 )
 
 if uploaded_file:
-    st.success(f"✅ File uploaded: **{uploaded_file.name}** ({uploaded_file.size / 1024:.1f} KB)")
+    st.success(f"✅ Loaded: **{uploaded_file.name}** ({uploaded_file.size / 1024:.1f} KB)")
     
-    # Save to temp file
     with tempfile.NamedTemporaryFile(delete=False, suffix='.pcap') as tmp:
         tmp.write(uploaded_file.getvalue())
         tmp_path = tmp.name
     
-    # Analyze button
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        analyze_btn = st.button("🔍 Analyze PCAP", width='stretch')
-    
-    if analyze_btn:
-        with st.spinner("Analyzing packets..."):
+    if st.button("🔍 Begin Deep Analysis", type="primary", use_container_width=True):
+        with st.spinner("Decoding packets and extracting flow features..."):
             try:
                 from src.capture import PcapAnalyzer
                 
@@ -73,105 +63,106 @@ if uploaded_file:
                 summary = analyzer.get_summary()
                 
                 if df.empty:
-                    st.warning("No IP packets found in file")
+                    st.warning("No IP packets found in the uploaded file.")
                 else:
-                    # Summary metrics
-                    st.markdown("### 📊 Analysis Results")
+                    st.markdown("### 📊 Dataset Overview")
                     cols = st.columns(4)
                     cols[0].metric("Total Flows", f"{summary['total_flows']:,}")
                     cols[1].metric("Total Packets", f"{summary['total_packets']:,}")
-                    cols[2].metric("Unique IPs", f"{summary['unique_ips']}")
-                    cols[3].metric("Protocols", len(summary['protocols']))
+                    cols[2].metric("Unique IP Addresses", f"{summary['unique_ips']}")
+                    cols[3].metric("Active Protocols", len(summary['protocols']))
                     
-                    st.markdown("---")
-                    
-                    # Protocol distribution
+                    st.markdown("<br>", unsafe_allow_html=True)
                     col1, col2 = st.columns(2)
                     
                     with col1:
-                        st.markdown("#### 📡 Protocol Distribution")
+                        st.markdown("#### 📡 Protocol Breakdown")
                         protocols = summary['protocols']
                         fig = px.pie(
                             values=list(protocols.values()),
                             names=list(protocols.keys()),
-                            hole=0.4
+                            hole=0.5,
+                            color_discrete_sequence=[COLORS['primary'], COLORS['accent'], COLORS['success'], COLORS['warning']]
                         )
-                        fig.update_layout(paper_bgcolor='rgba(0,0,0,0)')
-                        st.plotly_chart(fig, width='stretch')
+                        fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', showlegend=True, margin=dict(t=0))
+                        st.plotly_chart(fig, use_container_width=True)
                     
                     with col2:
-                        st.markdown("#### 📈 Traffic by Port")
-                        port_counts = df['dst_port'].value_counts().head(10)
-                        fig = px.bar(x=port_counts.index.astype(str), y=port_counts.values)
-                        fig.update_layout(paper_bgcolor='rgba(0,0,0,0)')
-                        st.plotly_chart(fig, width='stretch')
+                        st.markdown("#### 📈 Target Ports")
+                        port_counts = df['dst_port'].value_counts().head(8)
+                        fig = px.bar(
+                            x=port_counts.index.astype(str), 
+                            y=port_counts.values,
+                            color_discrete_sequence=[COLORS['primary']]
+                        )
+                        fig.update_layout(
+                            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+                            xaxis_title="Port", yaxis_title="Flows", margin=dict(t=0),
+                            xaxis=dict(gridcolor=COLORS['bg_tertiary']),
+                            yaxis=dict(gridcolor=COLORS['bg_tertiary'])
+                        )
+                        st.plotly_chart(fig, use_container_width=True)
                     
-                    st.markdown("---")
-                    
-                    # Flow table
-                    st.markdown("#### 📋 Flow Details")
+                    st.markdown("### 📋 Flow Signatures")
                     display_cols = ['src_ip', 'dst_ip', 'src_port', 'dst_port', 'protocol', 
                                    'total_fwd_packets', 'total_bwd_packets', 'flow_bytes_per_s']
                     st.dataframe(
                         df[display_cols].head(100),
-                        width='stretch',
+                        use_container_width=True,
                         hide_index=True
                     )
                     
-                    # Download results
                     st.download_button(
-                        "📥 Download as CSV",
+                        "📥 Download Extracted Features (CSV)",
                         df.to_csv(index=False),
-                        file_name=f"analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                        mime="text/csv"
+                        file_name=f"pcap_features_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                        mime="text/csv",
+                        type="primary"
                     )
                     
             except ImportError:
-                st.error("⚠️ scapy not installed. Run: `pip install scapy`")
+                st.error("⚠️ The 'scapy' library is not installed. Please run: `pip install scapy`")
             except Exception as e:
-                st.error(f"Analysis error: {str(e)}")
+                st.error(f"Failed to process capture file: {str(e)}")
             finally:
                 os.unlink(tmp_path)
 else:
-    # Upload instructions
     st.markdown("""
     <div class="upload-box">
-        <h3>📂 Drop your PCAP file here</h3>
-        <p style="color: #94a3b8;">Supported formats: .pcap, .pcapng, .cap</p>
-        <p style="color: #64748b; font-size: 0.875rem;">
-            Maximum file size: 200MB • Files are processed locally
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🗂️</div>
+        <h3>Select a Capture File</h3>
+        <p style="color: #94a3b8; max-width: 400px; margin: 0 auto; line-height: 1.6;">
+            We support standard .pcap and .pcapng files generated by Wireshark, tcpdump, or other capture tools.
+        </p>
+        <p style="color: #64748b; font-size: 0.875rem; margin-top: 1rem;">
+            Max size: 200MB • Local processing only
         </p>
     </div>
     """, unsafe_allow_html=True)
     
-    # Demo option
     st.markdown("---")
-    st.markdown("### 🎮 No PCAP file? Try demo data")
-    if st.button("Generate Demo Analysis"):
+    if st.button("Generate Synthetic Demo Capture", use_container_width=True):
         import numpy as np
-        
-        # Generate demo flows
-        n = 50
+        n = 100
         demo_df = pd.DataFrame({
             'src_ip': [f"192.168.1.{np.random.randint(1,255)}" for _ in range(n)],
             'dst_ip': [f"10.0.0.{np.random.randint(1,255)}" for _ in range(n)],
             'src_port': np.random.randint(1024, 65535, n),
-            'dst_port': np.random.choice([80, 443, 22, 3389], n),
-            'protocol': np.random.choice(['TCP', 'UDP'], n, p=[0.8, 0.2]),
-            'total_fwd_packets': np.random.poisson(10, n),
-            'total_bwd_packets': np.random.poisson(15, n),
-            'flow_bytes_per_s': np.random.exponential(5000, n),
+            'dst_port': np.random.choice([80, 443, 22, 3389, 53], n),
+            'protocol': np.random.choice(['TCP', 'UDP'], n, p=[85, 15]),
+            'total_fwd_packets': np.random.poisson(12, n),
+            'total_bwd_packets': np.random.poisson(18, n),
+            'flow_bytes_per_s': np.random.exponential(8000, n),
         })
         
-        st.markdown("### 📊 Demo Analysis Results")
+        st.markdown("### 📊 Demo Processing Complete")
         cols = st.columns(4)
         cols[0].metric("Total Flows", n)
         cols[1].metric("Total Packets", demo_df['total_fwd_packets'].sum() + demo_df['total_bwd_packets'].sum())
-        cols[2].metric("Unique IPs", demo_df['src_ip'].nunique())
+        cols[2].metric("Unique Source IPs", demo_df['src_ip'].nunique())
         cols[3].metric("Protocols", 2)
         
-        st.dataframe(demo_df, width='stretch', hide_index=True)
+        st.dataframe(demo_df, use_container_width=True, hide_index=True)
 
-# Footer
-st.markdown("---")
-st.markdown("<p style='text-align:center; color:#64748b;'>Yhlas Network Analyzer v2.0</p>", unsafe_allow_html=True)
+st.markdown("<br><br>", unsafe_allow_html=True)
+st.markdown(f"<p style='text-align:center; color:{COLORS['text_muted']};font-size:0.875rem;'>Yhlas Network Analyzer v2.0</p>", unsafe_allow_html=True)

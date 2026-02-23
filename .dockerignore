@@ -1,0 +1,15 @@
+.git
+.DS_Store
+__pycache__
+*.pyc
+venv/
+.venv/
+notebooks/
+data/raw/
+data/processed/
+*.md
+scripts/
+.idea/
+.vscode/
+.gitignore
+.dockerignore

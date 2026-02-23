@@ -3,82 +3,82 @@
 """
 
 import streamlit as st
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from dashboard.theme import inject_theme, COLORS
 
 st.set_page_config(page_title="Settings", page_icon="⚙️", layout="wide")
+inject_theme()
 
-st.markdown("""
+st.title("⚙️ Global Settings")
+st.markdown("Configure system behaviors, model parameters, and alert routing.")
+
+st.markdown(f"""
 <style>
-    .stApp { background: linear-gradient(135deg, #0a0f1a 0%, #111827 100%); }
-    h1, h2, h3 { color: #f8fafc !important; }
+    .settings-section {{
+        background: {COLORS['bg_tertiary']};
+        border: 1px solid {COLORS['border']};
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }}
+    h3 {{ margin-top: 0 !important; color: {COLORS['primary']} !important; }}
 </style>
 """, unsafe_allow_html=True)
 
-st.title("⚙️ Settings")
-
-# Model Settings
-st.markdown("### 🧠 Model Configuration")
+st.markdown("<div class='settings-section'>", unsafe_allow_html=True)
+st.markdown("### 🧠 AI Model Configuration")
 col1, col2 = st.columns(2)
 
 with col1:
-    model = st.selectbox("Primary Model", ["XGBoost", "LSTM Autoencoder", "Random Forest"])
-    threshold = st.slider("Detection Threshold", 0.0, 1.0, 0.5, 0.05)
+    model = st.selectbox("Active Inference Engine", ["LightGBM (Prod)", "XGBoost", "LSTM Autoencoder", "Random Forest"])
+    threshold = st.slider("Anomaly Confidence Threshold", 0.0, 1.0, 0.70, 0.05, 
+                          help="Minimum confidence required to flag a flow as an attack")
 
 with col2:
-    sensitivity = st.select_slider("Sensitivity", ["Low", "Medium", "High"], "Medium")
-    use_ensemble = st.checkbox("Use Ensemble (multiple models)", value=True)
+    sensitivity = st.select_slider("Heuristic Sensitivity", ["Low (Fewer False Positives)", "Balanced", "High (Catch Everything)"], "Balanced")
+    use_ensemble = st.toggle("Enable Ensemble Verification", value=True, help="Cross-check LightGBM results with LSTM before alerting")
+st.markdown("</div>", unsafe_allow_html=True)
 
-st.markdown("---")
 
-# Alert Settings
-st.markdown("### 🔔 Alert Configuration")
+st.markdown("<div class='settings-section'>", unsafe_allow_html=True)
+st.markdown("### 🔔 Alert Routing & Notifications")
 col1, col2 = st.columns(2)
 
 with col1:
-    enable_sound = st.checkbox("Enable Sound Alerts", value=True)
-    enable_email = st.checkbox("Email Notifications", value=False)
+    enable_sound = st.toggle("Browser Audio Alerts", value=True)
+    enable_email = st.toggle("Email Notifications (SMTP)", value=False)
+    
+    if enable_email:
+        email = st.text_input("SOC Distribution List", placeholder="soc-alerts@company.internal")
 
 with col2:
-    severity_filter = st.multiselect("Alert on severity", ["Critical", "High", "Medium", "Low"], 
+    severity_filter = st.multiselect("Route Alerts for Severity:", ["Critical", "High", "Medium", "Low"], 
                                       default=["Critical", "High"])
+    webhook = st.text_input("Slack/Teams Webhook URL", placeholder="https://hooks.slack.com/services/...")
 
-if enable_email:
-    email = st.text_input("Email Address", placeholder="admin@example.com")
+st.markdown("</div>", unsafe_allow_html=True)
 
-st.markdown("---")
-
-# Capture Settings
-st.markdown("### 📡 Capture Settings")
+st.markdown("<div class='settings-section'>", unsafe_allow_html=True)
+st.markdown("### 📡 Capture Interface Defaults")
 col1, col2 = st.columns(2)
 
 with col1:
-    default_interface = st.selectbox("Default Interface", ["Auto", "Wi-Fi", "Ethernet", "eth0"])
-    packet_limit = st.number_input("Max Packets per Session", 1000, 1000000, 100000)
+    default_interface = st.selectbox("Default Listen Interface", ["Auto-Detect", "eth0", "wlan0", "lo", "en0"])
+    packet_limit = st.number_input("Max Packets Retained in RAM", 1000, 5000000, 100000)
 
 with col2:
-    flow_timeout = st.number_input("Flow Timeout (seconds)", 30, 600, 120)
-    save_captures = st.checkbox("Auto-save Captures", value=False)
+    flow_timeout = st.number_input("Idle Flow Timeout (seconds)", 30, 600, 120, help="Time before an inactive TCP session is considered closed")
+    save_captures = st.toggle("Auto-Archive PCAPs to Disk", value=True)
+st.markdown("</div>", unsafe_allow_html=True)
 
-st.markdown("---")
 
-# Display Settings
-st.markdown("### 🎨 Display Settings")
-col1, col2 = st.columns(2)
-
-with col1:
-    refresh_rate = st.selectbox("Dashboard Refresh", ["Manual", "5s", "10s", "30s"])
-    theme = st.selectbox("Theme", ["Dark (Cybersecurity)", "Light"])
-
-with col2:
-    rows_per_page = st.number_input("Rows per Table", 10, 100, 25)
-    show_normal = st.checkbox("Show Normal Traffic", value=False)
-
-st.markdown("---")
-
-# Save button
+st.markdown("<br>", unsafe_allow_html=True)
 col1, col2, col3 = st.columns([2, 1, 2])
 with col2:
-    if st.button("💾 Save Settings", width='stretch'):
-        st.success("✅ Settings saved!")
+    if st.button("Apply & Save Settings", type="primary", use_container_width=True):
+        st.success("✅ Configuration synchronized successfully.")
 
-st.markdown("---")
-st.markdown("<p style='text-align:center; color:#64748b;'>Yhlas Network Analyzer v2.0</p>", unsafe_allow_html=True)
+st.markdown("<br><br>", unsafe_allow_html=True)
+st.markdown(f"<p style='text-align:center; color:{COLORS['text_muted']};font-size:0.875rem;'>Yhlas Network Analyzer v2.0</p>", unsafe_allow_html=True)

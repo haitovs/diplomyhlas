@@ -1,12 +1,33 @@
-# Node
-node_modules/
-
-# Python virtual env
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
 venv/
 .venv/
 
-# Common
-__pycache__/
-*.pyc
+# Environment
 .env
+
+# OS
 .DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Data (large files)
+data/raw/*.csv
+data/processed/
+
+# Docker
+.docker/
+
+# Misc
+*.log
+.ipynb_checkpoints/
