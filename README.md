@@ -8,10 +8,12 @@ This project implements a machine learning-based intrusion detection system (IDS
 
 ## ✨ Features
 
-- **Multi-class Classification**: Detects 15+ attack types
-- **Multiple Models**: XGBoost, Random Forest, LSTM Autoencoder
-- **Real-time Dashboard**: Streamlit-based monitoring
-- **GPU Accelerated**: Optimized for NVIDIA RTX GPUs
+- **Multi-class Classification**: Detects 15+ attack types (DDoS, Port Scan, Brute Force, etc.)
+- **Multiple Data Sources**: Real-time simulation, pre-recorded scenarios, file upload
+- **Professional Dashboard**: Streamlit-based with modern cybersecurity UI
+- **ML-Powered Detection**: LightGBM model with 98%+ accuracy
+- **Interactive Controls**: Attack simulation, live metrics, data export
+- **Lightweight**: Fast inference, no GPU required for demonstrations
 
 ## 📊 Dataset
 
@@ -22,42 +24,70 @@ This project implements a machine learning-based intrusion detection system (IDS
 
 ## 🚀 Quick Start
 
+### For Demonstration (Recommended)
+
+```bash
+# 1. Install dependencies
+pip install -r requirements.txt
+
+# 2. Generate sample datasets (if not already done)
+python scripts/generate_samples.py
+
+# 3. Run enhanced dashboard
+streamlit run dashboard/app_v2.py
+
+# 4. Open browser to http://localhost:8501
+```
+
+### For Full Development
+
 ```bash
 # 1. Create virtual environment
 python -m venv venv
-.\venv\Scripts\activate  # Windows
+source venv/bin/activate  # macOS/Linux
+# OR: .\venv\Scripts\activate  # Windows
 
 # 2. Install dependencies
 pip install -r requirements.txt
 
-# 3. Download dataset
+# 3. Download dataset (optional for training)
 python scripts/download_data.py
 
-# 4. Train model
+# 4. Train model (optional - pre-trained model included)
 python src/train.py
 
 # 5. Run dashboard
-streamlit run dashboard/app.py
+streamlit run dashboard/app_v2.py
 ```
 
 ## 📁 Project Structure
 
 ```
 yhlas-ml-detect-anomalies/
-├── data/
-│   ├── raw/              # Original CSV files
-│   ├── processed/        # Cleaned data
-│   └── models/           # Saved models
+├── dashboard/
+│   ├── app_v2.py         # ✨ Enhanced dashboard (NEW)
+│   ├── app.py            # Original dashboard
+│   ├── components.py     # ✨ Reusable UI components
+│   └── live_dashboard.py # Live simulation
 ├── src/
-│   ├── data/             # Data loading & preprocessing
-│   ├── models/           # ML model definitions
-│   ├── training/         # Training loops
-│   └── utils/            # Utilities
-├── dashboard/            # Streamlit app
-├── notebooks/            # Jupyter notebooks
-├── scripts/              # Helper scripts
-├── config.yaml           # Configuration
-└── requirements.txt      # Dependencies
+│   ├── data/
+│   │   ├── data_sources.py  # ✨ Data source manager (NEW)
+│   │   └── loader.py        # Data loading
+│   ├── inference/
+│   │   └── realtime.py      # ML prediction engine
+│   ├── simulation/
+│   │   └── traffic_generator.py  # Traffic & attack simulation
+│   └── models/           # Model definitions
+├── data/
+│   ├── samples/          # ✨ Pre-recorded demo datasets (NEW)
+│   ├── raw/              # Original CSV files
+│   └── processed/        # Cleaned data
+├── models/               # Trained models (LightGBM, etc.)
+├── scripts/
+│   └── generate_samples.py  # ✨ Dataset generator (NEW)
+├── DEMO_GUIDE.md        # ✨ Presentation guide (NEW)
+├── config.yaml          # Configuration
+└── requirements.txt     # Dependencies
 ```
 
 ## 🧠 Models
