@@ -14,21 +14,9 @@ inject_theme()
 st.title("⚙️ Global Settings")
 st.markdown("Configure system behaviors, model parameters, and alert routing.")
 
-st.markdown(f"""
-<style>
-    .settings-section {{
-        background: {COLORS['bg_tertiary']};
-        border: 1px solid {COLORS['border']};
-        border-radius: 12px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-    }}
-    h3 {{ margin-top: 0 !important; color: {COLORS['primary']} !important; }}
-</style>
-""", unsafe_allow_html=True)
-
-st.markdown("<div class='settings-section'>", unsafe_allow_html=True)
-st.markdown("### 🧠 AI Model Configuration")
+# --- AI Model Configuration ---
+st.markdown("---")
+st.markdown(f"### 🧠 AI Model Configuration")
 col1, col2 = st.columns(2)
 
 with col1:
@@ -39,11 +27,11 @@ with col1:
 with col2:
     sensitivity = st.select_slider("Heuristic Sensitivity", ["Low (Fewer False Positives)", "Balanced", "High (Catch Everything)"], "Balanced")
     use_ensemble = st.toggle("Enable Ensemble Verification", value=True, help="Cross-check LightGBM results with LSTM before alerting")
-st.markdown("</div>", unsafe_allow_html=True)
 
 
-st.markdown("<div class='settings-section'>", unsafe_allow_html=True)
-st.markdown("### 🔔 Alert Routing & Notifications")
+# --- Alert Routing ---
+st.markdown("---")
+st.markdown(f"### 🔔 Alert Routing & Notifications")
 col1, col2 = st.columns(2)
 
 with col1:
@@ -58,10 +46,10 @@ with col2:
                                       default=["Critical", "High"])
     webhook = st.text_input("Slack/Teams Webhook URL", placeholder="https://hooks.slack.com/services/...")
 
-st.markdown("</div>", unsafe_allow_html=True)
 
-st.markdown("<div class='settings-section'>", unsafe_allow_html=True)
-st.markdown("### 📡 Capture Interface Defaults")
+# --- Capture Settings ---
+st.markdown("---")
+st.markdown(f"### 📡 Capture Interface Defaults")
 col1, col2 = st.columns(2)
 
 with col1:
@@ -71,13 +59,13 @@ with col1:
 with col2:
     flow_timeout = st.number_input("Idle Flow Timeout (seconds)", 30, 600, 120, help="Time before an inactive TCP session is considered closed")
     save_captures = st.toggle("Auto-Archive PCAPs to Disk", value=True)
-st.markdown("</div>", unsafe_allow_html=True)
 
 
-st.markdown("<br>", unsafe_allow_html=True)
+# --- Save ---
+st.markdown("---")
 col1, col2, col3 = st.columns([2, 1, 2])
 with col2:
-    if st.button("Apply & Save Settings", type="primary", use_container_width=True):
+    if st.button("Apply & Save", type="primary", use_container_width=True):
         st.success("✅ Configuration synchronized successfully.")
 
 st.markdown("<br><br>", unsafe_allow_html=True)

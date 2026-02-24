@@ -118,26 +118,27 @@ def process_data(batch_size):
     return new_data
 
 def render_top_metrics(df):
+    has_data = len(df) > 0 and 'ml_is_anomaly' in df.columns
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
         st.metric("TOTAL FLOWS", f"{st.session_state.total_processed:,}")
         
     with col2:
-        anomalies = df['ml_is_anomaly'].sum() if len(df) > 0 else 0
-        pct = (anomalies / len(df) * 100) if len(df) > 0 else 0
-        st.metric("THREATS DETECTED", f"{int(anomalies)}", f"{pct:.1f}%", delta_color="inverse")
+        anomalies = int(df['ml_is_anomaly'].sum()) if has_data else 0
+        pct = (anomalies / len(df) * 100) if has_data and len(df) > 0 else 0
+        st.metric("THREATS DETECTED", f"{anomalies}", f"{pct:.1f}%", delta_color="inverse")
         
     with col3:
-        conf = df['ml_confidence'].mean() * 100 if len(df) > 0 else 0
+        conf = df['ml_confidence'].mean() * 100 if has_data else 0
         st.metric("AVG CONFIDENCE", f"{conf:.1f}%")
         
     with col4:
         st.metric("STATUS", "ACTIVE" if st.session_state.is_monitoring else "PAUSED")
 
 def render_charts(df):
-    if len(df) == 0:
-        st.info("Waiting for data...")
+    if len(df) == 0 or 'ml_is_anomaly' not in df.columns:
+        st.info("Waiting for data... Click 'Start Monitoring' in the sidebar.")
         return
         
     col1, col2 = st.columns([2, 1])
@@ -196,6 +197,15 @@ def render_charts(df):
 
 def render_recent_alerts(df):
     st.markdown("#### Recent Threats")
+    
+    if len(df) == 0 or 'ml_is_anomaly' not in df.columns:
+        st.markdown(f"""
+            <div style="padding:1rem; border-radius:8px; background:rgba(16,185,129,0.1); color:{COLORS['success']}; border:1px solid rgba(16,185,129,0.3);">
+                ✅ System secure. No data processed yet.
+            </div>
+        """, unsafe_allow_html=True)
+        return
+    
     anomalies = df[df['ml_is_anomaly']].tail(5)
     
     if len(anomalies) == 0:

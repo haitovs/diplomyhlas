@@ -6,6 +6,14 @@ Provides a stunning hero visual and entry point to the rest of the application.
 import streamlit as st
 import pandas as pd
 import time
+import sys
+from pathlib import Path
+
+# Ensure project root is on sys.path so 'dashboard' and 'src' packages resolve
+_project_root = str(Path(__file__).parent.parent)
+if _project_root not in sys.path:
+    sys.path.insert(0, _project_root)
+
 from dashboard.theme import inject_theme, COLORS
 
 # Page configuration MUST be the first Streamlit command
@@ -54,7 +62,7 @@ def render_quick_stats():
 
 def render_features():
     """Renders the main feature cards with navigation logic"""
-    st.markdown("<h3 style='text-align: center; margin: 4rem 0 2rem 0;'>Core Modules</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align: center; margin: 3rem 0 2rem 0;'>Core Modules</h3>", unsafe_allow_html=True)
     
     col1, col2, col3 = st.columns(3)
     
@@ -63,8 +71,8 @@ def render_features():
             <div class="feature-card">
                 <div class="feature-icon">📡</div>
                 <h3 style="margin-top:0;">Live Monitoring</h3>
-                <p style="color: {COLORS['text_muted']};">
-                    Process traffic streams in real-time. Features interactive attack simulation to test the IDS capabilities live.
+                <p style="color: {COLORS['text_muted']}; line-height: 1.6;">
+                    Stream and analyze network traffic in real-time with interactive attack simulation controls.
                 </p>
             </div>
         """, unsafe_allow_html=True)
@@ -76,8 +84,8 @@ def render_features():
             <div class="feature-card">
                 <div class="feature-icon">📁</div>
                 <h3 style="margin-top:0;">PCAP Analysis</h3>
-                <p style="color: {COLORS['text_muted']};">
-                    Upload packet capture datasets (CSVs) for deep forensic analysis, geographical mapping, and PDF reporting.
+                <p style="color: {COLORS['text_muted']}; line-height: 1.6;">
+                    Upload packet capture files for deep forensic analysis, protocol breakdown, and CSV export.
                 </p>
             </div>
         """, unsafe_allow_html=True)
@@ -89,13 +97,13 @@ def render_features():
             <div class="feature-card">
                 <div class="feature-icon">🧠</div>
                 <h3 style="margin-top:0;">Model Intelligence</h3>
-                <p style="color: {COLORS['text_muted']};">
-                    XAI (Explainable AI) module. Understand how the LightGBM classifier makes decisions through feature importance and SHAP.
+                <p style="color: {COLORS['text_muted']}; line-height: 1.6;">
+                    Explore how the LightGBM classifier makes decisions via feature importance and trend analytics.
                 </p>
             </div>
         """, unsafe_allow_html=True)
         if st.button("View AI Metrics", key="btn_model", type="secondary", use_container_width=True):
-            st.switch_page("pages/5_📊_Model_Performance.py")
+            st.switch_page("pages/5_📊_History.py")
 
 def render_footer():
     """Renders clean footer"""

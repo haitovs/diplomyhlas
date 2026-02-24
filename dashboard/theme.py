@@ -84,9 +84,16 @@ def inject_theme():
             background: """ + COLORS['bg_tertiary'] + """;
             border: 1px solid """ + COLORS['border'] + """;
             border-radius: 16px;
-            padding: 1.5rem;
+            padding: 2rem 1.5rem;
             transition: all 0.3s ease;
-            height: 100%;
+            display: flex;
+            flex-direction: column;
+            min-height: 220px;
+        }
+        
+        .feature-card p {
+            flex: 1;
+            margin-bottom: 1.5rem;
         }
         
         .feature-card:hover {
@@ -97,11 +104,24 @@ def inject_theme():
         
         .feature-icon {
             font-size: 2.5rem;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
             display: inline-block;
-            background: linear-gradient(135deg, """ + COLORS['primary'] + """ 0%, """ + COLORS['accent'] + """ 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        }
+        
+        /* Force Streamlit columns to stretch equally */
+        [data-testid="stHorizontalBlock"] {
+            align-items: stretch;
+        }
+        
+        [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] > div {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
         
         /* Metrics Redesign */
@@ -109,13 +129,14 @@ def inject_theme():
             background: """ + COLORS['bg_tertiary'] + """;
             border: 1px solid """ + COLORS['border'] + """;
             border-radius: 16px;
-            padding: 1.5rem;
+            padding: 1.25rem 1.5rem;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            height: 100%;
         }
         
         [data-testid="stMetricLabel"] {
             color: """ + COLORS['text_muted'] + """ !important;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             font-weight: 500;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -123,7 +144,7 @@ def inject_theme():
         
         [data-testid="stMetricValue"] {
             color: """ + COLORS['text_main'] + """ !important;
-            font-size: 2.5rem;
+            font-size: 2rem;
             font-weight: 700;
             font-family: 'JetBrains Mono', monospace !important;
         }
