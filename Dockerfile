@@ -14,12 +14,12 @@ COPY data/samples/ ./data/samples/
 COPY config.yaml .
 COPY .streamlit/ ./.streamlit/
 
-EXPOSE 8501
+EXPOSE 4086
 
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-  CMD curl --fail http://localhost:8501/_stcore/health || exit 1
+  CMD curl --fail http://localhost:4086/_stcore/health || exit 1
 
 CMD ["streamlit", "run", "dashboard/app_v2.py", \
-     "--server.port=8501", \
-     "--server.address=0.0.0.0", \
-     "--server.headless=true"]
+  "--server.port=4086", \
+  "--server.address=0.0.0.0", \
+  "--server.headless=true"]

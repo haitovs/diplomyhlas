@@ -3,7 +3,7 @@ services:
     build: .
     container_name: yhlas-anomaly-detection
     ports:
-      - "8501:8501"
+      - "4086:4086"
     restart: unless-stopped
     environment:
       - STREAMLIT_SERVER_HEADLESS=true
