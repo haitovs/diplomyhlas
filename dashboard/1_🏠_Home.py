@@ -1,5 +1,5 @@
 """
-Yhlas Network Analyzer - Home/Landing Page
+Network Anomaly Analyzer - Home/Landing Page
 Provides a stunning hero visual and entry point to the rest of the application.
 """
 
@@ -110,7 +110,7 @@ def render_footer():
     st.markdown(f"""
         <div style="text-align: center; margin-top: 5rem; padding-top: 2rem; border-top: 1px solid {COLORS['border']};">
             <p style="color: {COLORS['text_muted']}; font-size: 0.9rem;">
-                <strong>Yhlas Network Analyzer v2.0</strong> • Diploma Project 2025
+                <strong>Network Anomaly Analyzer v2.0</strong> • Diploma Project 2025
             </p>
         </div>
     """, unsafe_allow_html=True)

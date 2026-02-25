@@ -170,4 +170,4 @@ st.download_button(
     type="primary"
 )
 
-st.markdown(f"<p style='text-align:center; color:{COLORS['text_muted']};font-size:0.875rem;'>Yhlas Network Analyzer v2.0</p>", unsafe_allow_html=True)
+st.markdown(f"<p style='text-align:center; color:{COLORS['text_muted']};font-size:0.875rem;'>Network Anomaly Analyzer v2.0</p>", unsafe_allow_html=True)
