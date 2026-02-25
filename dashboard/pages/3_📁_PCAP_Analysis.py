@@ -149,7 +149,7 @@ else:
             'dst_ip': [f"10.0.0.{np.random.randint(1,255)}" for _ in range(n)],
             'src_port': np.random.randint(1024, 65535, n),
             'dst_port': np.random.choice([80, 443, 22, 3389, 53], n),
-            'protocol': np.random.choice(['TCP', 'UDP'], n, p=[85, 15]),
+            'protocol': np.random.choice(['TCP', 'UDP'], n, p=[0.85, 0.15]),
             'total_fwd_packets': np.random.poisson(12, n),
             'total_bwd_packets': np.random.poisson(18, n),
             'flow_bytes_per_s': np.random.exponential(8000, n),
