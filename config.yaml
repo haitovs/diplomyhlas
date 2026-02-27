@@ -96,5 +96,5 @@ logging:
 # Dashboard
 dashboard:
   host: "localhost"
-  port: 8501
+  port: 4086
   theme: "dark"

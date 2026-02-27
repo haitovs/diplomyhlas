@@ -184,18 +184,21 @@ def render_charts(df):
         st.markdown("#### Traffic Timeline")
         df_sorted = df.sort_values('timestamp')
         df_sorted['sec'] = pd.to_datetime(df_sorted['timestamp']).dt.floor('1s')
-        agg = df_sorted.groupby('sec').agg({'ml_is_anomaly': 'sum', 'src_ip': 'count'}).reset_index()
+        agg = df_sorted.groupby('sec').agg(
+            threats=('ml_is_anomaly', 'sum'),
+            total=('ml_is_anomaly', 'count')
+        ).reset_index()
 
         fig = go.Figure()
         fig.add_trace(go.Scatter(
-            x=agg['sec'], y=agg['src_ip'], name="Total", fill='tozeroy',
+            x=agg['sec'], y=agg['total'], name="Total", fill='tozeroy',
             line=dict(color=COLORS['primary']), fillcolor="rgba(99,102,241,0.15)"
         ))
 
-        anomalies = agg[agg['ml_is_anomaly'] > 0]
+        anomalies = agg[agg['threats'] > 0]
         if len(anomalies) > 0:
             fig.add_trace(go.Scatter(
-                x=anomalies['sec'], y=anomalies['src_ip'], mode='markers', name='Threats',
+                x=anomalies['sec'], y=anomalies['total'], mode='markers', name='Threats',
                 marker=dict(color=COLORS['danger'], size=10, symbol='circle')
             ))
 
@@ -232,8 +235,11 @@ def render_network_stats(df):
 
     unique_src = df['src_ip'].nunique() if 'src_ip' in df.columns else 0
     unique_dst = df['dst_ip'].nunique() if 'dst_ip' in df.columns else 0
-    top_port = int(df['dst_port'].mode().iloc[0]) if 'dst_port' in df.columns and len(df) > 0 else "-"
-    avg_bytes = df['flow_bytes_per_s'].mean() if 'flow_bytes_per_s' in df.columns else 0
+    if 'dst_port' in df.columns and len(df) > 0 and not df['dst_port'].mode().empty:
+        top_port = int(df['dst_port'].mode().iloc[0])
+    else:
+        top_port = "-"
+    avg_bytes = df['bytes_per_sec'].mean() if 'bytes_per_sec' in df.columns else (df['flow_bytes_per_s'].mean() if 'flow_bytes_per_s' in df.columns else 0)
 
     st.markdown(f"""
     <div style="display:flex; gap:1.5rem; flex-wrap:wrap; padding:0.75rem 1rem;

@@ -53,14 +53,19 @@ df = df[df['type'].isin(selected_types)]
 st.markdown("### 📊 Attack Summary")
 cols = st.columns(4)
 cols[0].metric("Total Attacks Logged", len(df))
-cr_count = len(df[df['severity'] == 'Critical'])
+cr_count = len(df[df['severity'] == 'Critical']) if len(df) > 0 else 0
 cols[1].metric("Critical Severity", cr_count)
-cols[2].metric("Unique Origins", df['source_ip'].nunique())
-cols[3].metric("Avg Model Confidence", f"{df['confidence'].mean()*100:.1f}%")
+cols[2].metric("Unique Origins", df['source_ip'].nunique() if len(df) > 0 else 0)
+avg_conf = f"{df['confidence'].mean()*100:.1f}%" if len(df) > 0 else "0.0%"
+cols[3].metric("Avg Model Confidence", avg_conf)
 
 st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
 
 # ── Charts row ───────────────────────────────────────────────────────────────
+if len(df) == 0:
+    st.info("No attacks match the current filters. Adjust the type selection above.")
+    st.stop()
+
 col1, col2, col3 = st.columns([2, 2, 1])
 
 with col1:
@@ -152,7 +157,8 @@ st.markdown(f"""
 # ── Forensic Investigation Workbench ─────────────────────────────────────────
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 st.markdown("### 🔍 Forensic Investigation Workbench")
-selected_id = st.selectbox("Select Attack ID for detailed forensics", df['id'].tolist())
+id_list = df['id'].tolist() if len(df) > 0 else []
+selected_id = st.selectbox("Select Attack ID for detailed forensics", id_list) if id_list else None
 
 if selected_id:
     attack = df[df['id'] == selected_id].iloc[0]
