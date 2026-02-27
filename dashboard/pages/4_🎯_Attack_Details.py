@@ -10,33 +10,18 @@ import numpy as np
 from datetime import datetime, timedelta
 import sys
 from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-from dashboard.theme import inject_theme, COLORS
+from dashboard.theme import inject_theme, inject_sidebar_brand, COLORS, apply_chart_theme
+from dashboard.components import page_header, severity_badge
 
 st.set_page_config(page_title="Attack Analysis", page_icon="🎯", layout="wide")
 inject_theme()
+inject_sidebar_brand()
 
-st.title("🎯 Attack Analysis")
-st.markdown("Deep analysis of detected threats and historical attack patterns")
+page_header("🎯", "Attack Analysis", "Threat forensics & event log")
 
-st.markdown(f"""
-<style>
-    .attack-card {{
-        background: {COLORS['bg_tertiary']};
-        border: 1px solid {COLORS['border']};
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-        transition: transform 0.2s ease;
-    }}
-    .attack-card:hover {{
-        transform: translateY(-2px);
-        border-color: {COLORS['accent']};
-    }}
-</style>
-""", unsafe_allow_html=True)
-
-# Generate demo attack data (mocking a database since there's no DB hooked up)
+# ── Generate demo attack data ────────────────────────────────────────────────
 np.random.seed(42)
 attack_types = ['DDoS', 'PortScan', 'BruteForce', 'SQLi', 'Botnet']
 
@@ -57,12 +42,14 @@ for i in range(150):
 
 df = pd.DataFrame(attacks)
 
+# ── Sidebar filters ──────────────────────────────────────────────────────────
 st.sidebar.markdown("### ⏱️ Data Controls")
 time_filter = st.sidebar.selectbox("Period", ["Last 24 Hours", "Last 48 Hours", "Last 7 Days"])
 selected_types = st.sidebar.multiselect("Filter by Type", attack_types, default=attack_types)
 
 df = df[df['type'].isin(selected_types)]
 
+# ── Attack Summary metrics ───────────────────────────────────────────────────
 st.markdown("### 📊 Attack Summary")
 cols = st.columns(4)
 cols[0].metric("Total Attacks Logged", len(df))
@@ -71,9 +58,10 @@ cols[1].metric("Critical Severity", cr_count)
 cols[2].metric("Unique Origins", df['source_ip'].nunique())
 cols[3].metric("Avg Model Confidence", f"{df['confidence'].mean()*100:.1f}%")
 
-st.markdown("<br>", unsafe_allow_html=True)
+st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
 
-col1, col2 = st.columns(2)
+# ── Charts row ───────────────────────────────────────────────────────────────
+col1, col2, col3 = st.columns([2, 2, 1])
 
 with col1:
     st.markdown("#### Attack Type Vectors")
@@ -82,7 +70,9 @@ with col1:
         values=type_counts.values, names=type_counts.index, hole=0.6,
         color_discrete_sequence=[COLORS['danger'], COLORS['warning'], COLORS['primary'], COLORS['accent'], COLORS['success']]
     )
-    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', height=320, showlegend=True, margin=dict(t=0, b=0))
+    fig.update_traces(textfont=dict(color=COLORS['text_main']))
+    apply_chart_theme(fig)
+    fig.update_layout(height=320)
     st.plotly_chart(fig, use_container_width=True)
 
 with col2:
@@ -90,62 +80,131 @@ with col2:
     df['hour'] = df['timestamp'].dt.floor('1h')
     hourly = df.groupby('hour').size().reset_index(name='count')
     fig = px.bar(hourly, x='hour', y='count', color_discrete_sequence=[COLORS['primary']])
-    fig.update_layout(
-        paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-        height=320, xaxis_title="Time", yaxis_title="Events", margin=dict(t=0, b=0),
-        xaxis=dict(gridcolor=COLORS['bg_tertiary']), yaxis=dict(gridcolor=COLORS['bg_tertiary'])
-    )
+    apply_chart_theme(fig)
+    fig.update_layout(height=320, xaxis_title="Time", yaxis_title="Events")
     st.plotly_chart(fig, use_container_width=True)
 
+with col3:
+    st.markdown("#### Severity")
+    sev_counts = df['severity'].value_counts()
+    sev_colors = {'Critical': COLORS['danger'], 'High': COLORS['warning'], 'Medium': COLORS['info']}
+    fig = go.Figure(data=[go.Pie(
+        labels=sev_counts.index,
+        values=sev_counts.values,
+        hole=0.55,
+        marker=dict(colors=[sev_colors.get(s, COLORS['text_muted']) for s in sev_counts.index]),
+        textfont=dict(color=COLORS['text_main']),
+    )])
+    apply_chart_theme(fig)
+    fig.update_layout(height=320, showlegend=True)
+    st.plotly_chart(fig, use_container_width=True)
+
+# ── Security Event Log with color-coded severity ────────────────────────────
 st.markdown("### 📋 Security Event Log")
+
 display_df = df[['id', 'timestamp', 'type', 'source_ip', 'target_port', 'severity', 'confidence']].copy()
 display_df['timestamp'] = display_df['timestamp'].dt.strftime('%Y-%m-%d %H:%M')
 display_df['confidence'] = (display_df['confidence'] * 100).round(1).astype(str) + '%'
 
-st.dataframe(display_df, use_container_width=True, hide_index=True)
+# Build HTML table with severity badges
+table_rows = ""
+for _, row in display_df.head(50).iterrows():
+    sev_html = severity_badge(row['severity'])
+    table_rows += f"""
+    <tr>
+        <td style="font-family:'JetBrains Mono',monospace; font-size:0.8rem;">{row['id']}</td>
+        <td>{row['timestamp']}</td>
+        <td><strong>{row['type']}</strong></td>
+        <td style="font-family:'JetBrains Mono',monospace; font-size:0.8rem;">{row['source_ip']}</td>
+        <td>{row['target_port']}</td>
+        <td>{sev_html}</td>
+        <td style="font-family:'JetBrains Mono',monospace;">{row['confidence']}</td>
+    </tr>"""
 
-st.markdown("---")
+st.markdown(f"""
+<div style="overflow-x:auto; border-radius:12px; border:1px solid rgba(99,102,241,0.12);">
+<table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+<thead>
+    <tr style="background:rgba(99,102,241,0.12);">
+        <th style="padding:10px 12px; text-align:left; color:{COLORS['text_main']}; font-size:0.75rem;
+            text-transform:uppercase; letter-spacing:0.04em; border-bottom:2px solid rgba(99,102,241,0.25);">ID</th>
+        <th style="padding:10px 12px; text-align:left; color:{COLORS['text_main']}; font-size:0.75rem;
+            text-transform:uppercase; letter-spacing:0.04em; border-bottom:2px solid rgba(99,102,241,0.25);">Timestamp</th>
+        <th style="padding:10px 12px; text-align:left; color:{COLORS['text_main']}; font-size:0.75rem;
+            text-transform:uppercase; letter-spacing:0.04em; border-bottom:2px solid rgba(99,102,241,0.25);">Type</th>
+        <th style="padding:10px 12px; text-align:left; color:{COLORS['text_main']}; font-size:0.75rem;
+            text-transform:uppercase; letter-spacing:0.04em; border-bottom:2px solid rgba(99,102,241,0.25);">Source IP</th>
+        <th style="padding:10px 12px; text-align:left; color:{COLORS['text_main']}; font-size:0.75rem;
+            text-transform:uppercase; letter-spacing:0.04em; border-bottom:2px solid rgba(99,102,241,0.25);">Port</th>
+        <th style="padding:10px 12px; text-align:left; color:{COLORS['text_main']}; font-size:0.75rem;
+            text-transform:uppercase; letter-spacing:0.04em; border-bottom:2px solid rgba(99,102,241,0.25);">Severity</th>
+        <th style="padding:10px 12px; text-align:left; color:{COLORS['text_main']}; font-size:0.75rem;
+            text-transform:uppercase; letter-spacing:0.04em; border-bottom:2px solid rgba(99,102,241,0.25);">Confidence</th>
+    </tr>
+</thead>
+<tbody style="color:{COLORS['text_muted']};">
+    {table_rows}
+</tbody>
+</table>
+</div>
+""", unsafe_allow_html=True)
+
+# ── Forensic Investigation Workbench ─────────────────────────────────────────
+st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 st.markdown("### 🔍 Forensic Investigation Workbench")
 selected_id = st.selectbox("Select Attack ID for detailed forensics", df['id'].tolist())
 
 if selected_id:
     attack = df[df['id'] == selected_id].iloc[0]
-    
-    st.markdown(f"""
-        <div class="attack-card">
-            <h3 style="margin-top:0; color:{COLORS['danger'] if attack['severity']=='Critical' else COLORS['warning']}">{attack['type']} Detected</h3>
-            <div style="display:flex; justify-content:space-between; margin-top:1rem;">
-                <div>
-                    <p style="color:{COLORS['text_muted']}; margin:0;">Event ID</p>
-                    <p><strong>{attack['id']}</strong></p>
-                </div>
-                <div>
-                    <p style="color:{COLORS['text_muted']}; margin:0;">Source Origin</p>
-                    <p><strong>{attack['source_ip']}</strong></p>
-                </div>
-                <div>
-                    <p style="color:{COLORS['text_muted']}; margin:0;">Target Vector</p>
-                    <p><strong>{attack['target_ip']}:{attack['target_port']}</strong></p>
-                </div>
-                <div>
-                    <p style="color:{COLORS['text_muted']}; margin:0;">AI Confidence</p>
-                    <p><strong>{attack['confidence']*100:.1f}%</strong></p>
-                </div>
-            </div>
-            <hr style="border-color:{COLORS['border']}; margin: 1rem 0;" />
-            <h4 style="margin:0;">🛡️ Automated Response Suggestion</h4>
-    """, unsafe_allow_html=True)
-    
-    if attack['type'] == 'DDoS':
-        st.error(f"SYSTEM RECOMMENDATION: Apply aggressive rate limiting. Consider dropping all traffic from {attack['source_ip']} at the edge edge gateway.")
-    elif attack['type'] == 'BruteForce':
-        st.warning(f"SYSTEM RECOMMENDATION: Account lockout thresholds exceeded. Block {attack['source_ip']} and enforce MFA for port {attack['target_port']} access.")
-    elif attack['type'] == 'PortScan':
-        st.info(f"SYSTEM RECOMMENDATION: Reconnaissance detected. Add {attack['source_ip']} to monitoring watch-list.")
-    else:
-        st.success("SYSTEM RECOMMENDATION: Logged for analyst review.")
-        
-    st.markdown("</div>", unsafe_allow_html=True)
+    sev_color = COLORS['danger'] if attack['severity'] == 'Critical' else (
+        COLORS['warning'] if attack['severity'] == 'High' else COLORS['info']
+    )
 
-st.markdown("<br><br>", unsafe_allow_html=True)
-st.markdown(f"<p style='text-align:center; color:{COLORS['text_muted']};font-size:0.875rem;'>Network Anomaly Analyzer v2.0</p>", unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="glass-card" style="border-top:3px solid {sev_color};">
+        <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:1.25rem;">
+            <h3 style="margin:0; color:{sev_color};">{attack['type']} Detected</h3>
+            {severity_badge(attack['severity'])}
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem;">
+            <div>
+                <div style="color:{COLORS['text_muted']}; font-size:0.8rem; text-transform:uppercase;
+                     letter-spacing:0.04em; margin-bottom:0.25rem;">Event ID</div>
+                <div style="font-weight:700; font-family:'JetBrains Mono',monospace;">{attack['id']}</div>
+            </div>
+            <div>
+                <div style="color:{COLORS['text_muted']}; font-size:0.8rem; text-transform:uppercase;
+                     letter-spacing:0.04em; margin-bottom:0.25rem;">Source Origin</div>
+                <div style="font-weight:700; font-family:'JetBrains Mono',monospace;">{attack['source_ip']}</div>
+            </div>
+            <div>
+                <div style="color:{COLORS['text_muted']}; font-size:0.8rem; text-transform:uppercase;
+                     letter-spacing:0.04em; margin-bottom:0.25rem;">Target Vector</div>
+                <div style="font-weight:700; font-family:'JetBrains Mono',monospace;">{attack['target_ip']}:{attack['target_port']}</div>
+            </div>
+            <div>
+                <div style="color:{COLORS['text_muted']}; font-size:0.8rem; text-transform:uppercase;
+                     letter-spacing:0.04em; margin-bottom:0.25rem;">AI Confidence</div>
+                <div style="font-weight:700; font-family:'JetBrains Mono',monospace;">{attack['confidence']*100:.1f}%</div>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown('<div class="card-gap"></div>', unsafe_allow_html=True)
+    st.markdown("#### 🛡️ Automated Response Suggestion")
+
+    if attack['type'] == 'DDoS':
+        st.error(f"RECOMMENDATION: Apply aggressive rate limiting. Consider dropping all traffic from {attack['source_ip']} at the edge gateway.")
+    elif attack['type'] == 'BruteForce':
+        st.warning(f"RECOMMENDATION: Account lockout thresholds exceeded. Block {attack['source_ip']} and enforce MFA for port {attack['target_port']} access.")
+    elif attack['type'] == 'PortScan':
+        st.info(f"RECOMMENDATION: Reconnaissance detected. Add {attack['source_ip']} to monitoring watch-list.")
+    else:
+        st.success("RECOMMENDATION: Logged for analyst review.")
+
+st.markdown(f"""
+<div style="text-align:center; margin-top:3rem; padding-top:1.5rem; border-top:1px solid {COLORS['border']};">
+    <p style="color:{COLORS['text_muted']}; font-size:0.85rem;">Network Anomaly Analyzer v2.0</p>
+</div>
+""", unsafe_allow_html=True)
