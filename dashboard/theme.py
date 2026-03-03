@@ -82,6 +82,20 @@ def inject_theme():
         /* Google Fonts — Space Grotesk for headings, Inter for body, JetBrains Mono for data */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
+        /* ── Fix Streamlit sidebar theme derivation warnings ── */
+        :root {
+            --sidebar-widget-background-color: """ + COLORS['bg_tertiary'] + """;
+            --sidebar-widget-border-color: rgba(245,158,11,0.15);
+            --sidebar-skeleton-background-color: """ + COLORS['bg_secondary'] + """;
+        }
+        [data-testid="stSidebar"] [data-testid="stWidgetLabel"],
+        [data-testid="stSidebar"] .stSelectbox,
+        [data-testid="stSidebar"] .stSlider,
+        [data-testid="stSidebar"] .stNumberInput {
+            --widget-background-color: """ + COLORS['bg_tertiary'] + """;
+            --widget-border-color: rgba(245,158,11,0.15);
+        }
+
         /* ── Global Reset & Base — Tactical grid background ─── */
         .stApp {
             background: """ + COLORS['bg_primary'] + """;
