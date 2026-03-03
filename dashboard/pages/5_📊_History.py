@@ -1,171 +1,169 @@
 """
-📊 History Page
+📊 History Page - Real session data from Live Monitor, PCAP, and Live Capture
 """
 
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import numpy as np
-from datetime import datetime, timedelta
+from datetime import datetime
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from dashboard.theme import inject_theme, inject_sidebar_brand, COLORS, apply_chart_theme
-from dashboard.components import page_header
+from dashboard.components import page_header, init_shared_state
 
 st.set_page_config(page_title="History Analytics", page_icon="📊", layout="wide")
 inject_theme()
 inject_sidebar_brand()
+init_shared_state()
 
-page_header("📊", "Master Analytics", "Historical baselines & macro trends")
+page_header("📊", "Session Analytics", "Real-time session data & trends")
 
-col1, col2 = st.columns([3, 1])
-with col1:
-    time_range = st.selectbox("Resolution Window", ["Last 7 Days", "Last 30 Days", "Current Quarter"], label_visibility="collapsed")
-with col2:
-    st.button("🔄 Sync with Database", use_container_width=True)
+# ── Check for data ──────────────────────────────────────────────────────────
+detection_log = st.session_state.detection_log
+metrics = st.session_state.session_metrics
+history_df = st.session_state.get('history_df', pd.DataFrame())
 
-st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+has_detections = len(detection_log) > 0
+has_traffic = len(history_df) > 0
 
-# ── Generate historical data ─────────────────────────────────────────────────
-np.random.seed(42)
-days = 30
-hours = days * 24
+if not has_detections and not has_traffic:
+    st.markdown(f"""
+    <div style="text-align:center; padding:4rem 2rem; margin:2rem 0;
+         border:2px dashed rgba(245,158,11,0.20); border-radius:4px;
+         background:{COLORS['bg_tertiary']};">
+        <div style="font-size:4rem; margin-bottom:1rem;">📊</div>
+        <h3 style="margin-bottom:0.5rem; font-family:'Space Grotesk',sans-serif;">No Session Data Yet</h3>
+        <p style="color:{COLORS['text_muted']}; max-width:450px; margin:0 auto; line-height:1.7;">
+            Session analytics populate as you use the system. Start the <strong>Live Monitor</strong>
+            or upload a <strong>PCAP file</strong> to generate data.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    st.stop()
 
-timestamps = [datetime.now() - timedelta(hours=i) for i in range(hours)][::-1]
-traffic_data = np.random.exponential(5000, hours) * (1 + 0.6 * np.sin(np.linspace(0, 4 * np.pi, hours)))
-attack_data = np.random.poisson(3, hours) * (1 + 0.4 * np.random.rand(hours))
+# ── Session Snapshot ────────────────────────────────────────────────────────
+st.markdown("### 📈 Session Snapshot")
+session_duration = (datetime.now() - metrics['session_start']).total_seconds() / 60
 
-df = pd.DataFrame({
-    'timestamp': timestamps,
-    'traffic_kb': traffic_data,
-    'attacks': attack_data.astype(int),
-    'unique_ips': np.random.randint(50, 200, hours),
-})
-df['date'] = df['timestamp'].dt.date
-df['hour'] = df['timestamp'].dt.hour
-df['dow'] = df['timestamp'].dt.dayofweek  # 0=Mon
-
-# ── Macro Snapshot ───────────────────────────────────────────────────────────
-st.markdown("### 📈 Macro Snapshot")
 cols = st.columns(4)
-cols[0].metric("Aggregated Traffic", f"{df['traffic_kb'].sum()/1e6:.2f} GB")
-cols[1].metric("Total Network Events", f"{df['attacks'].sum():,}")
-cols[2].metric("Daily Attack Velocity", f"{df['attacks'].sum()/days:.1f}/day")
-cols[3].metric("Bandwidth Peak", f"{df['traffic_kb'].max()/1000:.1f} MB/hr")
+cols[0].metric("Total Flows Processed", f"{metrics['total_flows']:,}")
+cols[1].metric("Threats Detected", f"{metrics['total_threats']:,}")
+threat_rate = (metrics['total_threats'] / max(metrics['total_flows'], 1)) * 100
+cols[2].metric("Threat Rate", f"{threat_rate:.1f}%")
+cols[3].metric("Session Duration", f"{session_duration:.0f} min")
 
-# ── Bandwidth Utilization Trend ──────────────────────────────────────────────
 st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
-st.markdown("### 📈 Bandwidth Utilization Trend")
-daily_traffic = df.groupby('date')['traffic_kb'].sum().reset_index()
-fig = px.area(daily_traffic, x='date', y='traffic_kb', color_discrete_sequence=[COLORS['primary']])
-apply_chart_theme(fig)
-fig.update_layout(height=300, yaxis_title='Traffic (KB)', xaxis_title="")
-st.plotly_chart(fig, use_container_width=True)
 
-# ── Threat Frequency Trend ───────────────────────────────────────────────────
-st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
-st.markdown("### ⚠️ Threat Frequency Trend")
-daily_attacks = df.groupby('date')['attacks'].sum().reset_index()
-fig = px.bar(daily_attacks, x='date', y='attacks', color_discrete_sequence=[COLORS['danger']])
-apply_chart_theme(fig)
-fig.update_layout(height=300, yaxis_title="Threats Logged", xaxis_title="")
-st.plotly_chart(fig, use_container_width=True)
+# ── Source Breakdown ────────────────────────────────────────────────────────
+if metrics['by_source']:
+    st.markdown("### 📡 Detection Sources")
+    source_cols = st.columns(len(metrics['by_source']))
+    source_colors = {
+        'Live Monitor': COLORS['primary'],
+        'PCAP Analysis': COLORS['accent'],
+        'Live Capture': COLORS['success'],
+    }
+    for i, (source, count) in enumerate(metrics['by_source'].items()):
+        with source_cols[i]:
+            color = source_colors.get(source, COLORS['info'])
+            st.markdown(f"""
+            <div style="background:{COLORS['bg_tertiary']}; border:1px solid rgba(245,158,11,0.10);
+                 border-radius:4px; padding:1.25rem; border-left:3px solid {color};">
+                <div style="color:{COLORS['text_muted']}; font-size:0.8rem; text-transform:uppercase;
+                     letter-spacing:0.06em; margin-bottom:0.5rem; font-family:'Space Grotesk',sans-serif;">{source}</div>
+                <div style="font-size:1.75rem; font-weight:700; font-family:'JetBrains Mono',monospace;
+                     color:{COLORS['primary']};">{count}</div>
+                <div style="color:{COLORS['text_muted']}; font-size:0.8rem;">threats detected</div>
+            </div>
+            """, unsafe_allow_html=True)
 
-st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+    st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
 
-# ── Diurnal & Clustering side-by-side ────────────────────────────────────────
-col1, col2 = st.columns(2)
+# ── Detection Timeline ──────────────────────────────────────────────────────
+if has_detections:
+    det_df = pd.DataFrame(detection_log)
+    det_df['timestamp'] = pd.to_datetime(det_df['timestamp'])
 
-with col1:
-    st.markdown("### 🕐 Average Diurnal Traffic Wave")
-    hourly = df.groupby('hour')['traffic_kb'].mean().reset_index()
-    fig = px.line(hourly, x='hour', y='traffic_kb', markers=True, color_discrete_sequence=[COLORS['success']])
+    st.markdown("### ⚠️ Detection Timeline")
+    det_df['minute'] = det_df['timestamp'].dt.floor('1min')
+    timeline = det_df.groupby('minute').size().reset_index(name='threats')
+    fig = px.bar(timeline, x='minute', y='threats', color_discrete_sequence=[COLORS['danger']])
     apply_chart_theme(fig)
-    fig.update_layout(height=280, xaxis_title="Hour of Day", yaxis_title="Avg Traffic (KB)")
+    fig.update_layout(height=300, yaxis_title="Threats", xaxis_title="")
     st.plotly_chart(fig, use_container_width=True)
 
-with col2:
-    st.markdown("### 🎯 Attack Clustering by Time")
-    hourly_attacks = df.groupby('hour')['attacks'].mean().reset_index()
-    fig = px.bar(hourly_attacks, x='hour', y='attacks', color_discrete_sequence=[COLORS['warning']])
+    st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
+
+    # ── Threat Type Breakdown ────────────────────────────────────────────
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("### 🎯 Threat Type Breakdown")
+        if metrics['by_type']:
+            type_df = pd.DataFrame(list(metrics['by_type'].items()), columns=['Type', 'Count'])
+            fig = px.pie(type_df, values='Count', names='Type', hole=0.55,
+                         color_discrete_sequence=[COLORS['danger'], COLORS['warning'], COLORS['accent'],
+                                                  COLORS['primary'], COLORS['success'], COLORS['info']])
+            fig.update_traces(textfont=dict(color=COLORS['text_main']))
+            apply_chart_theme(fig)
+            fig.update_layout(height=320)
+            st.plotly_chart(fig, use_container_width=True)
+
+    with col2:
+        st.markdown("### 📊 Severity Distribution")
+        sev_counts = det_df['severity'].value_counts()
+        sev_colors_map = {'Critical': COLORS['danger'], 'High': COLORS['warning'], 'Medium': COLORS['info']}
+        fig = go.Figure(data=[go.Pie(
+            labels=sev_counts.index,
+            values=sev_counts.values,
+            hole=0.55,
+            marker=dict(colors=[sev_colors_map.get(s, COLORS['text_muted']) for s in sev_counts.index]),
+            textfont=dict(color=COLORS['text_main']),
+        )])
+        apply_chart_theme(fig)
+        fig.update_layout(height=320, showlegend=True)
+        st.plotly_chart(fig, use_container_width=True)
+
+# ── Traffic Volume Timeline (from Live Monitor history_df) ──────────────────
+if has_traffic and 'timestamp' in history_df.columns and 'ml_is_anomaly' in history_df.columns:
+    st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+    st.markdown("### 📈 Traffic Volume Timeline")
+
+    traffic_df = history_df.copy()
+    traffic_df['timestamp'] = pd.to_datetime(traffic_df['timestamp'])
+    traffic_df['sec'] = traffic_df['timestamp'].dt.floor('5s')
+    vol = traffic_df.groupby('sec').agg(
+        total=('ml_is_anomaly', 'count'),
+        threats=('ml_is_anomaly', 'sum')
+    ).reset_index()
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=vol['sec'], y=vol['total'], name="Total Flows", fill='tozeroy',
+        line=dict(color=COLORS['primary']), fillcolor="rgba(245,158,11,0.12)"
+    ))
+    fig.add_trace(go.Scatter(
+        x=vol['sec'], y=vol['threats'], name="Threats", fill='tozeroy',
+        line=dict(color=COLORS['danger']), fillcolor="rgba(239,68,68,0.15)"
+    ))
     apply_chart_theme(fig)
-    fig.update_layout(height=280, xaxis_title="Hour of Day", yaxis_title="Avg Threats")
+    fig.update_layout(height=300, yaxis_title="Flows", xaxis_title="")
     st.plotly_chart(fig, use_container_width=True)
 
-# ── Heatmap: Hour-of-Day x Day-of-Week ──────────────────────────────────────
-st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
-st.markdown("### 🗓️ Attack Heatmap — Hour vs Day of Week")
-
-heatmap_data = df.groupby(['dow', 'hour'])['attacks'].mean().reset_index()
-heatmap_pivot = heatmap_data.pivot(index='dow', columns='hour', values='attacks').fillna(0)
-
-day_labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-fig = go.Figure(data=go.Heatmap(
-    z=heatmap_pivot.values,
-    x=[f"{h}:00" for h in heatmap_pivot.columns],
-    y=[day_labels[d] for d in heatmap_pivot.index],
-    colorscale=[
-        [0, "rgba(99,102,241,0.05)"],
-        [0.5, "rgba(245,158,11,0.5)"],
-        [1, "rgba(239,68,68,0.85)"],
-    ],
-    hoverongaps=False,
-    colorbar=dict(
-        title=dict(text="Avg Attacks", font=dict(color=COLORS['text_muted'])),
-        tickfont=dict(color=COLORS['text_muted']),
-    ),
-))
-apply_chart_theme(fig)
-fig.update_layout(height=280, yaxis=dict(autorange="reversed"))
-st.plotly_chart(fig, use_container_width=True)
-
-# ── Extreme Event Highlights (proper Streamlit cards) ────────────────────────
-st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
-st.markdown("### 🏆 Extreme Event Highlights")
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    st.markdown(f"""
-    <div class="glass-card" style="border-left:4px solid {COLORS['primary']};">
-        <div style="font-weight:700; margin-bottom:0.75rem;">Peak Bandwidth Days</div>
-    </div>
-    """, unsafe_allow_html=True)
-    top_traffic = df.groupby('date')['traffic_kb'].sum().nlargest(3)
-    for date, val in top_traffic.items():
-        st.markdown(f"&nbsp;&nbsp;📈 **{date}**: `{val/1000:.1f} MB`")
-
-with col2:
-    st.markdown(f"""
-    <div class="glass-card" style="border-left:4px solid {COLORS['warning']};">
-        <div style="font-weight:700; margin-bottom:0.75rem;">Highest Threat Intensity</div>
-    </div>
-    """, unsafe_allow_html=True)
-    top_attacks = df.groupby('date')['attacks'].sum().nlargest(3)
-    for date, val in top_attacks.items():
-        st.markdown(f"&nbsp;&nbsp;⚠️ **{date}**: `{val} alerts`")
-
-with col3:
-    st.markdown(f"""
-    <div class="glass-card" style="border-left:4px solid {COLORS['accent']};">
-        <div style="font-weight:700; margin-bottom:0.75rem;">Consistent Bottlenecks</div>
-    </div>
-    """, unsafe_allow_html=True)
-    busy_hours = df.groupby('hour')['traffic_kb'].mean().nlargest(3)
-    for hour, val in busy_hours.items():
-        st.markdown(f"&nbsp;&nbsp;🕐 **{hour}:00**: `{val:.0f} KB/hr`")
-
+# ── Export ───────────────────────────────────────────────────────────────────
 st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
-
-st.download_button(
-    "📥 Download Master Rollup (CSV)",
-    df.to_csv(index=False),
-    file_name=f"history_rollup_{datetime.now().strftime('%Y%m%d')}.csv",
-    mime="text/csv",
-    type="primary"
-)
+if has_detections:
+    export_df = pd.DataFrame(detection_log)
+    st.download_button(
+        "📥 Export Session Detections (CSV)",
+        export_df.to_csv(index=False),
+        file_name=f"session_detections_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+        mime="text/csv",
+        type="primary"
+    )
 
 st.markdown(f"""
 <div style="text-align:center; margin-top:3rem; padding-top:1.5rem; border-top:1px solid {COLORS['border']};">

@@ -12,7 +12,7 @@ if _project_root not in sys.path:
     sys.path.insert(0, _project_root)
 
 from dashboard.theme import inject_theme, inject_sidebar_brand, COLORS
-from dashboard.components import inject_components_css, animated_metric
+from dashboard.components import inject_components_css, animated_metric, init_shared_state
 
 st.set_page_config(
     page_title="Network Anomaly Detection",
@@ -24,6 +24,7 @@ st.set_page_config(
 inject_theme()
 inject_components_css()
 inject_sidebar_brand()
+init_shared_state()
 
 # ── Hero ─────────────────────────────────────────────────────────────────────
 def render_hero():
@@ -32,7 +33,7 @@ def render_hero():
             <div style="display: flex; justify-content: center; margin-bottom: 1rem; position:relative;">
                 <div class="pulse-container">
                     <div class="pulse-dot"></div>
-                    <span style="font-size: 0.85rem; font-weight: 600; letter-spacing: 0.05em;">SYSTEM ACTIVE</span>
+                    <span style="font-size: 0.85rem; font-weight: 700; letter-spacing: 0.08em; text-transform:uppercase; font-family:'Space Grotesk',sans-serif;">SYSTEM ACTIVE</span>
                 </div>
             </div>
             <h1 class="hero-title">Network Anomaly Detection</h1>
@@ -46,7 +47,7 @@ def render_hero():
 
 # ── Quick Stats (animated metric cards) ──────────────────────────────────────
 def render_quick_stats():
-    st.markdown("<h3 style='text-align: center; margin-bottom: 2rem;'>System Capabilities</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align: center; margin-bottom: 2rem; font-family: Space Grotesk, sans-serif;'>System Capabilities</h3>", unsafe_allow_html=True)
 
     col1, col2, col3, col4 = st.columns(4)
 
@@ -63,7 +64,7 @@ def render_quick_stats():
 # ── How It Works ─────────────────────────────────────────────────────────────
 def render_how_it_works():
     st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
-    st.markdown("<h3 style='text-align: center; margin-bottom: 0.5rem;'>How It Works</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align: center; margin-bottom: 0.5rem; font-family: Space Grotesk, sans-serif;'>How It Works</h3>", unsafe_allow_html=True)
     st.markdown(f"<p style='text-align:center; color:{COLORS['text_muted']}; margin-bottom:2rem;'>Three-stage pipeline from raw traffic to actionable intelligence</p>", unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns(3)
@@ -84,7 +85,7 @@ def render_how_it_works():
         st.markdown(f"""
         <div class="glass-card" style="text-align:center; min-height:200px;">
             <div style="font-size:2.5rem; margin-bottom:0.75rem;">🧠</div>
-            <div style="font-size:1.5rem; font-weight:700; color:{COLORS['accent']}; margin-bottom:0.25rem;">02</div>
+            <div style="font-size:1.5rem; font-weight:700; color:{COLORS['secondary']}; margin-bottom:0.25rem;">02</div>
             <h4 style="margin:0 0 0.5rem 0;">ML Analysis</h4>
             <p style="color:{COLORS['text_muted']}; line-height:1.6; font-size:0.9rem;">
                 LightGBM classifier trained on 2.8M CICIDS2017 flows predicts attack type and confidence score.
@@ -119,9 +120,10 @@ def render_tech_badges():
     ]
 
     badges_html = " ".join(
-        f'<span style="display:inline-block; padding:6px 16px; border-radius:20px; '
+        f'<span style="display:inline-block; padding:6px 16px; border-radius:2px; '
         f'background:{c}15; border:1px solid {c}30; color:{c}; font-size:0.8rem; '
-        f'font-weight:600; letter-spacing:0.03em;">{name}</span>'
+        f'font-weight:700; letter-spacing:0.04em; text-transform:uppercase; '
+        f'font-family:Space Grotesk,sans-serif;">{name}</span>'
         for name, c in techs
     )
     st.markdown(
@@ -133,9 +135,9 @@ def render_tech_badges():
 # ── Feature Cards (navigation tiles) ────────────────────────────────────────
 def render_features():
     st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
-    st.markdown("<h3 style='text-align: center; margin: 0 0 2rem 0;'>Core Modules</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align: center; margin: 0 0 2rem 0; font-family: Space Grotesk, sans-serif;'>Core Modules</h3>", unsafe_allow_html=True)
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
 
     with col1:
         st.markdown(f"""
@@ -143,7 +145,7 @@ def render_features():
                 <div class="feature-icon">📡</div>
                 <h3 style="margin-top:0;">Live Monitoring</h3>
                 <p style="color: {COLORS['text_muted']}; line-height: 1.6;">
-                    Stream and analyze network traffic in real-time with interactive attack simulation controls.
+                    Stream and analyze network traffic in real-time with live capture and attack simulation.
                 </p>
             </div>
         """, unsafe_allow_html=True)
@@ -156,7 +158,7 @@ def render_features():
                 <div class="feature-icon">📁</div>
                 <h3 style="margin-top:0;">PCAP Analysis</h3>
                 <p style="color: {COLORS['text_muted']}; line-height: 1.6;">
-                    Upload packet capture files for deep forensic analysis, protocol breakdown, and CSV export.
+                    Upload packet captures for ML classification, protocol breakdown, and threat assessment.
                 </p>
             </div>
         """, unsafe_allow_html=True)
@@ -169,12 +171,25 @@ def render_features():
                 <div class="feature-icon">🧠</div>
                 <h3 style="margin-top:0;">Model Intelligence</h3>
                 <p style="color: {COLORS['text_muted']}; line-height: 1.6;">
-                    Explore how the LightGBM classifier makes decisions via feature importance and trend analytics.
+                    Session analytics, detection timelines, and threat type breakdowns from real data.
                 </p>
             </div>
         """, unsafe_allow_html=True)
-        if st.button("View AI Metrics", key="btn_model", type="secondary", use_container_width=True):
+        if st.button("View Analytics", key="btn_model", type="secondary", use_container_width=True):
             st.switch_page("pages/5_📊_History.py")
+
+    with col4:
+        st.markdown(f"""
+            <div class="feature-card">
+                <div class="feature-icon">📖</div>
+                <h3 style="margin-top:0;">How It Works</h3>
+                <p style="color: {COLORS['text_muted']}; line-height: 1.6;">
+                    Learn about ML models, CICIDS2017 dataset, feature engineering, and attack types.
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
+        if st.button("Read Documentation", key="btn_docs", type="secondary", use_container_width=True):
+            st.switch_page("pages/7_📖_How_It_Works.py")
 
 
 # ── Footer ───────────────────────────────────────────────────────────────────

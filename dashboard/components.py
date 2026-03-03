@@ -5,7 +5,82 @@ Professional loading indicators, progress bars, and widgets
 
 import streamlit as st
 import time
-from typing import Optional, Callable
+from datetime import datetime
+from typing import Optional, Callable, List, Dict
+
+
+# ── Cross-Page Shared State ─────────────────────────────────────────────────
+
+DEFAULT_SETTINGS = {
+    'confidence_threshold': 0.70,
+    'model': 'LightGBM (Prod)',
+    'sensitivity': 'Balanced',
+}
+
+
+def init_shared_state():
+    """Initialize shared session-state keys used across all pages."""
+    if 'detection_log' not in st.session_state:
+        st.session_state.detection_log = []
+
+    if 'session_metrics' not in st.session_state:
+        st.session_state.session_metrics = {
+            'total_flows': 0,
+            'total_threats': 0,
+            'by_type': {},
+            'by_source': {},
+            'session_start': datetime.now(),
+        }
+
+    if 'settings' not in st.session_state:
+        st.session_state.settings = dict(DEFAULT_SETTINGS)
+
+    if 'pcap_results' not in st.session_state:
+        st.session_state.pcap_results = None
+
+
+def append_detections(detections: List[Dict], source: str = "unknown"):
+    """Push anomaly detections into the shared log with IDs and severity.
+
+    Each detection dict should contain at minimum:
+        prediction, confidence, is_anomaly,
+        src_ip, dst_ip, dst_port  (optional but recommended)
+    """
+    init_shared_state()
+    metrics = st.session_state.session_metrics
+
+    for det in detections:
+        if not det.get('is_anomaly', False):
+            continue
+
+        conf = det.get('confidence', 0)
+        if conf < 0.9:
+            severity = 'Medium'
+        elif conf < 0.95:
+            severity = 'High'
+        else:
+            severity = 'Critical'
+
+        entry = {
+            'id': f"ATK-{10000 + len(st.session_state.detection_log)}",
+            'timestamp': det.get('timestamp', datetime.now()),
+            'type': det.get('prediction', 'Unknown'),
+            'src_ip': det.get('src_ip', 'N/A'),
+            'dst_ip': det.get('dst_ip', 'N/A'),
+            'dst_port': det.get('dst_port', ''),
+            'confidence': conf,
+            'severity': severity,
+            'source': source,
+        }
+        st.session_state.detection_log.append(entry)
+
+        # Update counters
+        metrics['total_threats'] += 1
+        attack_type = entry['type']
+        metrics['by_type'][attack_type] = metrics['by_type'].get(attack_type, 0) + 1
+        metrics['by_source'][source] = metrics['by_source'].get(source, 0) + 1
+
+    metrics['total_flows'] += len(detections)
 
 
 def loading_spinner(text: str = "Processing", duration: Optional[float] = None):
@@ -48,10 +123,10 @@ def animated_metric(label: str, value: str, delta: Optional[str] = None,
 def status_badge(text: str, status: str = "success"):
     """Create a status badge"""
     colors = {
-        'success': ('#10b981', '#064e3b'),
+        'success': ('#22c55e', '#064e3b'),
         'warning': ('#f59e0b', '#78350f'),
         'error': ('#ef4444', '#7f1d1d'),
-        'info': ('#3b82f6', '#1e3a8a')
+        'info': ('#0ea5e9', '#0c4a6e')
     }
 
     bg_color, text_color = colors.get(status, colors['info'])
@@ -62,9 +137,12 @@ def status_badge(text: str, status: str = "success"):
         color: {bg_color};
         border: 1px solid {bg_color}40;
         padding: 4px 12px;
-        border-radius: 12px;
+        border-radius: 2px;
         font-size: 0.875rem;
-        font-weight: 600;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        font-family: 'Space Grotesk', sans-serif;
         display: inline-block;
     ">{text}</span>
     """, unsafe_allow_html=True)
@@ -98,10 +176,10 @@ def page_header(icon: str, title: str, subtitle: str = ""):
 def alert_box(message: str, alert_type: str = "info", icon: str = "ℹ️"):
     """Create an alert box"""
     type_styles = {
-        'info': ('linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)', '#93c5fd'),
-        'success': ('linear-gradient(135deg, #10b981 0%, #059669 100%)', '#6ee7b7'),
-        'warning': ('linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', '#fcd34d'),
-        'error': ('linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', '#fca5a5'),
+        'info': ('rgba(14,165,233,0.12)', '#0ea5e9'),
+        'success': ('rgba(34,197,94,0.12)', '#22c55e'),
+        'warning': ('rgba(245,158,11,0.12)', '#f59e0b'),
+        'error': ('rgba(239,68,68,0.12)', '#ef4444'),
     }
 
     background, border_color = type_styles.get(alert_type, type_styles['info'])
@@ -109,17 +187,17 @@ def alert_box(message: str, alert_type: str = "info", icon: str = "ℹ️"):
     st.markdown(f"""
     <div style="
         background: {background};
-        color: white;
+        color: {border_color};
         padding: 12px 16px;
-        border-radius: 8px;
-        border-left: 4px solid {border_color};
+        border-radius: 2px;
+        border-left: 3px solid {border_color};
         margin: 8px 0;
         display: flex;
         align-items: center;
         gap: 12px;
     ">
         <span style="font-size: 1.25rem;">{icon}</span>
-        <span>{message}</span>
+        <span style="color: #e2e8f0;">{message}</span>
     </div>
     """, unsafe_allow_html=True)
 
@@ -151,21 +229,23 @@ def info_card(title: str, content: str, icon: str = "📌"):
     """Create an information card"""
     st.markdown(f"""
     <div style="
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
-        border: 1px solid rgba(99, 102, 241, 0.2);
-        border-radius: 12px;
+        background: rgba(245,158,11,0.06);
+        border: 1px solid rgba(245,158,11,0.12);
+        border-left: 3px solid #f59e0b;
+        border-radius: 2px;
         padding: 16px;
         margin: 8px 0;
     ">
         <div style="
             font-size: 1.1rem;
-            font-weight: 600;
-            color: #a5b4fc;
+            font-weight: 700;
+            color: #f59e0b;
+            font-family: 'Space Grotesk', sans-serif;
             margin-bottom: 8px;
         ">
             {icon} {title}
         </div>
-        <div style="color: #cbd5e1;">
+        <div style="color: #e2e8f0;">
             {content}
         </div>
     </div>
@@ -174,9 +254,9 @@ def info_card(title: str, content: str, icon: str = "📌"):
 
 def section_header(title: str, subtitle: Optional[str] = None, icon: str = ""):
     """Create a section header with optional subtitle"""
-    header_html = f'<h2 style="color: #ffffff; margin-bottom: 0.5rem;">{icon} {title}</h2>'
+    header_html = f'<h2 style="color: #e2e8f0; font-family: Space Grotesk, sans-serif; margin-bottom: 0.5rem;">{icon} {title}</h2>'
     if subtitle:
-        header_html += f'<p style="color: #94a3b8; margin-bottom: 1rem;">{subtitle}</p>'
+        header_html += f'<p style="color: #7c8aa4; margin-bottom: 1rem;">{subtitle}</p>'
 
     st.markdown(header_html, unsafe_allow_html=True)
 
@@ -226,22 +306,20 @@ def simulate_processing(steps: Optional[list] = None, total_duration: float = 1.
 COMPONENTS_CSS = """
 <style>
     .metric-card {
-        background: rgba(30,41,59,0.45);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(99, 102, 241, 0.2);
-        border-radius: 16px;
+        background: #131d2e;
+        border: 1px solid rgba(245,158,11,0.10);
+        border-left: 3px solid #f59e0b;
+        border-radius: 4px;
         padding: 1.25rem;
         display: flex;
         gap: 1rem;
         align-items: center;
-        transition: all 0.3s ease;
+        transition: all 0.25s ease;
     }
 
     .metric-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 16px rgba(99, 102, 241, 0.2);
-        border-color: rgba(99,102,241,0.35);
+        border-color: rgba(245,158,11,0.25);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.25);
     }
 
     .metric-icon {
@@ -253,7 +331,7 @@ COMPONENTS_CSS = """
     }
 
     .metric-label {
-        color: #94a3b8;
+        color: #7c8aa4;
         font-size: 0.8rem;
         margin-bottom: 0.25rem;
         text-transform: uppercase;
@@ -262,7 +340,7 @@ COMPONENTS_CSS = """
     }
 
     .metric-value {
-        color: #ffffff;
+        color: #f59e0b;
         font-size: 1.75rem;
         font-weight: 700;
         font-family: 'JetBrains Mono', monospace;
@@ -274,7 +352,7 @@ COMPONENTS_CSS = """
     }
 
     .metric-delta.success {
-        color: #10b981;
+        color: #22c55e;
     }
 
     .metric-delta.warning {
@@ -286,7 +364,7 @@ COMPONENTS_CSS = """
     }
 
     .metric-delta.normal {
-        color: #94a3b8;
+        color: #7c8aa4;
     }
 </style>
 """

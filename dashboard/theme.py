@@ -1,29 +1,30 @@
 """
 Centralized Theme Configuration
-Provides modern, professional cybersecurity dark theme for all pages
+Tactical SOC / War Room aesthetic — dark navy, amber operational accents,
+sharp corners, monospace data readouts.
 """
 
 import streamlit as st
 
-# Global color palette
+# Global color palette — Tactical SOC
 COLORS = {
-    "bg_primary": "#0a0f1a",
-    "bg_secondary": "#111827",
-    "bg_tertiary": "rgba(30, 41, 59, 0.6)",
+    "bg_primary": "#060b14",
+    "bg_secondary": "#0c1222",
+    "bg_tertiary": "#131d2e",
 
-    "primary": "#6366f1",      # Indigo
-    "secondary": "#8b5cf6",    # Purple
-    "accent": "#06b6d4",       # Cyan
+    "primary": "#f59e0b",       # Amber — SOC operational
+    "secondary": "#0ea5e9",     # Blue
+    "accent": "#22d3ee",        # Cyan
 
-    "success": "#10b981",      # Emerald
-    "warning": "#f59e0b",      # Amber
-    "danger": "#ef4444",       # Red
-    "info": "#3b82f6",         # Blue
+    "success": "#22c55e",       # Green
+    "warning": "#f59e0b",       # Amber
+    "danger": "#ef4444",        # Red
+    "info": "#0ea5e9",          # Blue
 
-    "text_main": "#f8fafc",
-    "text_muted": "#94a3b8",
+    "text_main": "#e2e8f0",
+    "text_muted": "#7c8aa4",
 
-    "border": "rgba(99, 102, 241, 0.2)"
+    "border": "rgba(245,158,11,0.12)",
 }
 
 # ── Plotly Template ──────────────────────────────────────────────────────────
@@ -31,7 +32,7 @@ PLOTLY_TEMPLATE = dict(
     paper_bgcolor="rgba(0,0,0,0)",
     plot_bgcolor="rgba(0,0,0,0)",
     font=dict(
-        family="Inter, sans-serif",
+        family="Space Grotesk, Inter, sans-serif",
         color=COLORS["text_main"],
         size=13,
     ),
@@ -47,21 +48,21 @@ PLOTLY_TEMPLATE = dict(
         x=0.5,
     ),
     xaxis=dict(
-        gridcolor="rgba(148,163,184,0.08)",
-        zerolinecolor="rgba(148,163,184,0.12)",
+        gridcolor="rgba(245,158,11,0.06)",
+        zerolinecolor="rgba(245,158,11,0.10)",
         tickfont=dict(color=COLORS["text_muted"]),
         title=dict(font=dict(color=COLORS["text_muted"])),
     ),
     yaxis=dict(
-        gridcolor="rgba(148,163,184,0.08)",
-        zerolinecolor="rgba(148,163,184,0.12)",
+        gridcolor="rgba(245,158,11,0.06)",
+        zerolinecolor="rgba(245,158,11,0.10)",
         tickfont=dict(color=COLORS["text_muted"]),
         title=dict(font=dict(color=COLORS["text_muted"])),
     ),
     colorway=[
-        COLORS["primary"], COLORS["accent"], COLORS["success"],
-        COLORS["warning"], COLORS["danger"], COLORS["secondary"],
-        COLORS["info"],
+        COLORS["primary"], COLORS["secondary"], COLORS["success"],
+        COLORS["danger"], COLORS["accent"], COLORS["info"],
+        "#a78bfa",
     ],
     margin=dict(l=0, r=0, t=30, b=0),
 )
@@ -74,18 +75,39 @@ def apply_chart_theme(fig):
 
 
 def inject_theme():
-    """Injects core CSS shared across all dashboard pages"""
+    """Injects core CSS shared across all dashboard pages — Tactical SOC theme."""
 
     st.markdown("""
     <style>
-        /* Google Fonts */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+        /* Google Fonts — Space Grotesk for headings, Inter for body, JetBrains Mono for data */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
-        /* Global Reset & Base */
+        /* ── Global Reset & Base — Tactical grid background ─── */
         .stApp {
-            background: linear-gradient(135deg, """ + COLORS['bg_primary'] + """ 0%, """ + COLORS['bg_secondary'] + """ 100%);
+            background: """ + COLORS['bg_primary'] + """;
+            background-image:
+                linear-gradient(rgba(245,158,11,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(245,158,11,0.03) 1px, transparent 1px);
+            background-size: 32px 32px;
             font-family: 'Inter', sans-serif;
             color: """ + COLORS['text_main'] + """;
+            position: relative;
+        }
+
+        /* Scanline overlay */
+        .stApp::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0,0,0,0.03) 2px,
+                rgba(0,0,0,0.03) 4px
+            );
+            pointer-events: none;
+            z-index: 9999;
         }
 
         /* ── Spacing utilities ─────────────────────────────── */
@@ -93,43 +115,60 @@ def inject_theme():
         .card-gap     { margin-top: 1.25rem; }
         .section-divider {
             border: none;
-            border-top: 1px solid rgba(99,102,241,0.15);
+            border-top: 1px solid rgba(245,158,11,0.12);
             margin: 2.5rem 0;
         }
 
-        /* ── Hero Section ──────────────────────────────────── */
+        /* ── Hero Section — Radar animation ──────────────────── */
         .hero-container {
             text-align: center;
             padding: 4rem 2rem 3rem 2rem;
-            background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+            background: radial-gradient(circle at 50% 50%, rgba(245,158,11,0.06) 0%, transparent 70%);
             border-bottom: 1px solid """ + COLORS['border'] + """;
             margin-bottom: 3rem;
             position: relative;
             overflow: hidden;
         }
 
-        /* subtle animated grid behind the hero */
+        /* Radar rings */
         .hero-container::before {
             content: '';
             position: absolute;
-            inset: 0;
-            background-image:
-                linear-gradient(rgba(99,102,241,0.04) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(99,102,241,0.04) 1px, transparent 1px);
-            background-size: 40px 40px;
-            animation: gridScroll 25s linear infinite;
+            top: 50%; left: 50%;
+            width: 500px; height: 500px;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background:
+                radial-gradient(circle, transparent 30%, transparent 30.5%),
+                radial-gradient(circle, transparent 49%, rgba(245,158,11,0.06) 49.5%, rgba(245,158,11,0.06) 50%, transparent 50.5%),
+                radial-gradient(circle, transparent 69%, rgba(245,158,11,0.04) 69.5%, rgba(245,158,11,0.04) 70%, transparent 70.5%),
+                radial-gradient(circle, transparent 89%, rgba(245,158,11,0.03) 89.5%, rgba(245,158,11,0.03) 90%, transparent 90.5%);
             pointer-events: none;
         }
-        @keyframes gridScroll {
-            0%   { background-position: 0 0; }
-            100% { background-position: 40px 40px; }
+
+        /* Radar sweep line */
+        .hero-container::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 250px; height: 2px;
+            background: linear-gradient(90deg, rgba(245,158,11,0.5), transparent);
+            transform-origin: left center;
+            animation: radarSweep 4s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes radarSweep {
+            0%   { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .hero-title {
+            font-family: 'Space Grotesk', sans-serif;
             font-size: 3.5rem;
-            font-weight: 800;
+            font-weight: 700;
             letter-spacing: -0.02em;
-            background: linear-gradient(135deg, """ + COLORS['primary'] + """ 0%, """ + COLORS['accent'] + """ 100%);
+            background: linear-gradient(135deg, """ + COLORS['primary'] + """ 0%, #fbbf24 50%, """ + COLORS['primary'] + """ 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 1rem;
@@ -147,7 +186,7 @@ def inject_theme():
 
         /* ── Typography ────────────────────────────────────── */
         h1, h2, h3, h4, h5, h6 {
-            font-family: 'Inter', sans-serif !important;
+            font-family: 'Space Grotesk', sans-serif !important;
             color: """ + COLORS['text_main'] + """ !important;
             letter-spacing: -0.01em;
         }
@@ -156,29 +195,27 @@ def inject_theme():
             font-family: 'JetBrains Mono', monospace !important;
         }
 
-        /* ── Glass-morphism Cards ──────────────────────────── */
-        .glass-card {
-            background: rgba(30, 41, 59, 0.45);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(99,102,241,0.15);
-            border-radius: 16px;
+        /* ── Tactical Panels (replaces glass-card) ───────────── */
+        .glass-card, .tactical-panel {
+            background: """ + COLORS['bg_tertiary'] + """;
+            border: 1px solid rgba(245,158,11,0.10);
+            border-top: 2px solid """ + COLORS['primary'] + """;
+            border-radius: 4px;
             padding: 1.75rem;
-            transition: all 0.3s ease;
+            transition: all 0.25s ease;
         }
-        .glass-card:hover {
-            border-color: rgba(99,102,241,0.35);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+        .glass-card:hover, .tactical-panel:hover {
+            border-color: rgba(245,158,11,0.25);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
 
         .feature-card {
-            background: rgba(30, 41, 59, 0.45);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid """ + COLORS['border'] + """;
-            border-radius: 16px;
+            background: """ + COLORS['bg_tertiary'] + """;
+            border: 1px solid rgba(245,158,11,0.08);
+            border-left: 3px solid transparent;
+            border-radius: 4px;
             padding: 2rem 1.5rem;
-            transition: all 0.3s ease;
+            transition: all 0.25s ease;
             display: flex;
             flex-direction: column;
             min-height: 220px;
@@ -191,9 +228,9 @@ def inject_theme():
         }
 
         .feature-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(99, 102, 241, 0.5);
-            box-shadow: 0 10px 40px rgba(99,102,241,0.15), 0 0 0 1px rgba(99,102,241,0.2);
+            border-left-color: """ + COLORS['primary'] + """;
+            background: rgba(245,158,11,0.04);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
         }
 
         .feature-icon {
@@ -218,22 +255,21 @@ def inject_theme():
             flex-direction: column;
         }
 
-        /* ── Metrics Redesign ──────────────────────────────── */
+        /* ── Metrics Redesign — Amber left border ────────────── */
         [data-testid="stMetric"] {
-            background: rgba(30, 41, 59, 0.45);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid """ + COLORS['border'] + """;
-            border-radius: 16px;
+            background: """ + COLORS['bg_tertiary'] + """;
+            border: 1px solid rgba(245,158,11,0.10);
+            border-left: 3px solid """ + COLORS['primary'] + """;
+            border-radius: 4px;
             padding: 1.25rem 1.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
             height: 100%;
-            transition: all 0.3s ease;
+            transition: all 0.25s ease;
         }
 
         [data-testid="stMetric"]:hover {
-            border-color: rgba(99,102,241,0.35);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            border-color: rgba(245,158,11,0.25);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.25);
         }
 
         [data-testid="stMetricLabel"] {
@@ -245,7 +281,7 @@ def inject_theme():
         }
 
         [data-testid="stMetricValue"] {
-            color: """ + COLORS['text_main'] + """ !important;
+            color: """ + COLORS['primary'] + """ !important;
             font-size: 2rem;
             font-weight: 700;
             font-family: 'JetBrains Mono', monospace !important;
@@ -257,24 +293,24 @@ def inject_theme():
             align-items: center;
             gap: 0.5rem;
             padding: 0.5rem 1rem;
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            border-radius: 20px;
+            background: rgba(245,158,11,0.08);
+            border: 1px solid rgba(245,158,11,0.20);
+            border-radius: 4px;
             width: fit-content;
         }
 
         .pulse-dot {
             width: 8px;
             height: 8px;
-            background-color: """ + COLORS['success'] + """;
+            background-color: """ + COLORS['primary'] + """;
             border-radius: 50%;
             animation: pulse 2s infinite;
         }
 
         @keyframes pulse {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245,158,11,0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(245,158,11,0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245,158,11,0); }
         }
 
         /* ── Animated status indicator (generic) ──────────── */
@@ -292,50 +328,54 @@ def inject_theme():
         }
         .status-indicator.danger .dot { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
         .status-indicator.warning .dot { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
-        .status-indicator.success .dot { background: #10b981; box-shadow: 0 0 6px #10b981; }
+        .status-indicator.success .dot { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
 
-        /* ── Primary Button Override ───────────────────────── */
+        /* ── Primary Button Override — Amber gradient ────────── */
         .stButton > button[data-testid="baseButton-primary"] {
-            background: linear-gradient(135deg, """ + COLORS['primary'] + """ 0%, """ + COLORS['accent'] + """ 100%);
+            background: linear-gradient(135deg, """ + COLORS['primary'] + """ 0%, #d97706 100%);
             border: none;
-            color: white;
+            color: #060b14;
             padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s ease;
+            border-radius: 4px;
+            font-weight: 700;
+            font-family: 'Space Grotesk', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            transition: all 0.25s ease;
         }
 
         .stButton > button[data-testid="baseButton-primary"]:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+            box-shadow: 0 4px 20px rgba(245,158,11,0.35);
+            filter: brightness(1.1);
         }
 
-        /* Secondary Button Override */
+        /* Secondary Button Override — Amber outlined */
         .stButton > button[data-testid="baseButton-secondary"] {
-            background: rgba(30, 41, 59, 0.45);
-            backdrop-filter: blur(8px);
-            border: 1px solid """ + COLORS['border'] + """;
-            color: """ + COLORS['text_main'] + """;
-            border-radius: 8px;
-            transition: all 0.3s ease;
+            background: transparent;
+            border: 1px solid rgba(245,158,11,0.30);
+            color: """ + COLORS['primary'] + """;
+            border-radius: 4px;
+            font-family: 'Space Grotesk', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            transition: all 0.25s ease;
         }
 
         .stButton > button[data-testid="baseButton-secondary"]:hover {
             border-color: """ + COLORS['primary'] + """;
-            color: """ + COLORS['primary'] + """;
+            background: rgba(245,158,11,0.08);
         }
 
-        /* ── Sidebar – Branding ────────────────────────────── */
+        /* ── Sidebar — Amber right-edge accent line ──────────── */
         [data-testid="stSidebar"] {
-            background: rgba(10, 15, 26, 0.97);
-            backdrop-filter: blur(16px);
-            border-right: 1px solid """ + COLORS['border'] + """;
+            background: """ + COLORS['bg_primary'] + """;
+            border-right: 2px solid """ + COLORS['primary'] + """;
         }
 
         [data-testid="stSidebar"] .sidebar-brand {
             text-align: center;
             padding: 1.5rem 1rem 1rem 1rem;
-            border-bottom: 1px solid rgba(99,102,241,0.12);
+            border-bottom: 1px solid rgba(245,158,11,0.12);
             margin-bottom: 1rem;
         }
         [data-testid="stSidebar"] .sidebar-brand .brand-icon {
@@ -345,7 +385,8 @@ def inject_theme():
         [data-testid="stSidebar"] .sidebar-brand .brand-title {
             font-size: 1rem;
             font-weight: 700;
-            background: linear-gradient(135deg, """ + COLORS['primary'] + """, """ + COLORS['accent'] + """);
+            font-family: 'Space Grotesk', sans-serif;
+            background: linear-gradient(135deg, """ + COLORS['primary'] + """, #fbbf24);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -356,38 +397,39 @@ def inject_theme():
             text-transform: uppercase;
         }
 
-        /* ── Styled Dataframes ─────────────────────────────── */
+        /* ── Styled Dataframes — Amber headers ────────────── */
         [data-testid="stDataFrame"] table {
             border-collapse: separate;
             border-spacing: 0;
         }
         [data-testid="stDataFrame"] thead th {
-            background: rgba(99,102,241,0.15) !important;
+            background: rgba(245,158,11,0.12) !important;
             color: """ + COLORS['text_main'] + """ !important;
             font-weight: 600 !important;
             font-size: 0.8rem !important;
+            font-family: 'Space Grotesk', sans-serif !important;
             text-transform: uppercase !important;
             letter-spacing: 0.04em !important;
-            border-bottom: 2px solid rgba(99,102,241,0.3) !important;
+            border-bottom: 2px solid rgba(245,158,11,0.25) !important;
         }
         [data-testid="stDataFrame"] tbody tr:hover td {
-            background: rgba(99,102,241,0.06) !important;
+            background: rgba(245,158,11,0.04) !important;
         }
         [data-testid="stDataFrame"] tbody td {
-            border-bottom: 1px solid rgba(148,163,184,0.06) !important;
+            border-bottom: 1px solid rgba(245,158,11,0.06) !important;
             font-size: 0.85rem !important;
         }
 
-        /* ── Page header bar ───────────────────────────────── */
+        /* ── Page header bar — Sharp, amber left border ──────── */
         .page-header {
             display: flex;
             align-items: center;
             gap: 0.75rem;
             padding: 0.75rem 1.25rem;
-            background: rgba(30,41,59,0.4);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(99,102,241,0.1);
-            border-radius: 12px;
+            background: """ + COLORS['bg_tertiary'] + """;
+            border: 1px solid rgba(245,158,11,0.10);
+            border-left: 3px solid """ + COLORS['primary'] + """;
+            border-radius: 2px;
             margin-bottom: 2rem;
         }
         .page-header .ph-icon {
@@ -396,10 +438,13 @@ def inject_theme():
         .page-header .ph-title {
             font-size: 1.1rem;
             font-weight: 700;
+            font-family: 'Space Grotesk', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
             color: """ + COLORS['text_main'] + """;
         }
         .page-header .ph-sep {
-            color: rgba(148,163,184,0.3);
+            color: rgba(245,158,11,0.30);
             font-weight: 300;
         }
         .page-header .ph-sub {
@@ -407,11 +452,11 @@ def inject_theme():
             font-size: 0.85rem;
         }
 
-        /* ── Scrollbar ─────────────────────────────────────── */
+        /* ── Scrollbar — Amber ────────────────────────────── */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb {
-            background: rgba(99, 102, 241, 0.35);
+            background: rgba(245,158,11,0.30);
             border-radius: 3px;
         }
         ::-webkit-scrollbar-thumb:hover { background: """ + COLORS['primary'] + """; }
@@ -420,12 +465,12 @@ def inject_theme():
         #MainMenu {visibility: hidden;}
         header[data-testid="stHeader"] {background: transparent;}
 
-        /* ── Settings card sections ────────────────────────── */
+        /* ── Settings card sections — Sharp, amber top accent ── */
         .settings-section {
-            background: rgba(30,41,59,0.4);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(99,102,241,0.12);
-            border-radius: 16px;
+            background: """ + COLORS['bg_tertiary'] + """;
+            border: 1px solid rgba(245,158,11,0.10);
+            border-top: 2px solid """ + COLORS['primary'] + """;
+            border-radius: 4px;
             padding: 1.75rem;
             margin-bottom: 1.5rem;
         }
@@ -439,6 +484,7 @@ def inject_theme():
         .settings-section-header .ss-title {
             font-size: 1.15rem;
             font-weight: 700;
+            font-family: 'Space Grotesk', sans-serif;
             color: """ + COLORS['text_main'] + """;
         }
         .settings-section-desc {
@@ -447,19 +493,31 @@ def inject_theme():
             margin-bottom: 1.25rem;
         }
 
-        /* ── Severity badges ───────────────────────────────── */
+        /* ── Severity badges — Sharp, uppercase, critical pulse ── */
         .sev-badge {
             display: inline-block;
             padding: 2px 10px;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 0.8rem;
-            letter-spacing: 0.02em;
+            border-radius: 2px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            font-family: 'Space Grotesk', sans-serif;
         }
-        .sev-critical { background: rgba(239,68,68,0.18); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+        .sev-critical {
+            background: rgba(239,68,68,0.18);
+            color: #fca5a5;
+            border: 1px solid rgba(239,68,68,0.3);
+            animation: criticalPulse 2s ease-in-out infinite;
+        }
         .sev-high     { background: rgba(245,158,11,0.18); color: #fcd34d; border: 1px solid rgba(245,158,11,0.3); }
-        .sev-medium   { background: rgba(59,130,246,0.18); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3); }
-        .sev-low      { background: rgba(16,185,129,0.18); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); }
+        .sev-medium   { background: rgba(14,165,233,0.18); color: #7dd3fc; border: 1px solid rgba(14,165,233,0.3); }
+        .sev-low      { background: rgba(34,197,94,0.18); color: #86efac; border: 1px solid rgba(34,197,94,0.3); }
+
+        @keyframes criticalPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+            50% { box-shadow: 0 0 8px 2px rgba(239,68,68,0.3); }
+        }
     </style>
     """, unsafe_allow_html=True)
 

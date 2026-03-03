@@ -1,6 +1,7 @@
 """
 📡 Live Monitor Page
-Combines file/simulation data sources with real-time analysis visualizations
+Combines file/simulation data sources with real-time analysis visualizations.
+Includes Live Network Capture mode for sniffing real packets.
 """
 
 import streamlit as st
@@ -16,11 +17,12 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from src.data.data_sources import DataSourceManager, SimulationDataSource
 from src.inference.realtime import RealtimePredictor
 from dashboard.theme import inject_theme, inject_sidebar_brand, COLORS, apply_chart_theme
-from dashboard.components import page_header
+from dashboard.components import page_header, init_shared_state, append_detections
 
 st.set_page_config(page_title="Live Monitor", page_icon="📡", layout="wide")
 inject_theme()
 inject_sidebar_brand()
+init_shared_state()
 
 if 'data_manager' not in st.session_state:
     st.session_state.data_manager = DataSourceManager()
@@ -28,6 +30,12 @@ if 'data_manager' not in st.session_state:
     st.session_state.history_df = pd.DataFrame()
     st.session_state.total_processed = 0
     st.session_state.is_monitoring = False
+
+# Live capture state
+if 'live_capture_obj' not in st.session_state:
+    st.session_state.live_capture_obj = None
+    st.session_state.live_capture_active = False
+    st.session_state.live_capture_source_mode = False
 
 
 def create_sidebar():
@@ -41,6 +49,10 @@ def create_sidebar():
         else:
             if st.button("⏹️ Stop Monitoring", type="secondary", use_container_width=True):
                 st.session_state.is_monitoring = False
+                # Stop live capture if running
+                if st.session_state.live_capture_obj and st.session_state.live_capture_active:
+                    st.session_state.live_capture_obj.stop()
+                    st.session_state.live_capture_active = False
                 st.rerun()
 
         if st.button("🗑️ Clear History", use_container_width=True):
@@ -50,9 +62,11 @@ def create_sidebar():
 
         st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
+        # ── Data Source Selector (including Live Capture) ────────────────
         st.markdown("### 📊 Data Source")
         sources = st.session_state.data_manager.list_sources()
         source_dict = {name: sid for sid, name, desc in sources}
+        source_dict["Live Network Capture"] = "live_capture"
 
         selected_name = st.selectbox(
             "Select Source",
@@ -61,31 +75,81 @@ def create_sidebar():
         )
         selected_id = source_dict[selected_name]
 
-        if selected_id != st.session_state.data_manager.current_source:
-            st.session_state.data_manager.set_source(selected_id)
-            st.session_state.history_df = pd.DataFrame()
-            st.session_state.total_processed = 0
-
-        if 'simulation' in selected_id:
+        # Handle Live Network Capture mode
+        if selected_id == "live_capture":
+            st.session_state.live_capture_source_mode = True
             st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
-            st.markdown("### ⚡ Attack Simulation")
-            attack_type = st.selectbox("Type", ["DDoS", "PortScan", "BruteForce", "Bot", "SQLi"], label_visibility="collapsed")
+            st.markdown("### 🔌 Capture Interface")
+            st.info("Requires **sudo** / admin privileges for raw packet access.", icon="🔒")
 
-            col1, col2 = st.columns(2)
-            source = st.session_state.data_manager.get_current_source()
+            try:
+                from src.capture.network_capture import get_available_interfaces, create_capture
+                ifaces = get_available_interfaces()
+                iface_names = [f"{i.name} ({i.ip})" for i in ifaces]
+                iface_map = {f"{i.name} ({i.ip})": i.name for i in ifaces}
 
-            attack_active = False
-            if hasattr(source, 'attack_sim') and hasattr(source.attack_sim, 'attack_active'):
-                attack_active = source.attack_sim.attack_active
+                if iface_names:
+                    selected_iface_name = st.selectbox("Interface", iface_names)
+                    selected_iface = iface_map[selected_iface_name]
+                else:
+                    st.warning("No interfaces found. Using loopback.")
+                    selected_iface = "lo0"
 
-            with col1:
-                if st.button("Start", disabled=attack_active, use_container_width=True):
-                    source.start_attack(attack_type, duration_sec=60)
-                    st.rerun()
-            with col2:
-                if st.button("Stop", disabled=not attack_active, use_container_width=True):
-                    source.stop_attack()
-                    st.rerun()
+                # Start/stop live capture
+                if st.session_state.is_monitoring and not st.session_state.live_capture_active:
+                    capture = create_capture(selected_iface)
+                    try:
+                        capture.start()
+                        st.session_state.live_capture_obj = capture
+                        st.session_state.live_capture_active = True
+                    except Exception as e:
+                        st.error(f"Capture failed: {e}. Try running with sudo.")
+                        st.session_state.is_monitoring = False
+
+                if st.session_state.live_capture_active and st.session_state.live_capture_obj:
+                    stats = st.session_state.live_capture_obj.get_stats()
+                    st.markdown(f"""
+                    <div style="padding:0.5rem; border-radius:4px; background:rgba(245,158,11,0.06);
+                         border:1px solid rgba(245,158,11,0.15); border-left:3px solid {COLORS['primary']};
+                         margin-top:0.5rem; font-size:0.85rem;">
+                        <div style="color:{COLORS['primary']}; font-weight:700; font-family:'Space Grotesk',sans-serif;">Capturing on {stats['interface']}</div>
+                        <div style="color:{COLORS['text_muted']}; font-family:'JetBrains Mono',monospace;">Packets: {stats['packet_count']} | {stats['packets_per_second']:.1f}/s</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+            except ImportError:
+                st.error("Scapy not available. Install with: `pip install scapy`")
+        else:
+            st.session_state.live_capture_source_mode = False
+            # Stop live capture if we switched away
+            if st.session_state.live_capture_active and st.session_state.live_capture_obj:
+                st.session_state.live_capture_obj.stop()
+                st.session_state.live_capture_active = False
+
+            if selected_id != st.session_state.data_manager.current_source:
+                st.session_state.data_manager.set_source(selected_id)
+                st.session_state.history_df = pd.DataFrame()
+                st.session_state.total_processed = 0
+
+            if 'simulation' in selected_id:
+                st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+                st.markdown("### ⚡ Attack Simulation")
+                attack_type = st.selectbox("Type", ["DDoS", "PortScan", "BruteForce", "Bot", "SQLi"], label_visibility="collapsed")
+
+                col1, col2 = st.columns(2)
+                source = st.session_state.data_manager.get_current_source()
+
+                attack_active = False
+                if hasattr(source, 'attack_sim') and hasattr(source.attack_sim, 'attack_active'):
+                    attack_active = source.attack_sim.attack_active
+
+                with col1:
+                    if st.button("Start", disabled=attack_active, use_container_width=True):
+                        source.start_attack(attack_type, duration_sec=60)
+                        st.rerun()
+                with col2:
+                    if st.button("Stop", disabled=not attack_active, use_container_width=True):
+                        source.stop_attack()
+                        st.rerun()
 
         st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
         st.markdown("### 🔧 Parameters")
@@ -96,7 +160,22 @@ def create_sidebar():
 
 
 def process_data(batch_size):
-    new_data = st.session_state.data_manager.get_data(n_samples=batch_size)
+    threshold = st.session_state.settings.get('confidence_threshold', 0.70)
+
+    if st.session_state.live_capture_source_mode:
+        # Live Capture mode: get packets from capture object
+        if not st.session_state.live_capture_active or not st.session_state.live_capture_obj:
+            return pd.DataFrame()
+
+        packets = st.session_state.live_capture_obj.get_packets(max_packets=batch_size)
+        if not packets:
+            return pd.DataFrame()
+
+        new_data = pd.DataFrame(packets)
+    else:
+        # Standard data source mode
+        new_data = st.session_state.data_manager.get_data(n_samples=batch_size)
+
     if len(new_data) == 0:
         return pd.DataFrame()
 
@@ -104,7 +183,9 @@ def process_data(batch_size):
 
     new_data['ml_prediction'] = [p['prediction'] for p in predictions]
     new_data['ml_confidence'] = [p['confidence'] for p in predictions]
-    new_data['ml_is_anomaly'] = [p['is_anomaly'] for p in predictions]
+    new_data['ml_is_anomaly'] = [
+        p['is_anomaly'] and p['confidence'] >= threshold for p in predictions
+    ]
 
     if 'timestamp' not in new_data.columns:
         current_time = datetime.now()
@@ -115,6 +196,26 @@ def process_data(batch_size):
 
     if len(st.session_state.history_df) > 1000:
         st.session_state.history_df = st.session_state.history_df.tail(1000)
+
+    # Push anomalies to shared detection log
+    source_label = "Live Capture" if st.session_state.live_capture_source_mode else "Live Monitor"
+    anomalies = new_data[new_data['ml_is_anomaly']]
+    if len(anomalies) > 0:
+        anomaly_dets = []
+        for _, row in anomalies.iterrows():
+            anomaly_dets.append({
+                'prediction': row['ml_prediction'],
+                'confidence': row['ml_confidence'],
+                'is_anomaly': True,
+                'src_ip': row.get('src_ip', 'N/A'),
+                'dst_ip': row.get('dst_ip', 'N/A'),
+                'dst_port': row.get('dst_port', ''),
+                'timestamp': row.get('timestamp', datetime.now()),
+            })
+        append_detections(anomaly_dets, source=source_label)
+
+    # Update session metrics
+    st.session_state.session_metrics['total_flows'] += len(new_data)
 
     return new_data
 
@@ -133,11 +234,13 @@ def render_top_metrics(df):
         conf = df['ml_confidence'].mean() * 100 if has_data else 0
         st.metric("AVG CONFIDENCE", f"{conf:.1f}%")
     with col4:
-        st.metric("STATUS", "ACTIVE" if st.session_state.is_monitoring else "PAUSED")
+        status = "LIVE CAPTURE" if st.session_state.live_capture_source_mode and st.session_state.is_monitoring else (
+            "ACTIVE" if st.session_state.is_monitoring else "PAUSED"
+        )
+        st.metric("STATUS", status)
 
 
 def render_threat_gauge(df):
-    """Render a radial gauge for current threat level."""
     has_data = len(df) > 0 and 'ml_is_anomaly' in df.columns
     if has_data and len(df) > 0:
         threat_pct = df['ml_is_anomaly'].mean() * 100
@@ -162,7 +265,7 @@ def render_threat_gauge(df):
             bgcolor="rgba(30,41,59,0.5)",
             borderwidth=0,
             steps=[
-                dict(range=[0, 10], color="rgba(16,185,129,0.12)"),
+                dict(range=[0, 10], color="rgba(34,197,94,0.12)"),
                 dict(range=[10, 30], color="rgba(245,158,11,0.12)"),
                 dict(range=[30, 100], color="rgba(239,68,68,0.12)"),
             ],
@@ -192,7 +295,7 @@ def render_charts(df):
         fig = go.Figure()
         fig.add_trace(go.Scatter(
             x=agg['sec'], y=agg['total'], name="Total", fill='tozeroy',
-            line=dict(color=COLORS['primary']), fillcolor="rgba(99,102,241,0.15)"
+            line=dict(color=COLORS['primary']), fillcolor="rgba(245,158,11,0.12)"
         ))
 
         anomalies = agg[agg['threats'] > 0]
@@ -222,14 +325,13 @@ def render_charts(df):
         else:
             st.markdown(f"""
                 <div style="height:250px; display:flex; align-items:center; justify-content:center;
-                     border:1px dashed {COLORS['border']}; border-radius:12px;">
-                    <span style="color:{COLORS['success']}; font-weight:600;">No threats detected</span>
+                     border:1px dashed rgba(245,158,11,0.15); border-radius:4px;">
+                    <span style="color:{COLORS['success']}; font-weight:700; font-family:'Space Grotesk',sans-serif; text-transform:uppercase; letter-spacing:0.04em;">No threats detected</span>
                 </div>
             """, unsafe_allow_html=True)
 
 
 def render_network_stats(df):
-    """Mini network stats bar below main metrics."""
     if len(df) == 0 or 'ml_is_anomaly' not in df.columns:
         return
 
@@ -243,19 +345,19 @@ def render_network_stats(df):
 
     st.markdown(f"""
     <div style="display:flex; gap:1.5rem; flex-wrap:wrap; padding:0.75rem 1rem;
-         background:rgba(30,41,59,0.35); border:1px solid rgba(99,102,241,0.1);
-         border-radius:10px; margin-bottom:1.5rem;">
+         background:{COLORS['bg_tertiary']}; border:1px solid rgba(245,158,11,0.10);
+         border-left:3px solid {COLORS['primary']}; border-radius:4px; margin-bottom:1.5rem;">
         <span style="color:{COLORS['text_muted']}; font-size:0.8rem;">
-            <strong style="color:{COLORS['text_main']};">{unique_src}</strong> Source IPs
+            <strong style="color:{COLORS['primary']};">{unique_src}</strong> Source IPs
         </span>
         <span style="color:{COLORS['text_muted']}; font-size:0.8rem;">
-            <strong style="color:{COLORS['text_main']};">{unique_dst}</strong> Dest IPs
+            <strong style="color:{COLORS['primary']};">{unique_dst}</strong> Dest IPs
         </span>
         <span style="color:{COLORS['text_muted']}; font-size:0.8rem;">
-            Top Port: <strong style="color:{COLORS['text_main']};">{top_port}</strong>
+            Top Port: <strong style="color:{COLORS['primary']};">{top_port}</strong>
         </span>
         <span style="color:{COLORS['text_muted']}; font-size:0.8rem;">
-            Avg Throughput: <strong style="color:{COLORS['text_main']};">{avg_bytes:,.0f} B/s</strong>
+            Avg Throughput: <strong style="color:{COLORS['primary']};">{avg_bytes:,.0f} B/s</strong>
         </span>
     </div>
     """, unsafe_allow_html=True)
@@ -266,8 +368,9 @@ def render_recent_alerts(df):
 
     if len(df) == 0 or 'ml_is_anomaly' not in df.columns:
         st.markdown(f"""
-            <div style="padding:1rem; border-radius:10px; background:rgba(16,185,129,0.08);
-                 color:{COLORS['success']}; border:1px solid rgba(16,185,129,0.2);">
+            <div style="padding:1rem; border-radius:4px; background:rgba(34,197,94,0.08);
+                 color:{COLORS['success']}; border:1px solid rgba(34,197,94,0.2);
+                 border-left:3px solid {COLORS['success']};">
                 ✅ System secure. No data processed yet.
             </div>
         """, unsafe_allow_html=True)
@@ -277,8 +380,9 @@ def render_recent_alerts(df):
 
     if len(anomalies) == 0:
         st.markdown(f"""
-            <div style="padding:1rem; border-radius:10px; background:rgba(16,185,129,0.08);
-                 color:{COLORS['success']}; border:1px solid rgba(16,185,129,0.2);">
+            <div style="padding:1rem; border-radius:4px; background:rgba(34,197,94,0.08);
+                 color:{COLORS['success']}; border:1px solid rgba(34,197,94,0.2);
+                 border-left:3px solid {COLORS['success']};">
                 ✅ System secure. No recent threats logged.
             </div>
         """, unsafe_allow_html=True)
@@ -297,18 +401,18 @@ def render_recent_alerts(df):
         ts_str = ts.strftime('%H:%M:%S') if hasattr(ts, 'strftime') else str(ts)
 
         st.markdown(f"""
-            <div style="padding:0.75rem 1rem; border-radius:10px; background:rgba(239,68,68,0.06);
-                 border-left:4px solid {sev_color}; margin-bottom:0.5rem;
+            <div style="padding:0.75rem 1rem; border-radius:4px; background:rgba(239,68,68,0.06);
+                 border-left:3px solid {sev_color}; margin-bottom:0.5rem;
                  display:flex; justify-content:space-between; align-items:center;">
                 <div style="display:flex; align-items:center; gap:0.75rem;">
-                    <strong style="color:white;">{row['ml_prediction']}</strong>
-                    <span style="color:{COLORS['text_muted']}; font-size:0.85rem;">
+                    <strong style="color:{COLORS['text_main']};">{row['ml_prediction']}</strong>
+                    <span style="color:{COLORS['text_muted']}; font-size:0.85rem; font-family:'JetBrains Mono',monospace;">
                         {row.get('src_ip','N/A')} → {row.get('dst_ip','N/A')}:{row.get('dst_port','')}
                     </span>
                 </div>
                 <div style="display:flex; align-items:center; gap:1rem;">
-                    <span style="color:{COLORS['text_muted']}; font-size:0.75rem; font-family:monospace;">{ts_str}</span>
-                    <span style="color:white; font-family:monospace; font-weight:600;">{conf:.1f}%</span>
+                    <span style="color:{COLORS['text_muted']}; font-size:0.75rem; font-family:'JetBrains Mono',monospace;">{ts_str}</span>
+                    <span style="color:{COLORS['primary']}; font-family:'JetBrains Mono',monospace; font-weight:700;">{conf:.1f}%</span>
                 </div>
             </div>
         """, unsafe_allow_html=True)
@@ -318,10 +422,11 @@ def main():
     page_header("📡", "Live Monitor", "Real-time network traffic analysis")
 
     if st.session_state.is_monitoring:
+        mode_label = "LIVE PACKET CAPTURE" if st.session_state.live_capture_source_mode else "ACTIVELY SCREENING TRAFFIC"
         st.markdown(f"""
             <div class="pulse-container" style="margin-bottom: 1.5rem;">
                 <div class="pulse-dot"></div>
-                <span style="font-size: 0.85rem; font-weight: 600; color:{COLORS['success']}">ACTIVELY SCREENING TRAFFIC</span>
+                <span style="font-size: 0.85rem; font-weight: 600; color:{COLORS['success']}">{mode_label}</span>
             </div>
         """, unsafe_allow_html=True)
     else:
