@@ -77,26 +77,17 @@ def apply_chart_theme(fig):
 def inject_theme():
     """Injects core CSS shared across all dashboard pages — Tactical SOC theme."""
 
+    # Load fonts via <link> (non-blocking, no FOUC)
+    st.markdown(
+        '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700'
+        '&family=JetBrains+Mono:wght@400;500'
+        '&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">',
+        unsafe_allow_html=True,
+    )
+
     st.markdown("""
     <style>
-        /* Google Fonts — Space Grotesk for headings, Inter for body, JetBrains Mono for data */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap');
-
-        /* ── Fix Streamlit sidebar theme derivation warnings ── */
-        :root {
-            --sidebar-widget-background-color: """ + COLORS['bg_tertiary'] + """;
-            --sidebar-widget-border-color: rgba(245,158,11,0.15);
-            --sidebar-skeleton-background-color: """ + COLORS['bg_secondary'] + """;
-        }
-        [data-testid="stSidebar"] [data-testid="stWidgetLabel"],
-        [data-testid="stSidebar"] .stSelectbox,
-        [data-testid="stSidebar"] .stSlider,
-        [data-testid="stSidebar"] .stNumberInput {
-            --widget-background-color: """ + COLORS['bg_tertiary'] + """;
-            --widget-border-color: rgba(245,158,11,0.15);
-        }
-
-        /* ── Global Reset & Base — Tactical grid background ─── */
+        /* ── Global Base ─────────────────────────────────── */
         .stApp {
             background: """ + COLORS['bg_primary'] + """;
             background-image:
@@ -105,23 +96,6 @@ def inject_theme():
             background-size: 32px 32px;
             font-family: 'Inter', sans-serif;
             color: """ + COLORS['text_main'] + """;
-            position: relative;
-        }
-
-        /* Scanline overlay */
-        .stApp::after {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background: repeating-linear-gradient(
-                0deg,
-                transparent,
-                transparent 2px,
-                rgba(0,0,0,0.03) 2px,
-                rgba(0,0,0,0.03) 4px
-            );
-            pointer-events: none;
-            z-index: 9999;
         }
 
         /* ── Spacing utilities ─────────────────────────────── */
@@ -133,7 +107,7 @@ def inject_theme():
             margin: 2.5rem 0;
         }
 
-        /* ── Hero Section — Radar animation ──────────────────── */
+        /* ── Hero Section ────────────────────────────────── */
         .hero-container {
             text-align: center;
             padding: 4rem 2rem 3rem 2rem;
@@ -144,37 +118,22 @@ def inject_theme():
             overflow: hidden;
         }
 
-        /* Radar rings */
+        /* Radar rings — rendered via box-shadow on a single pseudo-element */
         .hero-container::before {
             content: '';
             position: absolute;
             top: 50%; left: 50%;
-            width: 500px; height: 500px;
-            transform: translate(-50%, -50%);
+            width: 4px; height: 4px;
             border-radius: 50%;
-            background:
-                radial-gradient(circle, transparent 30%, transparent 30.5%),
-                radial-gradient(circle, transparent 49%, rgba(245,158,11,0.06) 49.5%, rgba(245,158,11,0.06) 50%, transparent 50.5%),
-                radial-gradient(circle, transparent 69%, rgba(245,158,11,0.04) 69.5%, rgba(245,158,11,0.04) 70%, transparent 70.5%),
-                radial-gradient(circle, transparent 89%, rgba(245,158,11,0.03) 89.5%, rgba(245,158,11,0.03) 90%, transparent 90.5%);
+            transform: translate(-50%, -50%);
+            box-shadow:
+                0 0 0 80px transparent,
+                0 0 0 120px rgba(245,158,11,0.04),
+                0 0 0 121px transparent,
+                0 0 0 180px rgba(245,158,11,0.03),
+                0 0 0 181px transparent,
+                0 0 0 240px rgba(245,158,11,0.02);
             pointer-events: none;
-        }
-
-        /* Radar sweep line */
-        .hero-container::after {
-            content: '';
-            position: absolute;
-            top: 50%; left: 50%;
-            width: 250px; height: 2px;
-            background: linear-gradient(90deg, rgba(245,158,11,0.5), transparent);
-            transform-origin: left center;
-            animation: radarSweep 4s linear infinite;
-            pointer-events: none;
-        }
-
-        @keyframes radarSweep {
-            0%   { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
         }
 
         .hero-title {
@@ -216,7 +175,7 @@ def inject_theme():
             border-top: 2px solid """ + COLORS['primary'] + """;
             border-radius: 4px;
             padding: 1.75rem;
-            transition: all 0.25s ease;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
         }
         .glass-card:hover, .tactical-panel:hover {
             border-color: rgba(245,158,11,0.25);
@@ -229,7 +188,7 @@ def inject_theme():
             border-left: 3px solid transparent;
             border-radius: 4px;
             padding: 2rem 1.5rem;
-            transition: all 0.25s ease;
+            transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
             display: flex;
             flex-direction: column;
             min-height: 220px;
@@ -269,7 +228,7 @@ def inject_theme():
             flex-direction: column;
         }
 
-        /* ── Metrics Redesign — Amber left border ────────────── */
+        /* ── Metrics — Amber left border ─────────────────── */
         [data-testid="stMetric"] {
             background: """ + COLORS['bg_tertiary'] + """;
             border: 1px solid rgba(245,158,11,0.10);
@@ -278,7 +237,7 @@ def inject_theme():
             padding: 1.25rem 1.5rem;
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
             height: 100%;
-            transition: all 0.25s ease;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
         }
 
         [data-testid="stMetric"]:hover {
@@ -327,7 +286,7 @@ def inject_theme():
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245,158,11,0); }
         }
 
-        /* ── Animated status indicator (generic) ──────────── */
+        /* ── Status indicator (generic) ───────────────────── */
         .status-indicator {
             display: inline-flex;
             align-items: center;
@@ -344,7 +303,7 @@ def inject_theme():
         .status-indicator.warning .dot { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
         .status-indicator.success .dot { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
 
-        /* ── Primary Button Override — Amber gradient ────────── */
+        /* ── Primary Button — Amber gradient ─────────────── */
         .stButton > button[data-testid="baseButton-primary"] {
             background: linear-gradient(135deg, """ + COLORS['primary'] + """ 0%, #d97706 100%);
             border: none;
@@ -355,7 +314,7 @@ def inject_theme():
             font-family: 'Space Grotesk', sans-serif;
             text-transform: uppercase;
             letter-spacing: 0.04em;
-            transition: all 0.25s ease;
+            transition: box-shadow 0.25s ease, filter 0.25s ease;
         }
 
         .stButton > button[data-testid="baseButton-primary"]:hover {
@@ -363,7 +322,7 @@ def inject_theme():
             filter: brightness(1.1);
         }
 
-        /* Secondary Button Override — Amber outlined */
+        /* Secondary Button — Amber outlined */
         .stButton > button[data-testid="baseButton-secondary"] {
             background: transparent;
             border: 1px solid rgba(245,158,11,0.30);
@@ -372,7 +331,7 @@ def inject_theme():
             font-family: 'Space Grotesk', sans-serif;
             text-transform: uppercase;
             letter-spacing: 0.04em;
-            transition: all 0.25s ease;
+            transition: border-color 0.25s ease, background 0.25s ease;
         }
 
         .stButton > button[data-testid="baseButton-secondary"]:hover {
@@ -380,7 +339,7 @@ def inject_theme():
             background: rgba(245,158,11,0.08);
         }
 
-        /* ── Sidebar — Amber right-edge accent line ──────────── */
+        /* ── Sidebar — Amber right-edge accent line ──────── */
         [data-testid="stSidebar"] {
             background: """ + COLORS['bg_primary'] + """;
             border-right: 2px solid """ + COLORS['primary'] + """;
@@ -434,7 +393,7 @@ def inject_theme():
             font-size: 0.85rem !important;
         }
 
-        /* ── Page header bar — Sharp, amber left border ──────── */
+        /* ── Page header bar ─────────────────────────────── */
         .page-header {
             display: flex;
             align-items: center;
@@ -466,7 +425,7 @@ def inject_theme():
             font-size: 0.85rem;
         }
 
-        /* ── Scrollbar — Amber ────────────────────────────── */
+        /* ── Scrollbar ────────────────────────────────────── */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb {
@@ -475,11 +434,11 @@ def inject_theme():
         }
         ::-webkit-scrollbar-thumb:hover { background: """ + COLORS['primary'] + """; }
 
-        /* ── Hide default elements ─────────────────────────── */
+        /* ── Hide default chrome ──────────────────────────── */
         #MainMenu {visibility: hidden;}
         header[data-testid="stHeader"] {background: transparent;}
 
-        /* ── Settings card sections — Sharp, amber top accent ── */
+        /* ── Settings sections ────────────────────────────── */
         .settings-section {
             background: """ + COLORS['bg_tertiary'] + """;
             border: 1px solid rgba(245,158,11,0.10);
@@ -507,7 +466,7 @@ def inject_theme():
             margin-bottom: 1.25rem;
         }
 
-        /* ── Severity badges — Sharp, uppercase, critical pulse ── */
+        /* ── Severity badges ──────────────────────────────── */
         .sev-badge {
             display: inline-block;
             padding: 2px 10px;
