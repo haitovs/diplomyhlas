@@ -314,6 +314,8 @@ COMPONENTS_CSS = """
         display: flex;
         gap: 1rem;
         align-items: center;
+        height: 100%;
+        box-sizing: border-box;
         transition: all 0.25s ease;
     }
 

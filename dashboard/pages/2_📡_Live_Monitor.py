@@ -18,6 +18,7 @@ from src.data.data_sources import DataSourceManager, SimulationDataSource
 from src.inference.realtime import RealtimePredictor
 from dashboard.theme import inject_theme, inject_sidebar_brand, COLORS, apply_chart_theme
 from dashboard.components import page_header, init_shared_state, append_detections
+from dashboard.i18n import t
 
 st.set_page_config(page_title="Live Monitor", page_icon="📡", layout="wide")
 inject_theme()
@@ -40,14 +41,14 @@ if 'live_capture_obj' not in st.session_state:
 
 def create_sidebar():
     with st.sidebar:
-        st.markdown("### ⚙️ Control Panel")
+        st.markdown(f"### ⚙️ {t('live.control_panel')}")
 
         if not st.session_state.is_monitoring:
-            if st.button("▶️ Start Monitoring", type="primary", use_container_width=True):
+            if st.button(f"▶️ {t('live.start_monitoring')}", type="primary", use_container_width=True):
                 st.session_state.is_monitoring = True
                 st.rerun()
         else:
-            if st.button("⏹️ Stop Monitoring", type="secondary", use_container_width=True):
+            if st.button(f"⏹️ {t('live.stop_monitoring')}", type="secondary", use_container_width=True):
                 st.session_state.is_monitoring = False
                 # Stop live capture if running
                 if st.session_state.live_capture_obj and st.session_state.live_capture_active:
@@ -55,7 +56,7 @@ def create_sidebar():
                     st.session_state.live_capture_active = False
                 st.rerun()
 
-        if st.button("🗑️ Clear History", use_container_width=True):
+        if st.button(f"🗑️ {t('live.clear_history')}", use_container_width=True):
             st.session_state.history_df = pd.DataFrame()
             st.session_state.total_processed = 0
             st.rerun()
@@ -63,13 +64,13 @@ def create_sidebar():
         st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
         # ── Data Source Selector (including Live Capture) ────────────────
-        st.markdown("### 📊 Data Source")
+        st.markdown(f"### 📊 {t('live.data_source')}")
         sources = st.session_state.data_manager.list_sources()
         source_dict = {name: sid for sid, name, desc in sources}
-        source_dict["Live Network Capture"] = "live_capture"
+        source_dict[t('live.live_network_capture')] = "live_capture"
 
         selected_name = st.selectbox(
-            "Select Source",
+            t('live.select_source'),
             options=list(source_dict.keys()),
             label_visibility="collapsed"
         )
@@ -79,8 +80,8 @@ def create_sidebar():
         if selected_id == "live_capture":
             st.session_state.live_capture_source_mode = True
             st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
-            st.markdown("### 🔌 Capture Interface")
-            st.info("Requires **sudo** / admin privileges for raw packet access.", icon="🔒")
+            st.markdown(f"### 🔌 {t('live.capture_interface')}")
+            st.info(t('live.sudo_required'), icon="🔒")
 
             try:
                 from src.capture.network_capture import get_available_interfaces, create_capture
@@ -89,10 +90,10 @@ def create_sidebar():
                 iface_map = {f"{i.name} ({i.ip})": i.name for i in ifaces}
 
                 if iface_names:
-                    selected_iface_name = st.selectbox("Interface", iface_names)
+                    selected_iface_name = st.selectbox(t('live.interface'), iface_names)
                     selected_iface = iface_map[selected_iface_name]
                 else:
-                    st.warning("No interfaces found. Using loopback.")
+                    st.warning(t('live.no_interfaces'))
                     selected_iface = "lo0"
 
                 # Start/stop live capture
@@ -103,7 +104,7 @@ def create_sidebar():
                         st.session_state.live_capture_obj = capture
                         st.session_state.live_capture_active = True
                     except Exception as e:
-                        st.error(f"Capture failed: {e}. Try running with sudo.")
+                        st.error(t('live.capture_failed', error=str(e)))
                         st.session_state.is_monitoring = False
 
                 if st.session_state.live_capture_active and st.session_state.live_capture_obj:
@@ -112,12 +113,12 @@ def create_sidebar():
                     <div style="padding:0.5rem; border-radius:4px; background:rgba(245,158,11,0.06);
                          border:1px solid rgba(245,158,11,0.15); border-left:3px solid {COLORS['primary']};
                          margin-top:0.5rem; font-size:0.85rem;">
-                        <div style="color:{COLORS['primary']}; font-weight:700; font-family:'Space Grotesk',sans-serif;">Capturing on {stats['interface']}</div>
-                        <div style="color:{COLORS['text_muted']}; font-family:'JetBrains Mono',monospace;">Packets: {stats['packet_count']} | {stats['packets_per_second']:.1f}/s</div>
+                        <div style="color:{COLORS['primary']}; font-weight:700; font-family:'Space Grotesk',sans-serif;">{t('live.capturing_on', interface=stats['interface'])}</div>
+                        <div style="color:{COLORS['text_muted']}; font-family:'JetBrains Mono',monospace;">{t('live.packets_count', count=stats['packet_count'], rate=f"{stats['packets_per_second']:.1f}")}</div>
                     </div>
                     """, unsafe_allow_html=True)
             except ImportError:
-                st.error("Scapy not available. Install with: `pip install scapy`")
+                st.error(t('live.scapy_not_available'))
         else:
             st.session_state.live_capture_source_mode = False
             # Stop live capture if we switched away
@@ -132,7 +133,7 @@ def create_sidebar():
 
             if 'simulation' in selected_id:
                 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
-                st.markdown("### ⚡ Attack Simulation")
+                st.markdown(f"### ⚡ {t('live.attack_simulation')}")
                 attack_type = st.selectbox("Type", ["DDoS", "PortScan", "BruteForce", "Bot", "SQLi"], label_visibility="collapsed")
 
                 col1, col2 = st.columns(2)
@@ -143,18 +144,18 @@ def create_sidebar():
                     attack_active = source.attack_sim.attack_active
 
                 with col1:
-                    if st.button("Start", disabled=attack_active, use_container_width=True):
+                    if st.button(t('common.start'), disabled=attack_active, use_container_width=True):
                         source.start_attack(attack_type, duration_sec=60)
                         st.rerun()
                 with col2:
-                    if st.button("Stop", disabled=not attack_active, use_container_width=True):
+                    if st.button(t('common.stop'), disabled=not attack_active, use_container_width=True):
                         source.stop_attack()
                         st.rerun()
 
         st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
-        st.markdown("### 🔧 Parameters")
-        refresh_rate = st.selectbox("Refresh Rate", ["Manual", "1s", "3s", "5s"], index=1)
-        batch_size = st.slider("Flows/batch", 10, 200, 50)
+        st.markdown(f"### 🔧 {t('live.parameters')}")
+        refresh_rate = st.selectbox(t('live.refresh_rate'), [t('live.manual'), "1s", "3s", "5s"], index=1)
+        batch_size = st.slider(t('live.flows_per_batch'), 10, 200, 50)
 
         return refresh_rate, batch_size
 
@@ -225,19 +226,19 @@ def render_top_metrics(df):
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
-        st.metric("TOTAL FLOWS", f"{st.session_state.total_processed:,}")
+        st.metric(t('live.total_flows'), f"{st.session_state.total_processed:,}")
     with col2:
         anomalies = int(df['ml_is_anomaly'].sum()) if has_data else 0
         pct = (anomalies / len(df) * 100) if has_data and len(df) > 0 else 0
-        st.metric("THREATS DETECTED", f"{anomalies}", f"{pct:.1f}%", delta_color="inverse")
+        st.metric(t('live.threats_detected'), f"{anomalies}", f"{pct:.1f}%", delta_color="inverse")
     with col3:
         conf = df['ml_confidence'].mean() * 100 if has_data else 0
-        st.metric("AVG CONFIDENCE", f"{conf:.1f}%")
+        st.metric(t('live.avg_confidence'), f"{conf:.1f}%")
     with col4:
-        status = "LIVE CAPTURE" if st.session_state.live_capture_source_mode and st.session_state.is_monitoring else (
-            "ACTIVE" if st.session_state.is_monitoring else "PAUSED"
+        status = t('live.status_live_capture') if st.session_state.live_capture_source_mode and st.session_state.is_monitoring else (
+            t('live.status_active') if st.session_state.is_monitoring else t('live.status_paused')
         )
-        st.metric("STATUS", status)
+        st.metric(t('live.status'), status)
 
 
 def render_threat_gauge(df):
@@ -258,7 +259,7 @@ def render_threat_gauge(df):
         mode="gauge+number",
         value=threat_pct,
         number=dict(suffix="%", font=dict(color=COLORS['text_main'], size=36)),
-        title=dict(text="Threat Level", font=dict(color=COLORS['text_muted'], size=14)),
+        title=dict(text=t('live.threat_level'), font=dict(color=COLORS['text_muted'], size=14)),
         gauge=dict(
             axis=dict(range=[0, 100], tickfont=dict(color=COLORS['text_muted']), tickcolor=COLORS['text_muted']),
             bar=dict(color=bar_color),
@@ -278,13 +279,13 @@ def render_threat_gauge(df):
 
 def render_charts(df):
     if len(df) == 0 or 'ml_is_anomaly' not in df.columns:
-        st.info("Waiting for data... Click 'Start Monitoring' in the sidebar.")
+        st.info(t('live.waiting_for_data'))
         return
 
     col_left, col_right = st.columns([2, 1])
 
     with col_left:
-        st.markdown("#### Traffic Timeline")
+        st.markdown(f"#### {t('live.traffic_timeline')}")
         df_sorted = df.sort_values('timestamp')
         df_sorted['sec'] = pd.to_datetime(df_sorted['timestamp']).dt.floor('1s')
         agg = df_sorted.groupby('sec').agg(
@@ -294,14 +295,14 @@ def render_charts(df):
 
         fig = go.Figure()
         fig.add_trace(go.Scatter(
-            x=agg['sec'], y=agg['total'], name="Total", fill='tozeroy',
+            x=agg['sec'], y=agg['total'], name=t('common.total'), fill='tozeroy',
             line=dict(color=COLORS['primary']), fillcolor="rgba(245,158,11,0.12)"
         ))
 
         anomalies = agg[agg['threats'] > 0]
         if len(anomalies) > 0:
             fig.add_trace(go.Scatter(
-                x=anomalies['sec'], y=anomalies['total'], mode='markers', name='Threats',
+                x=anomalies['sec'], y=anomalies['total'], mode='markers', name=t('common.threats'),
                 marker=dict(color=COLORS['danger'], size=10, symbol='circle')
             ))
 
@@ -310,7 +311,7 @@ def render_charts(df):
         st.plotly_chart(fig, use_container_width=True)
 
     with col_right:
-        st.markdown("#### Threat Distribution")
+        st.markdown(f"#### {t('live.threat_distribution')}")
         anomalies_df = df[df['ml_is_anomaly']]
         if len(anomalies_df) > 0:
             counts = anomalies_df['ml_prediction'].value_counts()
@@ -326,7 +327,7 @@ def render_charts(df):
             st.markdown(f"""
                 <div style="height:250px; display:flex; align-items:center; justify-content:center;
                      border:1px dashed rgba(245,158,11,0.15); border-radius:4px;">
-                    <span style="color:{COLORS['success']}; font-weight:700; font-family:'Space Grotesk',sans-serif; text-transform:uppercase; letter-spacing:0.04em;">No threats detected</span>
+                    <span style="color:{COLORS['success']}; font-weight:700; font-family:'Space Grotesk',sans-serif; text-transform:uppercase; letter-spacing:0.04em;">{t('live.no_threats_detected')}</span>
                 </div>
             """, unsafe_allow_html=True)
 
@@ -348,30 +349,30 @@ def render_network_stats(df):
          background:{COLORS['bg_tertiary']}; border:1px solid rgba(245,158,11,0.10);
          border-left:3px solid {COLORS['primary']}; border-radius:4px; margin-bottom:1.5rem;">
         <span style="color:{COLORS['text_muted']}; font-size:0.8rem;">
-            <strong style="color:{COLORS['primary']};">{unique_src}</strong> Source IPs
+            <strong style="color:{COLORS['primary']};">{unique_src}</strong> {t('live.source_ips')}
         </span>
         <span style="color:{COLORS['text_muted']}; font-size:0.8rem;">
-            <strong style="color:{COLORS['primary']};">{unique_dst}</strong> Dest IPs
+            <strong style="color:{COLORS['primary']};">{unique_dst}</strong> {t('live.dest_ips')}
         </span>
         <span style="color:{COLORS['text_muted']}; font-size:0.8rem;">
-            Top Port: <strong style="color:{COLORS['primary']};">{top_port}</strong>
+            {t('live.top_port')}: <strong style="color:{COLORS['primary']};">{top_port}</strong>
         </span>
         <span style="color:{COLORS['text_muted']}; font-size:0.8rem;">
-            Avg Throughput: <strong style="color:{COLORS['primary']};">{avg_bytes:,.0f} B/s</strong>
+            {t('live.avg_throughput')}: <strong style="color:{COLORS['primary']};">{avg_bytes:,.0f} B/s</strong>
         </span>
     </div>
     """, unsafe_allow_html=True)
 
 
 def render_recent_alerts(df):
-    st.markdown("#### Recent Threats")
+    st.markdown(f"#### {t('live.recent_threats')}")
 
     if len(df) == 0 or 'ml_is_anomaly' not in df.columns:
         st.markdown(f"""
             <div style="padding:1rem; border-radius:4px; background:rgba(34,197,94,0.08);
                  color:{COLORS['success']}; border:1px solid rgba(34,197,94,0.2);
                  border-left:3px solid {COLORS['success']};">
-                ✅ System secure. No data processed yet.
+                ✅ {t('live.system_secure_no_data')}
             </div>
         """, unsafe_allow_html=True)
         return
@@ -383,7 +384,7 @@ def render_recent_alerts(df):
             <div style="padding:1rem; border-radius:4px; background:rgba(34,197,94,0.08);
                  color:{COLORS['success']}; border:1px solid rgba(34,197,94,0.2);
                  border-left:3px solid {COLORS['success']};">
-                ✅ System secure. No recent threats logged.
+                ✅ {t('live.system_secure_no_threats')}
             </div>
         """, unsafe_allow_html=True)
         return
@@ -419,10 +420,10 @@ def render_recent_alerts(df):
 
 
 def main():
-    page_header("📡", "Live Monitor", "Real-time network traffic analysis")
+    page_header("📡", t('live.page_title'), t('live.page_subtitle'))
 
     if st.session_state.is_monitoring:
-        mode_label = "LIVE PACKET CAPTURE" if st.session_state.live_capture_source_mode else "ACTIVELY SCREENING TRAFFIC"
+        mode_label = t('live.live_packet_capture_mode') if st.session_state.live_capture_source_mode else t('live.actively_screening')
         st.markdown(f"""
             <div class="pulse-container" style="margin-bottom: 1.5rem;">
                 <div class="pulse-dot"></div>
@@ -430,7 +431,7 @@ def main():
             </div>
         """, unsafe_allow_html=True)
     else:
-        st.info("System paused. Click 'Start Monitoring' in the sidebar to begin processing traffic.")
+        st.info(t('live.system_paused'))
 
     refresh_rate, batch_size = create_sidebar()
 
@@ -447,13 +448,13 @@ def main():
     with col_charts:
         render_charts(display_df)
     with col_gauge:
-        st.markdown("#### System Health")
+        st.markdown(f"#### {t('live.system_health')}")
         render_threat_gauge(display_df)
 
     st.markdown('<div class="card-gap"></div>', unsafe_allow_html=True)
     render_recent_alerts(display_df)
 
-    if st.session_state.is_monitoring and refresh_rate != "Manual":
+    if st.session_state.is_monitoring and refresh_rate != t('live.manual'):
         seconds = int(refresh_rate.replace('s', ''))
         time.sleep(seconds)
         st.rerun()

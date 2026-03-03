@@ -5,6 +5,7 @@ sharp corners, monospace data readouts.
 """
 
 import streamlit as st
+from dashboard.i18n import t, get_lang, set_lang, SUPPORTED_LANGS
 
 # Global color palette — Tactical SOC
 COLORS = {
@@ -77,7 +78,7 @@ def apply_chart_theme(fig):
 def inject_theme():
     """Injects core CSS shared across all dashboard pages — Tactical SOC theme."""
 
-    # Load fonts via <link> (non-blocking, no FOUC)
+    # Load fonts via <link> (non-blocking)
     st.markdown(
         '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700'
         '&family=JetBrains+Mono:wght@400;500'
@@ -107,6 +108,43 @@ def inject_theme():
             margin: 2.5rem 0;
         }
 
+        /* ══════════════════════════════════════════════════════
+           EQUAL-HEIGHT COLUMNS — force all side-by-side
+           containers to stretch to the tallest sibling
+           ══════════════════════════════════════════════════════ */
+        [data-testid="stHorizontalBlock"] {
+            align-items: stretch !important;
+            gap: 1rem;
+        }
+        [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] {
+            display: flex !important;
+            flex-direction: column !important;
+        }
+        /* Every wrapper div inside a column stretches */
+        [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] > div {
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+        /* HTML blocks (st.markdown) inside columns stretch */
+        [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] > div > div[data-testid="stMarkdownContainer"] {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] > div > div[data-testid="stMarkdownContainer"] > div {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        /* All card types fill their parent height */
+        .glass-card, .tactical-panel, .feature-card, .metric-card, .result-card {
+            flex: 1;
+        }
+        [data-testid="stMetric"] {
+            flex: 1;
+        }
+
         /* ── Hero Section ────────────────────────────────── */
         .hero-container {
             text-align: center;
@@ -118,7 +156,7 @@ def inject_theme():
             overflow: hidden;
         }
 
-        /* Radar rings — rendered via box-shadow on a single pseudo-element */
+        /* Radar rings */
         .hero-container::before {
             content: '';
             position: absolute;
@@ -168,7 +206,7 @@ def inject_theme():
             font-family: 'JetBrains Mono', monospace !important;
         }
 
-        /* ── Tactical Panels (replaces glass-card) ───────────── */
+        /* ── Tactical Panels ─────────────────────────────── */
         .glass-card, .tactical-panel {
             background: """ + COLORS['bg_tertiary'] + """;
             border: 1px solid rgba(245,158,11,0.10);
@@ -210,22 +248,6 @@ def inject_theme():
             font-size: 2.5rem;
             margin-bottom: 0.75rem;
             display: inline-block;
-        }
-
-        /* Force Streamlit columns to stretch equally */
-        [data-testid="stHorizontalBlock"] {
-            align-items: stretch;
-        }
-
-        [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] {
-            display: flex;
-            flex-direction: column;
-        }
-
-        [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] > div {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
         }
 
         /* ── Metrics — Amber left border ─────────────────── */
@@ -286,7 +308,6 @@ def inject_theme():
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245,158,11,0); }
         }
 
-        /* ── Status indicator (generic) ───────────────────── */
         .status-indicator {
             display: inline-flex;
             align-items: center;
@@ -303,7 +324,7 @@ def inject_theme():
         .status-indicator.warning .dot { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
         .status-indicator.success .dot { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
 
-        /* ── Primary Button — Amber gradient ─────────────── */
+        /* ── Primary Button ──────────────────────────────── */
         .stButton > button[data-testid="baseButton-primary"] {
             background: linear-gradient(135deg, """ + COLORS['primary'] + """ 0%, #d97706 100%);
             border: none;
@@ -316,13 +337,12 @@ def inject_theme():
             letter-spacing: 0.04em;
             transition: box-shadow 0.25s ease, filter 0.25s ease;
         }
-
         .stButton > button[data-testid="baseButton-primary"]:hover {
             box-shadow: 0 4px 20px rgba(245,158,11,0.35);
             filter: brightness(1.1);
         }
 
-        /* Secondary Button — Amber outlined */
+        /* Secondary Button */
         .stButton > button[data-testid="baseButton-secondary"] {
             background: transparent;
             border: 1px solid rgba(245,158,11,0.30);
@@ -333,30 +353,81 @@ def inject_theme():
             letter-spacing: 0.04em;
             transition: border-color 0.25s ease, background 0.25s ease;
         }
-
         .stButton > button[data-testid="baseButton-secondary"]:hover {
             border-color: """ + COLORS['primary'] + """;
             background: rgba(245,158,11,0.08);
         }
 
-        /* ── Sidebar — Amber right-edge accent line ──────── */
+        /* ══════════════════════════════════════════════════════
+           SIDEBAR — Full tactical SOC restyle
+           ══════════════════════════════════════════════════════ */
+
+        /* Sidebar container */
         [data-testid="stSidebar"] {
-            background: """ + COLORS['bg_primary'] + """;
+            background: """ + COLORS['bg_primary'] + """ !important;
             border-right: 2px solid """ + COLORS['primary'] + """;
         }
+        [data-testid="stSidebar"] > div:first-child {
+            background: """ + COLORS['bg_primary'] + """ !important;
+        }
 
+        /* ── Navigation links ───────────────────────────── */
+        [data-testid="stSidebarNav"] {
+            padding-top: 1rem;
+        }
+        [data-testid="stSidebarNav"] li {
+            margin: 0 !important;
+        }
+        [data-testid="stSidebarNav"] a {
+            display: flex !important;
+            align-items: center !important;
+            padding: 0.6rem 1rem !important;
+            margin: 2px 0.5rem !important;
+            border-radius: 4px !important;
+            border-left: 3px solid transparent !important;
+            color: """ + COLORS['text_muted'] + """ !important;
+            font-family: 'Space Grotesk', sans-serif !important;
+            font-size: 0.9rem !important;
+            font-weight: 500 !important;
+            text-decoration: none !important;
+            transition: all 0.2s ease !important;
+            background: transparent !important;
+        }
+        [data-testid="stSidebarNav"] a:hover {
+            background: rgba(245,158,11,0.06) !important;
+            border-left-color: rgba(245,158,11,0.4) !important;
+            color: """ + COLORS['text_main'] + """ !important;
+        }
+        /* Active nav link */
+        [data-testid="stSidebarNav"] a[aria-current="page"],
+        [data-testid="stSidebarNav"] li a[href][aria-selected="true"] {
+            background: rgba(245,158,11,0.10) !important;
+            border-left-color: """ + COLORS['primary'] + """ !important;
+            color: """ + COLORS['primary'] + """ !important;
+            font-weight: 700 !important;
+        }
+        /* Nav link emoji/icon */
+        [data-testid="stSidebarNav"] a span {
+            font-size: 1.1rem !important;
+            margin-right: 0.5rem !important;
+        }
+
+        /* ── Sidebar branding block ──────────────────────── */
         [data-testid="stSidebar"] .sidebar-brand {
             text-align: center;
-            padding: 1.5rem 1rem 1rem 1rem;
-            border-bottom: 1px solid rgba(245,158,11,0.12);
-            margin-bottom: 1rem;
+            padding: 1.25rem 1rem;
+            margin: 0.5rem 0.75rem;
+            border: 1px solid rgba(245,158,11,0.10);
+            border-top: 2px solid """ + COLORS['primary'] + """;
+            border-radius: 4px;
+            background: """ + COLORS['bg_tertiary'] + """;
         }
         [data-testid="stSidebar"] .sidebar-brand .brand-icon {
             font-size: 2rem;
             margin-bottom: 0.25rem;
         }
         [data-testid="stSidebar"] .sidebar-brand .brand-title {
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 700;
             font-family: 'Space Grotesk', sans-serif;
             background: linear-gradient(135deg, """ + COLORS['primary'] + """, #fbbf24);
@@ -364,13 +435,49 @@ def inject_theme():
             -webkit-text-fill-color: transparent;
         }
         [data-testid="stSidebar"] .sidebar-brand .brand-sub {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: """ + COLORS['text_muted'] + """;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.10em;
             text-transform: uppercase;
+            margin-top: 0.15rem;
         }
 
-        /* ── Styled Dataframes — Amber headers ────────────── */
+        /* ── Sidebar widget styling ──────────────────────── */
+        [data-testid="stSidebar"] h1,
+        [data-testid="stSidebar"] h2,
+        [data-testid="stSidebar"] h3 {
+            font-size: 0.8rem !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.08em !important;
+            color: """ + COLORS['text_muted'] + """ !important;
+            margin-top: 1rem !important;
+            margin-bottom: 0.5rem !important;
+            padding-left: 0.75rem !important;
+        }
+        [data-testid="stSidebar"] .stButton > button {
+            border-radius: 4px !important;
+            font-family: 'Space Grotesk', sans-serif !important;
+            font-size: 0.85rem !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.04em !important;
+        }
+        [data-testid="stSidebar"] .stSelectbox > div > div {
+            border-radius: 4px !important;
+            border-color: rgba(245,158,11,0.15) !important;
+            background: """ + COLORS['bg_tertiary'] + """ !important;
+        }
+        [data-testid="stSidebar"] .stSlider > div > div > div {
+            color: """ + COLORS['primary'] + """ !important;
+        }
+        [data-testid="stSidebar"] hr {
+            border-color: rgba(245,158,11,0.12) !important;
+        }
+        /* Sidebar collapse button */
+        [data-testid="stSidebar"] button[data-testid="stBaseButton-headerNoPadding"] {
+            color: """ + COLORS['text_muted'] + """ !important;
+        }
+
+        /* ── Styled Dataframes ────────────────────────────── */
         [data-testid="stDataFrame"] table {
             border-collapse: separate;
             border-spacing: 0;
@@ -405,9 +512,7 @@ def inject_theme():
             border-radius: 2px;
             margin-bottom: 2rem;
         }
-        .page-header .ph-icon {
-            font-size: 1.5rem;
-        }
+        .page-header .ph-icon { font-size: 1.5rem; }
         .page-header .ph-title {
             font-size: 1.1rem;
             font-weight: 700;
@@ -416,22 +521,13 @@ def inject_theme():
             letter-spacing: 0.04em;
             color: """ + COLORS['text_main'] + """;
         }
-        .page-header .ph-sep {
-            color: rgba(245,158,11,0.30);
-            font-weight: 300;
-        }
-        .page-header .ph-sub {
-            color: """ + COLORS['text_muted'] + """;
-            font-size: 0.85rem;
-        }
+        .page-header .ph-sep { color: rgba(245,158,11,0.30); font-weight: 300; }
+        .page-header .ph-sub { color: """ + COLORS['text_muted'] + """; font-size: 0.85rem; }
 
         /* ── Scrollbar ────────────────────────────────────── */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(245,158,11,0.30);
-            border-radius: 3px;
-        }
+        ::-webkit-scrollbar-thumb { background: rgba(245,158,11,0.30); border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: """ + COLORS['primary'] + """; }
 
         /* ── Hide default chrome ──────────────────────────── */
@@ -496,12 +592,28 @@ def inject_theme():
 
 
 def inject_sidebar_brand():
-    """Inject sidebar branding block — call once per page."""
+    """Inject sidebar branding block + language selector — call once per page."""
     with st.sidebar:
-        st.markdown("""
+        st.markdown(f"""
         <div class="sidebar-brand">
             <div class="brand-icon">🛡️</div>
-            <div class="brand-title">Network Anomaly Analyzer</div>
-            <div class="brand-sub">ML-Powered Threat Detection</div>
+            <div class="brand-title">{t('sidebar.brand_title')}</div>
+            <div class="brand-sub">{t('sidebar.brand_subtitle')}</div>
         </div>
         """, unsafe_allow_html=True)
+
+        # Language selector at bottom of sidebar
+        lang_codes = list(SUPPORTED_LANGS.keys())
+        lang_labels = list(SUPPORTED_LANGS.values())
+        current_lang = get_lang()
+        current_idx = lang_codes.index(current_lang) if current_lang in lang_codes else 0
+        selected_label = st.selectbox(
+            "🌐",
+            lang_labels,
+            index=current_idx,
+            key="sidebar_lang_select",
+        )
+        selected_code = lang_codes[lang_labels.index(selected_label)]
+        if selected_code != current_lang:
+            set_lang(selected_code)
+            st.rerun()

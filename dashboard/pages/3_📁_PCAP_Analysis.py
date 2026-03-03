@@ -16,13 +16,14 @@ import os
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from dashboard.theme import inject_theme, inject_sidebar_brand, COLORS, apply_chart_theme
 from dashboard.components import page_header, init_shared_state, append_detections
+from dashboard.i18n import t
 
 st.set_page_config(page_title="PCAP Analysis", page_icon="📁", layout="wide")
 inject_theme()
 inject_sidebar_brand()
 init_shared_state()
 
-page_header("📁", "File Analysis", "Upload & inspect packet captures")
+page_header("📁", t('pcap.page_title'), t('pcap.page_subtitle'))
 
 st.markdown(f"""
 <style>
@@ -84,14 +85,14 @@ def _run_ml_classification(df: pd.DataFrame):
     ]
 
     # ── Threat Assessment ────────────────────────────────────────────────
-    st.markdown("### 🛡️ ML Threat Assessment")
+    st.markdown(f"### 🛡️ {t('pcap.ml_threat_assessment')}")
     threats = df[df['ml_is_anomaly']]
     benign = df[~df['ml_is_anomaly']]
     threat_ratio = len(threats) / max(len(df), 1) * 100
 
     c1, c2, c3, c4 = st.columns(4)
     border_colors = [COLORS['danger'], COLORS['success'], COLORS['warning'], COLORS['primary']]
-    labels = ["Threats Found", "Benign Flows", "Threat Ratio", "Avg Confidence"]
+    labels = [t('pcap.threats_found'), t('pcap.benign_flows'), t('pcap.threat_ratio'), t('pcap.avg_confidence')]
     values = [
         f"{len(threats)}",
         f"{len(benign)}",
@@ -114,7 +115,7 @@ def _run_ml_classification(df: pd.DataFrame):
         st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
         col_pie, col_table = st.columns([1, 2])
         with col_pie:
-            st.markdown("#### Threat Type Breakdown")
+            st.markdown(f"#### {t('pcap.threat_type_breakdown')}")
             type_counts = threats['ml_prediction'].value_counts()
             fig = px.pie(
                 values=type_counts.values, names=type_counts.index, hole=0.55,
@@ -126,10 +127,10 @@ def _run_ml_classification(df: pd.DataFrame):
             st.plotly_chart(fig, use_container_width=True)
 
         with col_table:
-            st.markdown("#### Detected Threats")
+            st.markdown(f"#### {t('pcap.detected_threats')}")
             threat_display = threats[['src_ip', 'dst_ip', 'dst_port', 'ml_prediction', 'ml_confidence']].copy()
             threat_display['ml_confidence'] = (threat_display['ml_confidence'] * 100).round(1).astype(str) + '%'
-            threat_display.columns = ['Source IP', 'Dest IP', 'Port', 'Verdict', 'Confidence']
+            threat_display.columns = [t('pcap.col_source_ip'), t('pcap.col_dest_ip'), t('pcap.col_port'), t('pcap.col_verdict'), t('pcap.col_confidence')]
             st.dataframe(threat_display.head(50), use_container_width=True, hide_index=True)
 
     # Push anomalies to shared detection log
@@ -153,21 +154,21 @@ def _run_ml_classification(df: pd.DataFrame):
 
 # ── File Upload ─────────────────────────────────────────────────────────────
 uploaded_file = st.file_uploader(
-    "Upload PCAP/PCAPNG file",
+    t('pcap.upload_label'),
     type=['pcap', 'pcapng', 'cap'],
-    help="Drag and drop or click to upload network capture files",
+    help=t('pcap.upload_help'),
     label_visibility="hidden"
 )
 
 if uploaded_file:
-    st.success(f"Loaded: **{uploaded_file.name}** ({uploaded_file.size / 1024:.1f} KB)")
+    st.success(t('pcap.file_loaded', name=uploaded_file.name, size=f"{uploaded_file.size / 1024:.1f}"))
 
     with tempfile.NamedTemporaryFile(delete=False, suffix='.pcap') as tmp:
         tmp.write(uploaded_file.getvalue())
         tmp_path = tmp.name
 
-    if st.button("🔍 Begin Deep Analysis", type="primary", use_container_width=True):
-        with st.spinner("Decoding packets and extracting flow features..."):
+    if st.button(f"🔍 {t('pcap.begin_analysis')}", type="primary", use_container_width=True):
+        with st.spinner(t('pcap.decoding_packets')):
             try:
                 from src.capture import PcapAnalyzer
 
@@ -176,12 +177,12 @@ if uploaded_file:
                 summary = analyzer.get_summary()
 
                 if df.empty:
-                    st.warning("No IP packets found in the uploaded file.")
+                    st.warning(t('pcap.no_ip_packets'))
                 else:
-                    st.markdown("### 📊 Dataset Overview")
+                    st.markdown(f"### 📊 {t('pcap.dataset_overview')}")
                     c1, c2, c3, c4 = st.columns(4)
                     border_colors = [COLORS['primary'], COLORS['accent'], COLORS['success'], COLORS['warning']]
-                    labels = ["Total Flows", "Total Packets", "Unique IPs", "Protocols"]
+                    labels = [t('pcap.total_flows'), t('pcap.total_packets'), t('pcap.unique_ips'), t('pcap.protocols')]
                     values = [
                         f"{summary['total_flows']:,}",
                         f"{summary['total_packets']:,}",
@@ -203,7 +204,7 @@ if uploaded_file:
                     col1, col2 = st.columns(2)
 
                     with col1:
-                        st.markdown("#### 📡 Protocol Breakdown")
+                        st.markdown(f"#### 📡 {t('pcap.protocol_breakdown')}")
                         protocols = summary['protocols']
                         fig = px.pie(
                             values=list(protocols.values()),
@@ -217,7 +218,7 @@ if uploaded_file:
                         st.plotly_chart(fig, use_container_width=True)
 
                     with col2:
-                        st.markdown("#### 📈 Target Ports")
+                        st.markdown(f"#### 📈 {t('pcap.target_ports')}")
                         port_counts = df['dst_port'].value_counts().head(8)
                         fig = px.bar(
                             x=port_counts.index.astype(str),
@@ -225,7 +226,7 @@ if uploaded_file:
                             color_discrete_sequence=[COLORS['primary']]
                         )
                         apply_chart_theme(fig)
-                        fig.update_layout(height=320, xaxis_title="Port", yaxis_title="Flows")
+                        fig.update_layout(height=320, xaxis_title=t('common.port'), yaxis_title=t('common.flows'))
                         st.plotly_chart(fig, use_container_width=True)
 
                     # ── ML Classification ────────────────────────────────────────
@@ -234,19 +235,19 @@ if uploaded_file:
 
                     # ── Flow Signatures Table ────────────────────────────────────
                     st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
-                    st.markdown("### 📋 Flow Signatures")
+                    st.markdown(f"### 📋 {t('pcap.flow_signatures')}")
                     display_cols = ['src_ip', 'dst_ip', 'src_port', 'dst_port', 'protocol',
                                     'total_fwd_packets', 'total_bwd_packets', 'flow_bytes_per_s',
                                     'ml_prediction', 'ml_confidence', 'ml_is_anomaly']
                     show_df = df[display_cols].copy()
                     show_df['ml_confidence'] = (show_df['ml_confidence'] * 100).round(1).astype(str) + '%'
-                    show_df.columns = ['Src IP', 'Dst IP', 'Src Port', 'Dst Port', 'Proto',
-                                       'Fwd Pkts', 'Bwd Pkts', 'Bytes/s',
-                                       'ML Verdict', 'Confidence', 'Threat']
+                    show_df.columns = [t('pcap.col_src_ip'), t('pcap.col_dst_ip'), t('pcap.col_src_port'), t('pcap.col_dst_port'), t('pcap.col_proto'),
+                                       t('pcap.col_fwd_pkts'), t('pcap.col_bwd_pkts'), t('pcap.col_bytes_s'),
+                                       t('pcap.col_ml_verdict'), t('pcap.col_confidence'), t('pcap.col_threat')]
                     st.dataframe(show_df.head(100), use_container_width=True, hide_index=True)
 
                     st.download_button(
-                        "📥 Download Extracted Features (CSV)",
+                        f"📥 {t('pcap.download_csv')}",
                         df.to_csv(index=False),
                         file_name=f"pcap_features_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
                         mime="text/csv",
@@ -254,9 +255,9 @@ if uploaded_file:
                     )
 
             except ImportError:
-                st.error("The 'scapy' library is not installed. Please run: `pip install scapy`")
+                st.error(t('pcap.scapy_not_installed'))
             except Exception as e:
-                st.error(f"Failed to process capture file: {str(e)}")
+                st.error(t('pcap.process_failed', error=str(e)))
             finally:
                 os.unlink(tmp_path)
 else:
@@ -264,23 +265,22 @@ else:
     st.markdown(f"""
     <div class="upload-box">
         <div style="font-size: 4rem; margin-bottom: 1rem; opacity:0.8;">🗂️</div>
-        <h3 style="margin-bottom:0.5rem;">Select a Capture File</h3>
+        <h3 style="margin-bottom:0.5rem;">{t('pcap.empty_title')}</h3>
         <p style="color: {COLORS['text_muted']}; max-width: 420px; margin: 0 auto; line-height: 1.7; font-size:0.95rem;">
-            We support standard <strong>.pcap</strong> and <strong>.pcapng</strong> files generated by
-            Wireshark, tcpdump, or other capture tools.
+            {t('pcap.empty_desc')}
         </p>
         <div style="display:flex; gap:1rem; justify-content:center; margin-top:1.25rem;">
             <span style="color:{COLORS['text_muted']}; font-size:0.8rem; padding:4px 12px;
-                  border:1px solid rgba(148,163,184,0.15); border-radius:8px;">Max 200 MB</span>
+                  border:1px solid rgba(245,158,11,0.15); border-radius:2px;">{t('pcap.max_size')}</span>
             <span style="color:{COLORS['text_muted']}; font-size:0.8rem; padding:4px 12px;
-                  border:1px solid rgba(148,163,184,0.15); border-radius:8px;">Local Processing Only</span>
+                  border:1px solid rgba(245,158,11,0.15); border-radius:2px;">{t('pcap.local_processing')}</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
     st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
-    if st.button("Generate Synthetic Demo Capture", use_container_width=True):
+    if st.button(t('pcap.generate_demo'), use_container_width=True):
         n = 100
         demo_df = pd.DataFrame({
             'src_ip': [f"192.168.1.{np.random.randint(1,255)}" for _ in range(n)],
@@ -297,12 +297,12 @@ else:
             'flow_packets_per_s': np.random.exponential(50, n),
         })
 
-        st.markdown("### 📊 Demo Processing Complete")
+        st.markdown(f"### 📊 {t('pcap.demo_complete')}")
         cols = st.columns(4)
-        cols[0].metric("Total Flows", n)
-        cols[1].metric("Total Packets", int(demo_df['total_fwd_packets'].sum() + demo_df['total_bwd_packets'].sum()))
-        cols[2].metric("Unique Source IPs", demo_df['src_ip'].nunique())
-        cols[3].metric("Protocols", 2)
+        cols[0].metric(t('pcap.total_flows'), n)
+        cols[1].metric(t('pcap.total_packets'), int(demo_df['total_fwd_packets'].sum() + demo_df['total_bwd_packets'].sum()))
+        cols[2].metric(t('pcap.unique_source_ips'), demo_df['src_ip'].nunique())
+        cols[3].metric(t('pcap.protocols'), 2)
 
         # Run ML on demo data
         st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
@@ -313,6 +313,6 @@ else:
 
 st.markdown(f"""
 <div style="text-align:center; margin-top:3rem; padding-top:1.5rem; border-top:1px solid {COLORS['border']};">
-    <p style="color:{COLORS['text_muted']}; font-size:0.85rem;">Network Anomaly Analyzer v2.0</p>
+    <p style="color:{COLORS['text_muted']}; font-size:0.85rem;">{t('common.app_version')}</p>
 </div>
 """, unsafe_allow_html=True)
