@@ -359,122 +359,200 @@ def inject_theme():
         }
 
         /* ══════════════════════════════════════════════════════
-           SIDEBAR — Full tactical SOC restyle
+           SIDEBAR — Fully custom SOC command panel
            ══════════════════════════════════════════════════════ */
+
+        /* Hide default Streamlit nav — we build our own */
+        [data-testid="stSidebarNav"] {
+            display: none !important;
+        }
 
         /* Sidebar container */
         [data-testid="stSidebar"] {
             background: """ + COLORS['bg_primary'] + """ !important;
-            border-right: 2px solid """ + COLORS['primary'] + """;
+            border-right: 1px solid rgba(245,158,11,0.15);
         }
         [data-testid="stSidebar"] > div:first-child {
             background: """ + COLORS['bg_primary'] + """ !important;
+            padding-top: 0 !important;
         }
 
-        /* ── Navigation links ───────────────────────────── */
-        [data-testid="stSidebarNav"] {
-            padding-top: 1rem;
+        /* ── Sidebar branding block ──────────────────────── */
+        .sidebar-brand {
+            text-align: center;
+            padding: 1.5rem 1rem 1rem 1rem;
+            margin: 0 0 0.25rem 0;
+            border-bottom: 1px solid rgba(245,158,11,0.10);
+            background: linear-gradient(180deg, rgba(245,158,11,0.04) 0%, transparent 100%);
         }
-        [data-testid="stSidebarNav"] li {
-            margin: 0 !important;
+        .sidebar-brand .brand-icon {
+            font-size: 2.25rem;
+            margin-bottom: 0.35rem;
         }
-        [data-testid="stSidebarNav"] a {
+        .sidebar-brand .brand-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            font-family: 'Space Grotesk', sans-serif;
+            letter-spacing: 0.02em;
+            background: linear-gradient(135deg, """ + COLORS['primary'] + """, #fbbf24);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .sidebar-brand .brand-sub {
+            font-size: 0.6rem;
+            color: """ + COLORS['text_muted'] + """;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-top: 0.2rem;
+        }
+
+        /* ── System status indicator ────────────────────── */
+        .sidebar-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            margin-top: 0.6rem;
+            padding: 0.3rem 0.75rem;
+            background: rgba(34,197,94,0.08);
+            border: 1px solid rgba(34,197,94,0.15);
+            border-radius: 3px;
+            display: inline-flex;
+        }
+        .sidebar-status .status-dot {
+            width: 6px; height: 6px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        .sidebar-status .status-text {
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.10em;
+            text-transform: uppercase;
+            color: #22c55e;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ── Section labels ─────────────────────────────── */
+        .sidebar-section-label {
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: rgba(245,158,11,0.45);
+            padding: 0.85rem 1rem 0.3rem 1.15rem;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        /* ── Custom page links (st.page_link) ───────────── */
+        [data-testid="stSidebar"] [data-testid="stPageLink-nav"] a,
+        [data-testid="stSidebar"] a[data-testid="stPageLink-NavLink"] {
             display: flex !important;
             align-items: center !important;
-            padding: 0.6rem 1rem !important;
-            margin: 2px 0.5rem !important;
-            border-radius: 4px !important;
+            gap: 0.55rem !important;
+            padding: 0.5rem 1rem !important;
+            margin: 1px 0.5rem !important;
+            border-radius: 3px !important;
             border-left: 3px solid transparent !important;
             color: """ + COLORS['text_muted'] + """ !important;
             font-family: 'Space Grotesk', sans-serif !important;
-            font-size: 0.9rem !important;
+            font-size: 0.83rem !important;
             font-weight: 500 !important;
             text-decoration: none !important;
             transition: all 0.2s ease !important;
             background: transparent !important;
         }
-        [data-testid="stSidebarNav"] a:hover {
+        [data-testid="stSidebar"] [data-testid="stPageLink-nav"] a:hover,
+        [data-testid="stSidebar"] a[data-testid="stPageLink-NavLink"]:hover {
             background: rgba(245,158,11,0.06) !important;
-            border-left-color: rgba(245,158,11,0.4) !important;
+            border-left-color: rgba(245,158,11,0.35) !important;
             color: """ + COLORS['text_main'] + """ !important;
         }
-        /* Active nav link */
-        [data-testid="stSidebarNav"] a[aria-current="page"],
-        [data-testid="stSidebarNav"] li a[href][aria-selected="true"] {
-            background: rgba(245,158,11,0.10) !important;
+        /* Active page link */
+        [data-testid="stSidebar"] [data-testid="stPageLink-nav"] a[aria-current="page"],
+        [data-testid="stSidebar"] a[data-testid="stPageLink-NavLink"][aria-current="page"] {
+            background: rgba(245,158,11,0.08) !important;
             border-left-color: """ + COLORS['primary'] + """ !important;
             color: """ + COLORS['primary'] + """ !important;
             font-weight: 700 !important;
         }
-        /* Nav link emoji/icon */
-        [data-testid="stSidebarNav"] a span {
-            font-size: 1.1rem !important;
-            margin-right: 0.5rem !important;
+        /* Page link icon */
+        [data-testid="stSidebar"] [data-testid="stPageLink-nav"] a span:first-child,
+        [data-testid="stSidebar"] a[data-testid="stPageLink-NavLink"] span:first-child {
+            font-size: 1rem !important;
+            width: 1.25rem;
+            text-align: center;
         }
 
-        /* ── Sidebar branding block ──────────────────────── */
-        [data-testid="stSidebar"] .sidebar-brand {
+        /* ── Sidebar thin dividers ──────────────────────── */
+        .sidebar-divider {
+            border: none;
+            border-top: 1px solid rgba(245,158,11,0.08);
+            margin: 0.5rem 1rem;
+        }
+
+        /* ── Sidebar footer ─────────────────────────────── */
+        .sidebar-footer {
             text-align: center;
-            padding: 1.25rem 1rem;
-            margin: 0.5rem 0.75rem;
-            border: 1px solid rgba(245,158,11,0.10);
-            border-top: 2px solid """ + COLORS['primary'] + """;
-            border-radius: 4px;
-            background: """ + COLORS['bg_tertiary'] + """;
-        }
-        [data-testid="stSidebar"] .sidebar-brand .brand-icon {
-            font-size: 2rem;
-            margin-bottom: 0.25rem;
-        }
-        [data-testid="stSidebar"] .sidebar-brand .brand-title {
-            font-size: 0.95rem;
-            font-weight: 700;
-            font-family: 'Space Grotesk', sans-serif;
-            background: linear-gradient(135deg, """ + COLORS['primary'] + """, #fbbf24);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        [data-testid="stSidebar"] .sidebar-brand .brand-sub {
-            font-size: 0.65rem;
+            padding: 0.75rem 1rem;
+            font-size: 0.6rem;
             color: """ + COLORS['text_muted'] + """;
-            letter-spacing: 0.10em;
-            text-transform: uppercase;
-            margin-top: 0.15rem;
+            letter-spacing: 0.04em;
+            font-family: 'JetBrains Mono', monospace;
+            border-top: 1px solid rgba(245,158,11,0.08);
+            margin-top: 0.5rem;
         }
 
         /* ── Sidebar widget styling ──────────────────────── */
         [data-testid="stSidebar"] h1,
         [data-testid="stSidebar"] h2,
         [data-testid="stSidebar"] h3 {
-            font-size: 0.8rem !important;
+            font-size: 0.75rem !important;
             text-transform: uppercase !important;
             letter-spacing: 0.08em !important;
             color: """ + COLORS['text_muted'] + """ !important;
-            margin-top: 1rem !important;
-            margin-bottom: 0.5rem !important;
+            margin-top: 0.75rem !important;
+            margin-bottom: 0.35rem !important;
             padding-left: 0.75rem !important;
         }
         [data-testid="stSidebar"] .stButton > button {
-            border-radius: 4px !important;
+            border-radius: 3px !important;
             font-family: 'Space Grotesk', sans-serif !important;
-            font-size: 0.85rem !important;
+            font-size: 0.82rem !important;
             text-transform: uppercase !important;
             letter-spacing: 0.04em !important;
         }
         [data-testid="stSidebar"] .stSelectbox > div > div {
-            border-radius: 4px !important;
+            border-radius: 3px !important;
             border-color: rgba(245,158,11,0.15) !important;
             background: """ + COLORS['bg_tertiary'] + """ !important;
+            font-size: 0.82rem !important;
         }
         [data-testid="stSidebar"] .stSlider > div > div > div {
             color: """ + COLORS['primary'] + """ !important;
         }
         [data-testid="stSidebar"] hr {
-            border-color: rgba(245,158,11,0.12) !important;
+            border-color: rgba(245,158,11,0.08) !important;
         }
         /* Sidebar collapse button */
         [data-testid="stSidebar"] button[data-testid="stBaseButton-headerNoPadding"] {
             color: """ + COLORS['text_muted'] + """ !important;
+        }
+
+        /* ── Compact language selector in sidebar ────────── */
+        .sidebar-lang-wrap {
+            padding: 0.35rem 0.75rem;
+        }
+        .sidebar-lang-label {
+            font-size: 0.6rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.10em;
+            color: """ + COLORS['text_muted'] + """;
+            font-family: 'Space Grotesk', sans-serif;
+            margin-bottom: 0.2rem;
+            padding-left: 0.25rem;
         }
 
         /* ── Styled Dataframes ────────────────────────────── */
@@ -592,28 +670,62 @@ def inject_theme():
 
 
 def inject_sidebar_brand():
-    """Inject sidebar branding block + language selector — call once per page."""
+    """Build fully custom SOC sidebar — branding, navigation, language, footer."""
     with st.sidebar:
+        # ── Brand header ────────────────────────────────────
         st.markdown(f"""
         <div class="sidebar-brand">
             <div class="brand-icon">🛡️</div>
             <div class="brand-title">{t('sidebar.brand_title')}</div>
             <div class="brand-sub">{t('sidebar.brand_subtitle')}</div>
+            <div style="margin-top:0.6rem; text-align:center;">
+                <span class="sidebar-status">
+                    <span class="status-dot"></span>
+                    <span class="status-text">{t('sidebar.status_online')}</span>
+                </span>
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
-        # Language selector at bottom of sidebar
+        # ── Operations section ──────────────────────────────
+        st.markdown(f'<div class="sidebar-section-label">{t("sidebar.section_operations")}</div>', unsafe_allow_html=True)
+        st.page_link("1_🏠_Home.py", label=t("sidebar.nav_home"), icon="🏠")
+        st.page_link("pages/2_📡_Live_Monitor.py", label=t("sidebar.nav_live_monitor"), icon="📡")
+        st.page_link("pages/3_📁_PCAP_Analysis.py", label=t("sidebar.nav_pcap_analysis"), icon="📁")
+
+        # ── Intelligence section ────────────────────────────
+        st.markdown(f'<div class="sidebar-section-label">{t("sidebar.section_intelligence")}</div>', unsafe_allow_html=True)
+        st.page_link("pages/4_🎯_Attack_Details.py", label=t("sidebar.nav_attack_details"), icon="🎯")
+        st.page_link("pages/5_📊_History.py", label=t("sidebar.nav_history"), icon="📊")
+
+        # ── System section ──────────────────────────────────
+        st.markdown(f'<div class="sidebar-section-label">{t("sidebar.section_system")}</div>', unsafe_allow_html=True)
+        st.page_link("pages/6_⚙️_Settings.py", label=t("sidebar.nav_settings"), icon="⚙️")
+        st.page_link("pages/7_📖_How_It_Works.py", label=t("sidebar.nav_how_it_works"), icon="📖")
+
+        # ── Divider + Language ──────────────────────────────
+        st.markdown('<div class="sidebar-divider"></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="sidebar-lang-label">🌐 {t("common.language")}</div>', unsafe_allow_html=True)
         lang_codes = list(SUPPORTED_LANGS.keys())
         lang_labels = list(SUPPORTED_LANGS.values())
         current_lang = get_lang()
         current_idx = lang_codes.index(current_lang) if current_lang in lang_codes else 0
         selected_label = st.selectbox(
-            "🌐",
+            t("common.language"),
             lang_labels,
             index=current_idx,
             key="sidebar_lang_select",
+            label_visibility="collapsed",
         )
         selected_code = lang_codes[lang_labels.index(selected_label)]
         if selected_code != current_lang:
             set_lang(selected_code)
             st.rerun()
+
+        # ── Footer ──────────────────────────────────────────
+        st.markdown(f"""
+        <div class="sidebar-footer">
+            {t('common.app_version')}<br>
+            {t('common.diploma_project')}
+        </div>
+        """, unsafe_allow_html=True)

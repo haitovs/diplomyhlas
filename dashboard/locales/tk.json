@@ -51,7 +51,19 @@
 
   "sidebar": {
     "brand_title": "Tor Anomaliya Analizatory",
-    "brand_subtitle": "ML-esasly Howp Anyklamak"
+    "brand_subtitle": "ML-esasly Howp Anyklamak",
+    "section_operations": "Amallar",
+    "section_intelligence": "Analitika",
+    "section_system": "Ulgam",
+    "nav_home": "Dolandyrysh Merkezi",
+    "nav_live_monitor": "Canly Monitor",
+    "nav_pcap_analysis": "Fayl Seljermesi",
+    "nav_attack_details": "Hujum Seljermesi",
+    "nav_history": "Sessiya Analitikasy",
+    "nav_settings": "Konfigurasiýa",
+    "nav_how_it_works": "Dokumentasiýa",
+    "status_online": "ISJEŇ",
+    "status_label": "Ulgam Yagdaýy"
   },
 
   "home": {

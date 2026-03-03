@@ -51,7 +51,19 @@
 
   "sidebar": {
     "brand_title": "Network Anomaly Analyzer",
-    "brand_subtitle": "ML-Powered Threat Detection"
+    "brand_subtitle": "ML-Powered Threat Detection",
+    "section_operations": "Operations",
+    "section_intelligence": "Intelligence",
+    "section_system": "System",
+    "nav_home": "Command Center",
+    "nav_live_monitor": "Live Monitor",
+    "nav_pcap_analysis": "File Analysis",
+    "nav_attack_details": "Attack Analysis",
+    "nav_history": "Session Analytics",
+    "nav_settings": "Configuration",
+    "nav_how_it_works": "Documentation",
+    "status_online": "ONLINE",
+    "status_label": "System Status"
   },
 
   "home": {

@@ -19,7 +19,7 @@ st.set_page_config(
     page_title="Network Anomaly Detection",
     page_icon="🛡️",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="auto"
 )
 
 inject_theme()
