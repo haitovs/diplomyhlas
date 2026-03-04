@@ -1,7 +1,7 @@
 #!/bin/bash
-# Yhlas Network Analyzer - Quick Start Script
+# Network Anomaly Analyzer - Quick Start Script
 
-echo "🛡️ Starting Yhlas Network Analyzer (v2.0)..."
+echo "🛡️ Starting Network Anomaly Analyzer (v2.0)..."
 
 # Check if streamlit is installed
 if ! command -v streamlit &> /dev/null

@@ -1,7 +1,7 @@
 services:
   app:
     build: .
-    container_name: yhlas-anomaly-detection
+    container_name: anomaly-detection
     ports:
       - "4086:4086"
     restart: unless-stopped

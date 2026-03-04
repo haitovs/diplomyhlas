@@ -1,9 +1,9 @@
 # ML Network Anomaly Detection Configuration
 
 project:
-  name: "yhlas-ml-detect-anomalies"
+  name: "ml-detect-anomalies"
   version: "1.0.0"
-  author: "Yhlas"
+  author: ""
 
 # Data Configuration
 data:

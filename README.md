@@ -63,7 +63,7 @@ streamlit run dashboard/app_v2.py
 ## 📁 Project Structure
 
 ```
-yhlas-ml-detect-anomalies/
+ml-detect-anomalies/
 ├── dashboard/
 │   ├── app_v2.py         # ✨ Enhanced dashboard (NEW)
 │   ├── app.py            # Original dashboard
@@ -114,4 +114,4 @@ yhlas-ml-detect-anomalies/
 
 ## 👤 Author
 
-Yhlas - Diploma Project 2025
+Diploma Project 2025
