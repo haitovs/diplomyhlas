@@ -61,8 +61,20 @@ class RealtimePredictor:
             self.loaded = False
     
     def _extract_features(self, flow: Dict) -> np.ndarray:
-        """Extract features from a flow dictionary"""
-        # Map flow dict to expected features
+        """Extract features from a flow dictionary.
+
+        If the flow dict already contains CICIDS2017 feature keys
+        (e.g. from FlowAggregator), use them directly.
+        Otherwise fall back to legacy per-packet mapping.
+        """
+        # Check if flow has CICIDS2017 keys directly (from FlowAggregator)
+        has_cicids_keys = 'Flow Duration' in flow and 'Flow IAT Mean' in flow
+
+        if has_cicids_keys and self.feature_columns:
+            feature_vector = [flow.get(col, 0) for col in self.feature_columns]
+            return np.array(feature_vector, dtype=np.float64).reshape(1, -1)
+
+        # Legacy mapping for per-packet dicts
         features = {
             'Flow Duration': flow.get('duration', 0),
             'Total Fwd Packets': flow.get('fwd_packets', 0),
@@ -76,19 +88,14 @@ class RealtimePredictor:
             'Bwd Packet Length Max': flow.get('bwd_bytes', 0) / max(flow.get('bwd_packets', 1), 1),
             'Bwd Packet Length Mean': flow.get('bwd_bytes', 0) / max(flow.get('bwd_packets', 1), 1),
         }
-        
-        # Fill remaining features with zeros or defaults
+
         if self.feature_columns:
             feature_vector = []
             for col in self.feature_columns:
-                if col in features:
-                    feature_vector.append(features[col])
-                else:
-                    feature_vector.append(0)
-            return np.array(feature_vector).reshape(1, -1)
+                feature_vector.append(features.get(col, 0))
+            return np.array(feature_vector, dtype=np.float64).reshape(1, -1)
         else:
-            # Fallback: use available features
-            return np.array(list(features.values())).reshape(1, -1)
+            return np.array(list(features.values()), dtype=np.float64).reshape(1, -1)
     
     def predict(self, flow: Dict) -> Dict:
         """
@@ -100,13 +107,15 @@ class RealtimePredictor:
         # If model loaded, get real prediction
         if self.loaded:
             try:
+                import warnings
                 features = self._extract_features(flow)
-                
-                if self.scaler:
-                    features = self.scaler.transform(features)
-                
-                pred_class = self.model.predict(features)[0]
-                pred_proba = self.model.predict_proba(features)[0]
+
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore", UserWarning)
+                    if self.scaler:
+                        features = self.scaler.transform(features)
+                    pred_class = self.model.predict(features)[0]
+                    pred_proba = self.model.predict_proba(features)[0]
                 confidence = float(np.max(pred_proba))
                 
                 # Get label name
@@ -126,13 +135,14 @@ class RealtimePredictor:
                 }
             except Exception as e:
                 print(f"Prediction error: {e}")
-        
-        # Fallback: use flow's built-in label (from simulator)
+
+        # Model not loaded or prediction failed
         return {
-            'prediction': flow.get('label', 'BENIGN'),
-            'is_anomaly': flow.get('is_attack', False),
-            'confidence': np.random.uniform(0.85, 0.99),
-            'probabilities': {}
+            'prediction': 'UNKNOWN',
+            'is_anomaly': False,
+            'confidence': 0.0,
+            'probabilities': {},
+            'error': not self.loaded
         }
     
     def predict_batch(self, flows: List[Dict]) -> List[Dict]:

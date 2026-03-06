@@ -289,9 +289,6 @@ with tabs[4]:
     | Source | Description | Use Case |
     |--------|-------------|----------|
     | **{t('how_it_works.arch_source_live')}** | {t('how_it_works.arch_source_live_desc')} | {t('how_it_works.arch_source_live_use')} |
-    | **{t('how_it_works.arch_source_sim')}** | {t('how_it_works.arch_source_sim_desc')} | {t('how_it_works.arch_source_sim_use')} |
-    | **{t('how_it_works.arch_source_prerecorded')}** | {t('how_it_works.arch_source_prerecorded_desc')} | {t('how_it_works.arch_source_prerecorded_use')} |
-    | **{t('how_it_works.arch_source_pcap')}** | {t('how_it_works.arch_source_pcap_desc')} | {t('how_it_works.arch_source_pcap_use')} |
 
     ### {t('how_it_works.arch_threshold_title')}
     {t('how_it_works.arch_threshold_desc')}

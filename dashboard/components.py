@@ -35,8 +35,7 @@ def init_shared_state():
     if 'settings' not in st.session_state:
         st.session_state.settings = dict(DEFAULT_SETTINGS)
 
-    if 'pcap_results' not in st.session_state:
-        st.session_state.pcap_results = None
+    pass  # all shared state initialized above
 
 
 def append_detections(detections: List[Dict], source: str = "unknown"):
@@ -259,47 +258,6 @@ def section_header(title: str, subtitle: Optional[str] = None, icon: str = ""):
         header_html += f'<p style="color: #7c8aa4; margin-bottom: 1rem;">{subtitle}</p>'
 
     st.markdown(header_html, unsafe_allow_html=True)
-
-
-def data_source_selector(manager, key: str = "data_source"):
-    """Create a data source selector with information display"""
-    from src.data.data_sources import get_data_source_options
-
-    source_options = get_data_source_options(manager)
-
-    selected_name = st.selectbox(
-        "📊 Data Source",
-        options=list(source_options.keys()),
-        key=key,
-        help="Select where to load network traffic data from"
-    )
-
-    selected_id = source_options[selected_name]
-
-    if selected_id != manager.current_source:
-        manager.set_source(selected_id)
-
-    source_info = manager.get_source_info()
-
-    with st.expander("ℹ️ Source Information", expanded=False):
-        st.json(source_info)
-
-    return selected_id
-
-
-def simulate_processing(steps: Optional[list] = None, total_duration: float = 1.5):
-    """Simulate data processing with visual feedback"""
-    if steps is None:
-        steps = [
-            "Loading data",
-            "Extracting features",
-            "Running model inference",
-            "Computing statistics",
-            "Generating visualizations"
-        ]
-
-    step_duration = total_duration / len(steps)
-    progress_bar(steps, step_duration)
 
 
 # CSS for custom components

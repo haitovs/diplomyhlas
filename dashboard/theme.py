@@ -691,17 +691,14 @@ def inject_sidebar_brand():
         st.markdown(f'<div class="sidebar-section-label">{t("sidebar.section_operations")}</div>', unsafe_allow_html=True)
         st.page_link("1_🏠_Home.py", label=t("sidebar.nav_home"), icon="🏠")
         st.page_link("pages/2_📡_Live_Monitor.py", label=t("sidebar.nav_live_monitor"), icon="📡")
-        st.page_link("pages/3_📁_PCAP_Analysis.py", label=t("sidebar.nav_pcap_analysis"), icon="📁")
 
         # ── Intelligence section ────────────────────────────
         st.markdown(f'<div class="sidebar-section-label">{t("sidebar.section_intelligence")}</div>', unsafe_allow_html=True)
-        st.page_link("pages/4_🎯_Attack_Details.py", label=t("sidebar.nav_attack_details"), icon="🎯")
-        st.page_link("pages/5_📊_History.py", label=t("sidebar.nav_history"), icon="📊")
+        st.page_link("pages/3_📊_Detection_Report.py", label=t("sidebar.nav_detection_report"), icon="📊")
 
         # ── System section ──────────────────────────────────
         st.markdown(f'<div class="sidebar-section-label">{t("sidebar.section_system")}</div>', unsafe_allow_html=True)
-        st.page_link("pages/6_⚙️_Settings.py", label=t("sidebar.nav_settings"), icon="⚙️")
-        st.page_link("pages/7_📖_How_It_Works.py", label=t("sidebar.nav_how_it_works"), icon="📖")
+        st.page_link("pages/4_📖_How_It_Works.py", label=t("sidebar.nav_how_it_works"), icon="📖")
 
         # ── Divider + Language ──────────────────────────────
         st.markdown('<div class="sidebar-divider"></div>', unsafe_allow_html=True)

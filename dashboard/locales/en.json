@@ -57,10 +57,7 @@
     "section_system": "System",
     "nav_home": "Command Center",
     "nav_live_monitor": "Live Monitor",
-    "nav_pcap_analysis": "File Analysis",
-    "nav_attack_details": "Attack Analysis",
-    "nav_history": "Session Analytics",
-    "nav_settings": "Configuration",
+    "nav_detection_report": "Detection Report",
     "nav_how_it_works": "Documentation",
     "status_online": "ONLINE",
     "status_label": "System Status"
@@ -91,27 +88,28 @@
 
     "step1_number": "01",
     "step1_title": "Data Ingestion",
-    "step1_desc": "Live packet capture or PCAP upload. Flows are extracted and normalized into 78 CIC-standard features.",
+    "step1_desc": "Live packet capture on loopback (lo0). Packets are aggregated into bidirectional flows with 74 CICIDS2017-compatible features.",
     "step2_number": "02",
     "step2_title": "ML Analysis",
     "step2_desc": "LightGBM classifier trained on 2.8M CICIDS2017 flows predicts attack type and confidence score.",
     "step3_number": "03",
     "step3_title": "Threat Report",
-    "step3_desc": "Visual dashboards, severity-ranked alerts, forensic drill-downs, and exportable CSV/JSON reports.",
+    "step3_desc": "Visual dashboards, severity-ranked alerts, forensic drill-downs, and exportable CSV reports.",
+
+    "demo_title": "Demo Instructions",
+    "demo_subtitle": "Run the dashboard and attack script in two separate terminals",
+    "demo_terminal1_desc": "Start the dashboard with sudo (needed for packet capture):",
+    "demo_terminal2_desc": "In a second terminal, launch attack traffic:",
 
     "core_modules_title": "Core Modules",
 
     "live_monitor_title": "Live Monitoring",
-    "live_monitor_desc": "Stream and analyze network traffic in real-time with live capture and attack simulation.",
+    "live_monitor_desc": "Capture real network traffic on lo0, aggregate into flows, and detect attacks in real-time with ML.",
     "live_monitor_btn": "Launch Live Monitor",
 
-    "pcap_title": "PCAP Analysis",
-    "pcap_desc": "Upload packet captures for ML classification, protocol breakdown, and threat assessment.",
-    "pcap_btn": "Upload Dataset",
-
-    "model_intel_title": "Model Intelligence",
-    "model_intel_desc": "Session analytics, detection timelines, and threat type breakdowns from real data.",
-    "model_intel_btn": "View Analytics",
+    "detection_report_title": "Detection Report",
+    "detection_report_desc": "Review detected threats, severity breakdown, forensic details, and export session data as CSV.",
+    "detection_report_btn": "View Report",
 
     "docs_title": "How It Works",
     "docs_desc": "Learn about ML models, CICIDS2017 dataset, feature engineering, and attack types.",
@@ -125,22 +123,21 @@
     "start_monitoring": "Start Monitoring",
     "stop_monitoring": "Stop Monitoring",
     "clear_history": "Clear History",
-    "data_source": "Data Source",
-    "select_source": "Select Source",
-    "live_network_capture": "Live Network Capture",
     "capture_interface": "Capture Interface",
     "sudo_required": "Requires **sudo** / admin privileges for raw packet access.",
     "interface": "Interface",
     "no_interfaces": "No interfaces found. Using loopback.",
     "capturing_on": "Capturing on {interface}",
     "packets_count": "Packets: {count} | {rate}/s",
+    "active_flows": "Active flows: {count}",
     "capture_failed": "Capture failed: {error}. Try running with sudo.",
     "scapy_not_available": "Scapy not available. Install with: `pip install scapy`",
-    "attack_simulation": "Attack Simulation",
+    "model_info": "Model Info",
+    "model_not_loaded": "Model not loaded! Check models/ directory.",
+    "how_to_attack": "How to Attack",
     "parameters": "Parameters",
     "refresh_rate": "Refresh Rate",
     "manual": "Manual",
-    "flows_per_batch": "Flows/batch",
 
     "total_flows": "TOTAL FLOWS",
     "threats_detected": "THREATS DETECTED",
@@ -151,8 +148,7 @@
     "status_paused": "PAUSED",
 
     "live_packet_capture_mode": "LIVE PACKET CAPTURE",
-    "actively_screening": "ACTIVELY SCREENING TRAFFIC",
-    "system_paused": "System paused. Click 'Start Monitoring' in the sidebar to begin processing traffic.",
+    "system_paused": "System paused. Click 'Start Monitoring' in the sidebar to begin.",
     "waiting_for_data": "Waiting for data... Click 'Start Monitoring' in the sidebar.",
 
     "source_ips": "Source IPs",
@@ -171,72 +167,13 @@
     "system_secure_no_threats": "System secure. No recent threats logged."
   },
 
-  "pcap": {
-    "page_title": "File Analysis",
-    "page_subtitle": "Upload & inspect packet captures",
-    "upload_label": "Upload PCAP/PCAPNG file",
-    "upload_help": "Drag and drop or click to upload network capture files",
-    "file_loaded": "Loaded: **{name}** ({size} KB)",
-    "begin_analysis": "Begin Deep Analysis",
-    "decoding_packets": "Decoding packets and extracting flow features...",
-    "no_ip_packets": "No IP packets found in the uploaded file.",
-
-    "dataset_overview": "Dataset Overview",
-    "total_flows": "Total Flows",
-    "total_packets": "Total Packets",
-    "unique_ips": "Unique IPs",
-    "protocols": "Protocols",
-
-    "protocol_breakdown": "Protocol Breakdown",
-    "target_ports": "Target Ports",
-
-    "ml_threat_assessment": "ML Threat Assessment",
-    "threats_found": "Threats Found",
-    "benign_flows": "Benign Flows",
-    "threat_ratio": "Threat Ratio",
-    "avg_confidence": "Avg Confidence",
-
-    "threat_type_breakdown": "Threat Type Breakdown",
-    "detected_threats": "Detected Threats",
-    "col_source_ip": "Source IP",
-    "col_dest_ip": "Dest IP",
-    "col_port": "Port",
-    "col_verdict": "Verdict",
-    "col_confidence": "Confidence",
-
-    "flow_signatures": "Flow Signatures",
-    "col_src_ip": "Src IP",
-    "col_dst_ip": "Dst IP",
-    "col_src_port": "Src Port",
-    "col_dst_port": "Dst Port",
-    "col_proto": "Proto",
-    "col_fwd_pkts": "Fwd Pkts",
-    "col_bwd_pkts": "Bwd Pkts",
-    "col_bytes_s": "Bytes/s",
-    "col_ml_verdict": "ML Verdict",
-    "col_threat": "Threat",
-    "download_csv": "Download Extracted Features (CSV)",
-
-    "scapy_not_installed": "The 'scapy' library is not installed. Please run: `pip install scapy`",
-    "process_failed": "Failed to process capture file: {error}",
-
-    "empty_title": "Select a Capture File",
-    "empty_desc": "We support standard <strong>.pcap</strong> and <strong>.pcapng</strong> files generated by Wireshark, tcpdump, or other capture tools.",
-    "max_size": "Max 200 MB",
-    "local_processing": "Local Processing Only",
-    "generate_demo": "Generate Synthetic Demo Capture",
-    "demo_complete": "Demo Processing Complete",
-    "unique_source_ips": "Unique Source IPs"
-  },
-
   "attacks": {
-    "page_title": "Attack Analysis",
+    "page_title": "Detection Report",
     "page_subtitle": "Threat forensics & event log",
 
     "empty_title": "No Threats Detected Yet",
-    "empty_desc": "Start the <strong>Live Monitor</strong> with attack simulation or live network capture, or upload a <strong>PCAP file</strong> to begin detecting threats.",
+    "empty_desc": "Start the <strong>Live Monitor</strong> with live network capture and run the attack script to begin detecting threats.",
     "empty_live_monitor": "Live Monitor",
-    "empty_pcap_analysis": "PCAP Analysis",
 
     "data_controls": "Data Controls",
     "filter_by_type": "Filter by Type",
@@ -281,78 +218,12 @@
     "rec_default": "RECOMMENDATION: Logged for analyst review. Monitor for recurring patterns."
   },
 
-  "history": {
-    "page_title": "Session Analytics",
-    "page_subtitle": "Real-time session data & trends",
-
-    "empty_title": "No Session Data Yet",
-    "empty_desc": "Session analytics populate as you use the system. Start the <strong>Live Monitor</strong> or upload a <strong>PCAP file</strong> to generate data.",
-
-    "session_snapshot": "Session Snapshot",
-    "total_flows_processed": "Total Flows Processed",
-    "threats_detected": "Threats Detected",
+  "report": {
+    "session_flows": "Session Flows",
+    "session_threats": "Session Threats",
     "threat_rate": "Threat Rate",
     "session_duration": "Session Duration",
-    "min_suffix": "min",
-
-    "detection_sources": "Detection Sources",
-    "source_live_monitor": "Live Monitor",
-    "source_pcap_analysis": "PCAP Analysis",
-    "source_live_capture": "Live Capture",
-    "threats_detected_label": "threats detected",
-
-    "detection_timeline": "Detection Timeline",
-    "threat_type_breakdown": "Threat Type Breakdown",
-    "severity_distribution": "Severity Distribution",
-
-    "traffic_volume_timeline": "Traffic Volume Timeline",
-    "chart_total_flows": "Total Flows",
-    "chart_threats": "Threats",
-    "chart_flows_axis": "Flows",
-
-    "export_detections": "Export Session Detections (CSV)"
-  },
-
-  "settings": {
-    "page_title": "Global Settings",
-    "page_subtitle": "System configuration",
-
-    "ai_model_config": "AI Model Configuration",
-    "ai_model_config_desc": "Configure the inference engine, decision thresholds, and sensitivity.",
-    "model_lightgbm": "LightGBM (Prod)",
-    "model_xgboost": "XGBoost",
-    "model_lstm": "LSTM Autoencoder",
-    "model_rf": "Random Forest",
-    "active_engine": "Active Inference Engine",
-    "confidence_threshold": "Anomaly Confidence Threshold",
-    "confidence_threshold_help": "Minimum confidence required to flag a flow as an attack",
-    "sensitivity_low": "Low (Fewer False Positives)",
-    "sensitivity_balanced": "Balanced",
-    "sensitivity_high": "High (Catch Everything)",
-    "heuristic_sensitivity": "Heuristic Sensitivity",
-
-    "capture_defaults": "Capture Interface Defaults",
-    "capture_defaults_desc": "Network interface and flow timeout parameters for the packet capture engine.",
-    "default_interface": "Default Listen Interface",
-    "interface_auto": "Auto-Detect",
-    "max_packets_ram": "Max Packets Retained in RAM",
-    "flow_timeout": "Idle Flow Timeout (seconds)",
-    "flow_timeout_help": "Time before an inactive TCP session is considered closed",
-    "auto_archive": "Auto-Archive PCAPs to Disk",
-
-    "alert_routing": "Alert Routing & Notifications",
-    "alert_routing_desc": "External alert integrations planned for a future release.",
-    "alert_routing_info": "Email, Slack, and Teams webhook integrations are planned for a future release. Currently, all alerts appear in the <strong>Attack Details</strong> page in real time.",
-
-    "apply_save": "Apply & Save",
-    "reset_defaults": "Reset to Defaults",
-    "settings_saved": "Settings saved and applied.",
-    "settings_reset": "All settings restored to defaults.",
-
-    "current_settings": "Current Effective Settings",
-    "label_model": "Model",
-    "label_threshold": "Threshold",
-    "label_sensitivity": "Sensitivity"
+    "export_csv": "Export Detections (CSV)"
   },
 
   "how_it_works": {
@@ -426,7 +297,7 @@
     "ml_lightgbm_why_4": "State-of-the-art accuracy on tabular data",
     "ml_lightgbm_params": "**Key hyperparameters** (from config.yaml):",
     "ml_lightgbm_params_1": "Algorithm: Gradient Boosting Decision Tree",
-    "ml_lightgbm_params_2": "Trained on 78 numeric features after StandardScaler normalization",
+    "ml_lightgbm_params_2": "Trained on 74 numeric features after StandardScaler normalization",
 
     "ml_rf_title": "Random Forest",
     "ml_rf_desc": "**Random Forest** is an ensemble of decision trees trained on random subsets of the data.",
@@ -487,9 +358,9 @@
     "arch_title": "System Architecture",
     "arch_pipeline_title": "End-to-End Pipeline",
     "arch_box_data_source": "Data Source",
-    "arch_box_data_source_sub": "Live / PCAP / Sim",
-    "arch_box_feature": "Feature Extraction",
-    "arch_box_feature_sub": "78 CIC Features",
+    "arch_box_data_source_sub": "Live Capture (lo0)",
+    "arch_box_feature": "Flow Aggregator",
+    "arch_box_feature_sub": "74 CIC Features",
     "arch_box_scaler": "StandardScaler",
     "arch_box_scaler_sub": "Normalize",
     "arch_box_lightgbm": "LightGBM",
@@ -498,22 +369,13 @@
     "arch_box_classify_sub": "7 Classes",
     "arch_box_verdict": "Verdict",
     "arch_box_verdict_sub": "Alert / Benign",
-    "arch_sources_title": "Data Sources",
+    "arch_sources_title": "Data Source",
     "arch_source_live": "Live Network Capture",
-    "arch_source_live_desc": "Scapy-based packet sniffing on a real interface",
-    "arch_source_live_use": "Demo with attack sender script",
-    "arch_source_sim": "Simulation",
-    "arch_source_sim_desc": "Synthetic traffic generator with attack injection",
-    "arch_source_sim_use": "Testing without network access",
-    "arch_source_prerecorded": "Pre-recorded",
-    "arch_source_prerecorded_desc": "CSV datasets from `data/samples/`",
-    "arch_source_prerecorded_use": "Reproducible analysis",
-    "arch_source_pcap": "PCAP Upload",
-    "arch_source_pcap_desc": "User-uploaded .pcap/.pcapng files",
-    "arch_source_pcap_use": "Forensic analysis of captures",
+    "arch_source_live_desc": "Scapy-based packet sniffing on loopback (lo0) with FlowAggregator",
+    "arch_source_live_use": "Demo with attack sender script on localhost",
     "arch_threshold_title": "Confidence Threshold & Severity",
     "arch_threshold_desc": "The model outputs a **confidence score** (0.0 - 1.0) for each prediction.",
-    "arch_threshold_rule": "Flows below the **confidence threshold** (configurable in Settings) are treated as benign",
+    "arch_threshold_rule": "Flows below the **confidence threshold** (default 70%) are treated as benign",
     "arch_severity_rule": "Severity levels based on confidence: **Medium** (<90%), **High** (90-95%), **Critical** (>95%)",
 
     "attack_types_title": "Attack Types Explained",
@@ -558,7 +420,7 @@
       "false_positive": "A benign flow incorrectly classified as an attack. Causes unnecessary alerts.",
       "false_negative": "An attack flow incorrectly classified as benign. The most dangerous type of error.",
       "confidence_score": "The probability assigned by the model to its predicted class. Range: 0.0 (uncertain) to 1.0 (certain).",
-      "confidence_threshold": "The minimum confidence required to flag a flow as an attack. Configurable in Settings.",
+      "confidence_threshold": "The minimum confidence required to flag a flow as an attack. Default: 70%.",
       "severity_level": "Assigned based on confidence: Medium (<90%), High (90-95%), Critical (>95%).",
       "tcp_flags": "Control bits in TCP headers: SYN (connection start), ACK (acknowledgment), FIN (connection end), RST (reset), PSH (push data).",
       "iat": "Inter-Arrival Time -- the time between consecutive packets in a flow. Important feature for detecting automated attacks.",

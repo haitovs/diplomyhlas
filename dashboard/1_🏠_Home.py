@@ -133,11 +133,35 @@ def render_tech_badges():
 
 
 # ── Feature Cards (navigation tiles) ────────────────────────────────────────
+def render_demo_instructions():
+    st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
+    st.markdown(f"<h3 style='text-align: center; margin-bottom: 0.5rem; font-family: Space Grotesk, sans-serif;'>{t('home.demo_title')}</h3>", unsafe_allow_html=True)
+    st.markdown(f"<p style='text-align:center; color:{COLORS['text_muted']}; margin-bottom:2rem;'>{t('home.demo_subtitle')}</p>", unsafe_allow_html=True)
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown(f"""
+        <div class="glass-card">
+            <div style="font-size:1.5rem; font-weight:700; color:{COLORS['primary']}; margin-bottom:0.5rem; font-family:'Space Grotesk',sans-serif;">Terminal 1</div>
+            <p style="color:{COLORS['text_muted']}; margin-bottom:0.75rem;">{t('home.demo_terminal1_desc')}</p>
+            <code style="display:block; padding:0.75rem; background:{COLORS['bg_primary']}; border:1px solid {COLORS['border']}; border-radius:4px; font-size:0.85rem;">sudo streamlit run dashboard/1_🏠_Home.py</code>
+        </div>
+        """, unsafe_allow_html=True)
+    with col2:
+        st.markdown(f"""
+        <div class="glass-card">
+            <div style="font-size:1.5rem; font-weight:700; color:{COLORS['danger']}; margin-bottom:0.5rem; font-family:'Space Grotesk',sans-serif;">Terminal 2</div>
+            <p style="color:{COLORS['text_muted']}; margin-bottom:0.75rem;">{t('home.demo_terminal2_desc')}</p>
+            <code style="display:block; padding:0.75rem; background:{COLORS['bg_primary']}; border:1px solid {COLORS['border']}; border-radius:4px; font-size:0.85rem;">sudo python scripts/send_attacks.py --all</code>
+        </div>
+        """, unsafe_allow_html=True)
+
+
 def render_features():
     st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
     st.markdown(f"<h3 style='text-align: center; margin: 0 0 2rem 0; font-family: Space Grotesk, sans-serif;'>{t('home.core_modules_title')}</h3>", unsafe_allow_html=True)
 
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
         st.markdown(f"""
@@ -155,30 +179,17 @@ def render_features():
     with col2:
         st.markdown(f"""
             <div class="feature-card">
-                <div class="feature-icon">📁</div>
-                <h3 style="margin-top:0;">{t('home.pcap_title')}</h3>
+                <div class="feature-icon">📊</div>
+                <h3 style="margin-top:0;">{t('home.detection_report_title')}</h3>
                 <p style="color: {COLORS['text_muted']}; line-height: 1.6;">
-                    {t('home.pcap_desc')}
+                    {t('home.detection_report_desc')}
                 </p>
             </div>
         """, unsafe_allow_html=True)
-        if st.button(t('home.pcap_btn'), key="btn_pcap", type="secondary", use_container_width=True):
-            st.switch_page("pages/3_📁_PCAP_Analysis.py")
+        if st.button(t('home.detection_report_btn'), key="btn_report", type="secondary", use_container_width=True):
+            st.switch_page("pages/3_📊_Detection_Report.py")
 
     with col3:
-        st.markdown(f"""
-            <div class="feature-card">
-                <div class="feature-icon">🧠</div>
-                <h3 style="margin-top:0;">{t('home.model_intel_title')}</h3>
-                <p style="color: {COLORS['text_muted']}; line-height: 1.6;">
-                    {t('home.model_intel_desc')}
-                </p>
-            </div>
-        """, unsafe_allow_html=True)
-        if st.button(t('home.model_intel_btn'), key="btn_model", type="secondary", use_container_width=True):
-            st.switch_page("pages/5_📊_History.py")
-
-    with col4:
         st.markdown(f"""
             <div class="feature-card">
                 <div class="feature-icon">📖</div>
@@ -189,7 +200,7 @@ def render_features():
             </div>
         """, unsafe_allow_html=True)
         if st.button(t('home.docs_btn'), key="btn_docs", type="secondary", use_container_width=True):
-            st.switch_page("pages/7_📖_How_It_Works.py")
+            st.switch_page("pages/4_📖_How_It_Works.py")
 
 
 # ── Footer ───────────────────────────────────────────────────────────────────
@@ -209,6 +220,7 @@ def main():
     render_quick_stats()
     render_how_it_works()
     render_tech_badges()
+    render_demo_instructions()
     render_features()
     render_footer()
 

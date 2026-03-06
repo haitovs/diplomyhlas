@@ -142,9 +142,24 @@ def main():
                         help='Attack duration in seconds (default: 30)')
     parser.add_argument('--port', type=int, default=80,
                         help='Target port for DDoS (default: 80)')
+    parser.add_argument('--all', action='store_true',
+                        help='Run all 4 attacks sequentially')
     args = parser.parse_args()
 
-    if args.attack:
+    if args.all:
+        print("\n[ALL ATTACKS] Running all 4 attacks sequentially")
+        print(f"  Target: {args.target}  Duration: {args.duration}s each\n")
+        for key, (name, func) in ATTACKS.items():
+            print(f"{'='*50}")
+            if key == 'ddos':
+                func(args.target, port=args.port, duration=args.duration)
+            else:
+                func(args.target, duration=args.duration)
+            print(f"  Pausing 5s before next attack...\n")
+            time.sleep(5)
+        print(f"{'='*50}")
+        print("All attacks complete.")
+    elif args.attack:
         name, func = ATTACKS[args.attack]
         print(f"Launching: {name}")
         if args.attack == 'ddos':
