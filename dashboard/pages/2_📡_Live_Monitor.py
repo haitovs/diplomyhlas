@@ -1,12 +1,14 @@
 """
 📡 Live Monitor Page
-Real-time network capture → FlowAggregator → ML prediction pipeline.
-Uses PacketCapture + FlowAggregator + RealtimePredictor directly.
+Analyze network traffic files with ML-based anomaly detection.
+Load benign or malicious traffic → ML model classifies each flow → Block threats.
 """
 
 import streamlit as st
 import pandas as pd
+import numpy as np
 import plotly.graph_objects as go
+import joblib
 import sys
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -24,13 +26,28 @@ inject_theme()
 inject_sidebar_brand()
 init_shared_state()
 
+# ── Paths ─────────────────────────────────────────────────────────────────
+PROJECT_ROOT = Path(__file__).parent.parent.parent
+SAMPLES_DIR = PROJECT_ROOT / "data" / "samples"
+BENIGN_FILE = SAMPLES_DIR / "benign_flows.csv"
+MALICIOUS_FILE = SAMPLES_DIR / "malicious_flows.csv"
+
 # ── Session state init ────────────────────────────────────────────────────
 if 'predictor' not in st.session_state:
     st.session_state.predictor = RealtimePredictor()
+if 'feature_columns' not in st.session_state:
+    try:
+        st.session_state.feature_columns = list(
+            joblib.load(PROJECT_ROOT / "models" / "feature_columns.joblib")
+        )
+    except Exception:
+        st.session_state.feature_columns = []
 if 'history_df' not in st.session_state:
     st.session_state.history_df = pd.DataFrame()
 if 'total_processed' not in st.session_state:
     st.session_state.total_processed = 0
+if 'blocked_ips' not in st.session_state:
+    st.session_state.blocked_ips = set()
 if 'is_monitoring' not in st.session_state:
     st.session_state.is_monitoring = False
 if 'capture_obj' not in st.session_state:
@@ -39,89 +56,91 @@ if 'aggregator' not in st.session_state:
     st.session_state.aggregator = None
 
 
-def create_sidebar():
-    with st.sidebar:
-        st.markdown(f"### ⚙️ {t('live.control_panel')}")
+# ── IP Blocking ──────────────────────────────────────────────────────────
 
-        if not st.session_state.is_monitoring:
-            if st.button(f"▶️ {t('live.start_monitoring')}", type="primary", use_container_width=True):
-                st.session_state.is_monitoring = True
-                st.rerun()
-        else:
-            if st.button(f"⏹️ {t('live.stop_monitoring')}", type="secondary", use_container_width=True):
-                stop_capture()
-                st.rerun()
+def block_ip(ip: str):
+    st.session_state.blocked_ips.add(ip)
 
-        if st.button(f"🗑️ {t('live.clear_history')}", use_container_width=True):
-            st.session_state.history_df = pd.DataFrame()
-            st.session_state.total_processed = 0
-            st.rerun()
 
-        st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+def unblock_ip(ip: str):
+    st.session_state.blocked_ips.discard(ip)
 
-        # ── Interface selector ──────────────────────────────────────
-        st.markdown(f"### 🔌 {t('live.capture_interface')}")
-        st.info(t('live.sudo_required'), icon="🔒")
 
-        try:
-            from src.capture.network_capture import get_available_interfaces
-            ifaces = get_available_interfaces()
-            iface_names = [f"{i.name} ({i.ip})" for i in ifaces]
-            iface_map = {f"{i.name} ({i.ip})": i.name for i in ifaces}
+def is_blocked(ip: str) -> bool:
+    return ip in st.session_state.blocked_ips
 
-            # Highlight lo0 as default
-            default_idx = 0
-            for idx, name in enumerate(iface_names):
-                if 'lo0' in name or 'loopback' in name.lower():
-                    default_idx = idx
-                    break
 
-            selected_iface_name = st.selectbox(
-                t('live.interface'), iface_names, index=default_idx
-            )
-            selected_iface = iface_map[selected_iface_name]
-        except ImportError:
-            st.error(t('live.scapy_not_available'))
-            selected_iface = "lo0"
+# ── Load & Predict from CSV ──────────────────────────────────────────────
 
-        # Start capture if monitoring requested
-        if st.session_state.is_monitoring and st.session_state.capture_obj is None:
-            start_capture(selected_iface)
+def load_and_predict(csv_path: Path, source_label: str):
+    """Load a CSV with 74 CICIDS2017 features, run ML predictions, add to history."""
+    df = pd.read_csv(csv_path)
+    feature_cols = st.session_state.feature_columns
+    predictor = st.session_state.predictor
+    threshold = st.session_state.settings.get('confidence_threshold', 0.70)
+    blocked = st.session_state.blocked_ips
 
-        # Show capture stats
-        if st.session_state.capture_obj and st.session_state.capture_obj.running:
-            stats = st.session_state.capture_obj.get_stats()
-            flow_count = st.session_state.aggregator.active_flow_count() if st.session_state.aggregator else 0
-            st.markdown(f"""
-            <div style="padding:0.5rem; border-radius:4px; background:rgba(245,158,11,0.06);
-                 border:1px solid rgba(245,158,11,0.15); border-left:3px solid {COLORS['primary']};
-                 margin-top:0.5rem; font-size:0.85rem;">
-                <div style="color:{COLORS['primary']}; font-weight:700; font-family:'Space Grotesk',sans-serif;">{t('live.capturing_on', interface=stats['interface'])}</div>
-                <div style="color:{COLORS['text_muted']}; font-family:'JetBrains Mono',monospace;">{t('live.packets_count', count=stats['packet_count'], rate=f"{stats['packets_per_second']:.1f}")}</div>
-                <div style="color:{COLORS['text_muted']}; font-family:'JetBrains Mono',monospace;">{t('live.active_flows', count=flow_count)}</div>
-            </div>
-            """, unsafe_allow_html=True)
+    rows = []
+    anomaly_dets = []
 
-        # Model info
-        st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
-        st.markdown(f"### 🧠 {t('live.model_info')}")
-        model_info = st.session_state.predictor.get_model_info()
-        if model_info['loaded']:
-            st.success(f"{model_info['model_type']} — {model_info['n_features']} features", icon="✅")
-        else:
-            st.error(t('live.model_not_loaded'), icon="❌")
+    for _, row in df.iterrows():
+        src_ip = row.get('_src_ip', 'N/A')
 
-        # How to attack instructions
-        st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
-        st.markdown(f"### 🎯 {t('live.how_to_attack')}")
-        st.code("sudo python scripts/send_attacks.py --all", language="bash")
+        # Skip blocked IPs
+        if src_ip in blocked:
+            continue
 
-        st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
-        st.markdown(f"### 🔧 {t('live.parameters')}")
-        refresh_rate = st.selectbox(t('live.refresh_rate'), [t('live.manual'), "1s", "3s", "5s"], index=1)
+        # Build flow dict from CICIDS2017 feature columns
+        flow = {col: float(row.get(col, 0)) for col in feature_cols}
 
-        return refresh_rate
+        result = predictor.predict(flow)
 
+        entry = {
+            'timestamp': datetime.now() + timedelta(milliseconds=len(rows) * 50),
+            'src_ip': src_ip,
+            'dst_ip': row.get('_dst_ip', 'N/A'),
+            'src_port': int(np.random.randint(1024, 65535)),
+            'dst_port': int(row.get('_dst_port', 0)),
+            'protocol': row.get('_protocol', 'TCP'),
+            'ml_prediction': result['prediction'],
+            'ml_confidence': result['confidence'],
+            'ml_is_anomaly': result['is_anomaly'] and result['confidence'] >= threshold,
+            'total_packets': int(flow.get('Total Fwd Packets', 0) + flow.get('Total Backward Packets', 0)),
+            'total_bytes': int(flow.get('Total Length of Fwd Packets', 0) + flow.get('Total Length of Bwd Packets', 0)),
+            'flow_duration': flow.get('Flow Duration', 0),
+            'flow_bytes_per_s': flow.get('Flow Bytes/s', 0),
+        }
+        rows.append(entry)
+
+        if entry['ml_is_anomaly']:
+            anomaly_dets.append({
+                'prediction': entry['ml_prediction'],
+                'confidence': entry['ml_confidence'],
+                'is_anomaly': True,
+                'src_ip': entry['src_ip'],
+                'dst_ip': entry['dst_ip'],
+                'dst_port': entry['dst_port'],
+                'timestamp': entry['timestamp'],
+            })
+
+    if rows:
+        new_data = pd.DataFrame(rows)
+        st.session_state.total_processed += len(new_data)
+        st.session_state.history_df = pd.concat(
+            [st.session_state.history_df, new_data], ignore_index=True
+        )
+        if len(st.session_state.history_df) > 2000:
+            st.session_state.history_df = st.session_state.history_df.tail(2000)
+
+        if anomaly_dets:
+            append_detections(anomaly_dets, source=source_label)
+
+        st.session_state.session_metrics['total_flows'] += len(new_data)
+
+    return len(rows), len(anomaly_dets)
+
+
+# ── Live Capture ─────────────────────────────────────────────────────────
 
 def start_capture(interface: str):
     """Start packet capture with FlowAggregator."""
@@ -144,33 +163,34 @@ def stop_capture():
     st.session_state.is_monitoring = False
     if st.session_state.capture_obj:
         st.session_state.capture_obj.stop()
-    # Flush remaining flows
     if st.session_state.aggregator:
         remaining = st.session_state.aggregator.flush_all()
         if remaining:
-            _process_flows(remaining)
+            _process_live_flows(remaining)
     st.session_state.capture_obj = None
     st.session_state.aggregator = None
 
 
-def _process_flows(flows: list):
-    """Run ML prediction on aggregated flows and store results."""
+def _process_live_flows(flows: list):
+    """Run ML prediction on live-captured flows."""
     if not flows:
-        return pd.DataFrame()
-
+        return
     threshold = st.session_state.settings.get('confidence_threshold', 0.70)
     predictor = st.session_state.predictor
+    blocked = st.session_state.blocked_ips
 
     rows = []
     anomaly_dets = []
 
     for flow in flows:
         meta = flow.pop('_meta', {})
+        src_ip = meta.get('src_ip', 'N/A')
+        if src_ip in blocked:
+            continue
         result = predictor.predict(flow)
-
         row = {
             'timestamp': meta.get('timestamp', datetime.now()),
-            'src_ip': meta.get('src_ip', 'N/A'),
+            'src_ip': src_ip,
             'dst_ip': meta.get('dst_ip', 'N/A'),
             'src_port': meta.get('src_port', 0),
             'dst_port': meta.get('dst_port', 0),
@@ -184,7 +204,6 @@ def _process_flows(flows: list):
             'flow_bytes_per_s': flow.get('Flow Bytes/s', 0),
         }
         rows.append(row)
-
         if row['ml_is_anomaly']:
             anomaly_dets.append({
                 'prediction': row['ml_prediction'],
@@ -202,29 +221,133 @@ def _process_flows(flows: list):
         st.session_state.history_df = pd.concat(
             [st.session_state.history_df, new_data], ignore_index=True
         )
-        if len(st.session_state.history_df) > 1000:
-            st.session_state.history_df = st.session_state.history_df.tail(1000)
-
-        # Push anomalies to shared detection log
+        if len(st.session_state.history_df) > 2000:
+            st.session_state.history_df = st.session_state.history_df.tail(2000)
         if anomaly_dets:
             append_detections(anomaly_dets, source="Live Capture")
-
         st.session_state.session_metrics['total_flows'] += len(new_data)
-        return new_data
-
-    return pd.DataFrame()
 
 
-def process_data():
-    """Drain FlowAggregator for finished flows and run ML."""
+def process_live_data():
+    """Drain FlowAggregator for finished flows."""
     if not st.session_state.aggregator:
-        return pd.DataFrame()
-
+        return
     flows = st.session_state.aggregator.flush()
-    return _process_flows(flows)
+    _process_live_flows(flows)
 
 
-# ── Visualization functions (kept from original) ──────────────────────
+# ── Sidebar ──────────────────────────────────────────────────────────────
+
+def create_sidebar():
+    with st.sidebar:
+        # ── Traffic Loading ──────────────────────────────────────
+        st.markdown(f"### 📂 {t('live.load_traffic')}")
+
+        if st.button(f"✅ {t('live.load_benign')}", use_container_width=True, type="secondary", key="btn_benign"):
+            n_flows, n_threats = load_and_predict(BENIGN_FILE, "Benign File")
+            st.session_state['_last_load'] = f"Loaded {n_flows} benign flows"
+            st.rerun()
+
+        if st.button(f"☠️ {t('live.load_malicious')}", use_container_width=True, type="primary", key="btn_malicious"):
+            n_flows, n_threats = load_and_predict(MALICIOUS_FILE, "Malicious File")
+            st.session_state['_last_load'] = f"Loaded {n_flows} flows, {n_threats} threats detected!"
+            st.rerun()
+
+        # Show last load result
+        if '_last_load' in st.session_state:
+            msg = st.session_state['_last_load']
+            if 'threat' in msg.lower():
+                st.error(msg, icon="🚨")
+            else:
+                st.success(msg, icon="✅")
+
+        st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+
+        # ── Clear ──────────────────────────────────────
+        if st.button(f"🗑️ {t('live.clear_history')}", use_container_width=True):
+            st.session_state.history_df = pd.DataFrame()
+            st.session_state.total_processed = 0
+            st.session_state.pop('_last_load', None)
+            st.rerun()
+
+        st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+
+        # ── Live Capture (Advanced) ──────────────────────────────
+        with st.expander(f"🔌 {t('live.live_capture_advanced')}", expanded=False):
+            st.info(t('live.sudo_required'), icon="🔒")
+
+            try:
+                from src.capture.network_capture import get_available_interfaces
+                ifaces = get_available_interfaces()
+                iface_names = [f"{i.name} ({i.ip})" for i in ifaces]
+                iface_map = {f"{i.name} ({i.ip})": i.name for i in ifaces}
+                default_idx = 0
+                for idx, name in enumerate(iface_names):
+                    if 'lo0' in name or 'loopback' in name.lower():
+                        default_idx = idx
+                        break
+                selected_iface_name = st.selectbox(
+                    t('live.interface'), iface_names, index=default_idx
+                )
+                selected_iface = iface_map[selected_iface_name]
+            except ImportError:
+                st.error(t('live.scapy_not_available'))
+                selected_iface = "lo0"
+
+            if not st.session_state.is_monitoring:
+                if st.button(f"▶️ {t('live.start_monitoring')}", type="primary", use_container_width=True):
+                    st.session_state.is_monitoring = True
+                    start_capture(selected_iface)
+                    st.rerun()
+            else:
+                if st.button(f"⏹️ {t('live.stop_monitoring')}", type="secondary", use_container_width=True):
+                    stop_capture()
+                    st.rerun()
+
+            if st.session_state.capture_obj and st.session_state.capture_obj.running:
+                stats = st.session_state.capture_obj.get_stats()
+                flow_count = st.session_state.aggregator.active_flow_count() if st.session_state.aggregator else 0
+                st.markdown(f"""
+                <div style="padding:0.5rem; border-radius:4px; background:rgba(245,158,11,0.06);
+                     border:1px solid rgba(245,158,11,0.15); border-left:3px solid {COLORS['primary']};
+                     margin-top:0.5rem; font-size:0.85rem;">
+                    <div style="color:{COLORS['primary']}; font-weight:700;">{t('live.capturing_on', interface=stats['interface'])}</div>
+                    <div style="color:{COLORS['text_muted']}; font-family:'JetBrains Mono',monospace;">{t('live.packets_count', count=stats['packet_count'], rate=f"{stats['packets_per_second']:.1f}")}</div>
+                    <div style="color:{COLORS['text_muted']}; font-family:'JetBrains Mono',monospace;">{t('live.active_flows', count=flow_count)}</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+        st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+
+        # ── Model info ──────────────────────────────────────
+        st.markdown(f"### 🧠 {t('live.model_info')}")
+        model_info = st.session_state.predictor.get_model_info()
+        if model_info['loaded']:
+            st.success(f"{model_info['model_type']} — {model_info['n_features']} features", icon="✅")
+        else:
+            st.error(t('live.model_not_loaded'), icon="❌")
+
+        # ── Blocked IPs ──────────────────────────────────────
+        if st.session_state.blocked_ips:
+            st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+            st.markdown(f"### 🚫 {t('live.blocked_ips')}")
+            for blocked_ip in list(st.session_state.blocked_ips):
+                col_ip, col_unblock = st.columns([3, 1])
+                with col_ip:
+                    st.markdown(f'<span style="color:{COLORS["danger"]}; font-family:JetBrains Mono,monospace; font-size:0.8rem;">{blocked_ip}</span>', unsafe_allow_html=True)
+                with col_unblock:
+                    if st.button("✕", key=f"unblock_{blocked_ip}"):
+                        unblock_ip(blocked_ip)
+                        st.rerun()
+
+        st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+        st.markdown(f"### 🔧 {t('live.parameters')}")
+        refresh_rate = st.selectbox(t('live.refresh_rate'), [t('live.manual'), "1s", "3s", "5s"], index=0)
+
+        return refresh_rate
+
+
+# ── Visualization ────────────────────────────────────────────────────────
 
 def render_top_metrics(df):
     has_data = len(df) > 0 and 'ml_is_anomaly' in df.columns
@@ -240,8 +363,8 @@ def render_top_metrics(df):
         conf = df['ml_confidence'].mean() * 100 if has_data else 0
         st.metric(t('live.avg_confidence'), f"{conf:.1f}%")
     with col4:
-        status = t('live.status_live_capture') if st.session_state.is_monitoring else t('live.status_paused')
-        st.metric(t('live.status'), status)
+        blocked_count = len(st.session_state.blocked_ips)
+        st.metric(t('live.blocked_ips'), f"{blocked_count}")
 
 
 def render_threat_gauge(df):
@@ -377,7 +500,7 @@ def render_recent_alerts(df):
         """, unsafe_allow_html=True)
         return
 
-    anomalies = df[df['ml_is_anomaly']].tail(5)
+    anomalies = df[df['ml_is_anomaly']].tail(10)
 
     if len(anomalies) == 0:
         st.markdown(f"""
@@ -389,7 +512,7 @@ def render_recent_alerts(df):
         """, unsafe_allow_html=True)
         return
 
-    for _, row in anomalies.iterrows():
+    for idx, row in anomalies.iterrows():
         conf = row['ml_confidence'] * 100
         if conf > 90:
             sev_color = COLORS['danger']
@@ -400,24 +523,42 @@ def render_recent_alerts(df):
 
         ts = row.get('timestamp', '')
         ts_str = ts.strftime('%H:%M:%S') if hasattr(ts, 'strftime') else str(ts)
+        src_ip = row.get('src_ip', 'N/A')
+        already_blocked = is_blocked(src_ip)
 
-        st.markdown(f"""
-            <div style="padding:0.75rem 1rem; border-radius:4px; background:rgba(239,68,68,0.06);
-                 border-left:3px solid {sev_color}; margin-bottom:0.5rem;
-                 display:flex; justify-content:space-between; align-items:center;">
-                <div style="display:flex; align-items:center; gap:0.75rem;">
-                    <strong style="color:{COLORS['text_main']};">{row['ml_prediction']}</strong>
-                    <span style="color:{COLORS['text_muted']}; font-size:0.85rem; font-family:'JetBrains Mono',monospace;">
-                        {row.get('src_ip','N/A')} → {row.get('dst_ip','N/A')}:{row.get('dst_port','')}
-                    </span>
-                </div>
-                <div style="display:flex; align-items:center; gap:1rem;">
-                    <span style="color:{COLORS['text_muted']}; font-size:0.75rem; font-family:'JetBrains Mono',monospace;">{ts_str}</span>
-                    <span style="color:{COLORS['primary']}; font-family:'JetBrains Mono',monospace; font-weight:700;">{conf:.1f}%</span>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
+        col_alert, col_block = st.columns([5, 1])
+        with col_alert:
+            blocked_badge = ""
+            if already_blocked:
+                blocked_badge = f'<span style="background:rgba(239,68,68,0.15); color:{COLORS["danger"]}; padding:2px 8px; border-radius:2px; font-size:0.7rem; font-weight:700; margin-left:0.5rem;">BLOCKED</span>'
 
+            st.markdown(f"""
+                <div style="padding:0.75rem 1rem; border-radius:4px; background:rgba(239,68,68,0.06);
+                     border-left:3px solid {sev_color}; margin-bottom:0.5rem;
+                     display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; align-items:center; gap:0.75rem;">
+                        <strong style="color:{COLORS['text_main']};">{row['ml_prediction']}</strong>
+                        <span style="color:{COLORS['text_muted']}; font-size:0.85rem; font-family:'JetBrains Mono',monospace;">
+                            {src_ip} → {row.get('dst_ip','N/A')}:{row.get('dst_port','')}
+                        </span>
+                        {blocked_badge}
+                    </div>
+                    <div style="display:flex; align-items:center; gap:1rem;">
+                        <span style="color:{COLORS['text_muted']}; font-size:0.75rem; font-family:'JetBrains Mono',monospace;">{ts_str}</span>
+                        <span style="color:{COLORS['primary']}; font-family:'JetBrains Mono',monospace; font-weight:700;">{conf:.1f}%</span>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+        with col_block:
+            if not already_blocked and src_ip != 'N/A':
+                if st.button(f"🚫 {t('live.block')}", key=f"block_{idx}_{src_ip}", use_container_width=True):
+                    block_ip(src_ip)
+                    st.rerun()
+            elif already_blocked:
+                st.markdown(f'<div style="text-align:center; padding-top:0.5rem; color:{COLORS["danger"]}; font-size:0.75rem; font-weight:700;">🚫</div>', unsafe_allow_html=True)
+
+
+# ── Main ─────────────────────────────────────────────────────────────────
 
 def main():
     page_header("📡", t('live.page_title'), t('live.page_subtitle'))
@@ -429,15 +570,14 @@ def main():
                 <span style="font-size: 0.85rem; font-weight: 600; color:{COLORS['success']}">{t('live.live_packet_capture_mode')}</span>
             </div>
         """, unsafe_allow_html=True)
-    else:
-        st.info(t('live.system_paused'))
 
     refresh_rate = create_sidebar()
 
+    # Process live capture data if active
     if st.session_state.is_monitoring:
-        process_data()
+        process_live_data()
 
-    display_df = st.session_state.history_df.tail(300)
+    display_df = st.session_state.history_df.tail(500)
 
     render_top_metrics(display_df)
     render_network_stats(display_df)
@@ -452,6 +592,7 @@ def main():
     st.markdown('<div class="card-gap"></div>', unsafe_allow_html=True)
     render_recent_alerts(display_df)
 
+    # Auto-refresh for live capture
     if st.session_state.is_monitoring and refresh_rate != t('live.manual'):
         seconds = int(refresh_rate.replace('s', ''))
         time.sleep(seconds)

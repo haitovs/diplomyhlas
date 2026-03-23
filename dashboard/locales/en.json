@@ -164,7 +164,15 @@
 
     "recent_threats": "Recent Threats",
     "system_secure_no_data": "System secure. No data processed yet.",
-    "system_secure_no_threats": "System secure. No recent threats logged."
+    "system_secure_no_threats": "System secure. No recent threats logged.",
+
+    "load_traffic": "Load Traffic",
+    "load_benign": "Load Benign Traffic",
+    "load_malicious": "Load Malicious Traffic",
+    "live_capture_advanced": "Live Capture (Advanced)",
+    "blocked_ips": "Blocked IPs",
+    "block": "Block",
+    "unblock": "Unblock"
   },
 
   "attacks": {

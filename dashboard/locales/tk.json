@@ -164,7 +164,15 @@
 
     "recent_threats": "Sonky Howplar",
     "system_secure_no_data": "Ulgam howpsuz. Hali maglumat islenmedi.",
-    "system_secure_no_threats": "Ulgam howpsuz. Sonky howp yazgylary yok."
+    "system_secure_no_threats": "Ulgam howpsuz. Sonky howp yazgylary yok.",
+
+    "load_traffic": "Trafik Yukle",
+    "load_benign": "Adaty Trafik Yukle",
+    "load_malicious": "Zyyanly Trafik Yukle",
+    "live_capture_advanced": "Canly Capture (Owrenijiler ucin)",
+    "blocked_ips": "Bloklanan IP-ler",
+    "block": "Blokla",
+    "unblock": "Bloky Ac"
   },
 
   "attacks": {
