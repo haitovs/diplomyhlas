@@ -222,7 +222,7 @@ with tabs[3]:
     fi_path = Path(__file__).parent.parent.parent / 'models' / 'feature_importance.png'
     if fi_path.exists():
         st.markdown(f"### {t('how_it_works.fe_importance_title')}")
-        st.image(str(fi_path), use_container_width=True)
+        st.image(str(fi_path), width="stretch")
     else:
         st.info(t('how_it_works.fe_importance_missing'))
 

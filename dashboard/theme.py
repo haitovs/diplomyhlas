@@ -105,44 +105,12 @@ def inject_theme():
         .section-divider {
             border: none;
             border-top: 1px solid rgba(245,158,11,0.12);
-            margin: 2.5rem 0;
+            margin: 0.75rem 0;
         }
 
-        /* ══════════════════════════════════════════════════════
-           EQUAL-HEIGHT COLUMNS — force all side-by-side
-           containers to stretch to the tallest sibling
-           ══════════════════════════════════════════════════════ */
+        /* ── Column layout ──────────────────────────────────── */
         [data-testid="stHorizontalBlock"] {
-            align-items: stretch !important;
             gap: 1rem;
-        }
-        [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] {
-            display: flex !important;
-            flex-direction: column !important;
-        }
-        /* Every wrapper div inside a column stretches */
-        [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] > div {
-            flex: 1 !important;
-            display: flex !important;
-            flex-direction: column !important;
-        }
-        /* HTML blocks (st.markdown) inside columns stretch */
-        [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] > div > div[data-testid="stMarkdownContainer"] {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] > div > div[data-testid="stMarkdownContainer"] > div {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        /* All card types fill their parent height */
-        .glass-card, .tactical-panel, .feature-card, .metric-card, .result-card {
-            flex: 1;
-        }
-        [data-testid="stMetric"] {
-            flex: 1;
         }
 
         /* ── Hero Section ────────────────────────────────── */
@@ -695,6 +663,11 @@ def inject_sidebar_brand():
         # ── Intelligence section ────────────────────────────
         st.markdown(f'<div class="sidebar-section-label">{t("sidebar.section_intelligence")}</div>', unsafe_allow_html=True)
         st.page_link("pages/3_📊_Detection_Report.py", label=t("sidebar.nav_detection_report"), icon="📊")
+
+        # ── Simulation section ─────────────────────────────
+        st.markdown(f'<div class="sidebar-section-label">{t("sidebar.section_simulation")}</div>', unsafe_allow_html=True)
+        st.page_link("pages/5_💻_Traffic_Simulator.py", label=t("sidebar.nav_traffic_simulator"), icon="💻")
+        st.page_link("pages/6_☠️_Attacker_Console.py", label=t("sidebar.nav_attacker_console"), icon="☠️")
 
         # ── System section ──────────────────────────────────
         st.markdown(f'<div class="sidebar-section-label">{t("sidebar.section_system")}</div>', unsafe_allow_html=True)

@@ -85,7 +85,7 @@ with col1:
     fig.update_traces(textfont=dict(color=COLORS['text_main']))
     apply_chart_theme(fig)
     fig.update_layout(height=320)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 with col2:
     st.markdown(f"#### {t('attacks.temporal_distribution')}")
@@ -94,7 +94,7 @@ with col2:
     fig = px.bar(minutely, x='minute', y='count', color_discrete_sequence=[COLORS['primary']])
     apply_chart_theme(fig)
     fig.update_layout(height=320, xaxis_title=t('attacks.chart_time'), yaxis_title=t('attacks.chart_events'))
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 with col3:
     st.markdown(f"#### {t('attacks.severity_chart_title')}")
@@ -109,7 +109,7 @@ with col3:
     )])
     apply_chart_theme(fig)
     fig.update_layout(height=320, showlegend=True)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 # ── Security Event Log with color-coded severity ────────────────────────────
 st.markdown(f"### 📋 {t('attacks.security_event_log')}")

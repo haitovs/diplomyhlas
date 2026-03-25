@@ -173,7 +173,7 @@ def render_features():
                 </p>
             </div>
         """, unsafe_allow_html=True)
-        if st.button(t('home.live_monitor_btn'), key="btn_live", type="primary", use_container_width=True):
+        if st.button(t('home.live_monitor_btn'), key="btn_live", type="primary", width="stretch"):
             st.switch_page("pages/2_📡_Live_Monitor.py")
 
     with col2:
@@ -186,7 +186,7 @@ def render_features():
                 </p>
             </div>
         """, unsafe_allow_html=True)
-        if st.button(t('home.detection_report_btn'), key="btn_report", type="secondary", use_container_width=True):
+        if st.button(t('home.detection_report_btn'), key="btn_report", type="secondary", width="stretch"):
             st.switch_page("pages/3_📊_Detection_Report.py")
 
     with col3:
@@ -199,7 +199,7 @@ def render_features():
                 </p>
             </div>
         """, unsafe_allow_html=True)
-        if st.button(t('home.docs_btn'), key="btn_docs", type="secondary", use_container_width=True):
+        if st.button(t('home.docs_btn'), key="btn_docs", type="secondary", width="stretch"):
             st.switch_page("pages/4_📖_How_It_Works.py")
 
 

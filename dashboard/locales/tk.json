@@ -59,6 +59,9 @@
     "nav_live_monitor": "Canly Monitor",
     "nav_detection_report": "Anyklama Hasabaty",
     "nav_how_it_works": "Dokumentasiya",
+    "nav_traffic_simulator": "Trafik Simulyatory",
+    "nav_attacker_console": "Hujumcy Konsoly",
+    "section_simulation": "Simulyasiya",
     "status_online": "ISJEN",
     "status_label": "Ulgam Yagdayy"
   },
