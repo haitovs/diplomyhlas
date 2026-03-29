@@ -4,17 +4,18 @@ In production, also serves the built React frontend as static files.
 """
 
 import sys
+import os
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
 # Make project root and backend dir importable
-PROJECT_ROOT = Path(__file__).parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from routers import state, inference, monitor
 
@@ -40,13 +41,23 @@ def health():
 
 # Serve built React frontend in production
 FRONTEND_DIR = PROJECT_ROOT / "frontend" / "dist"
+print(f"[startup] PROJECT_ROOT={PROJECT_ROOT}")
+print(f"[startup] FRONTEND_DIR={FRONTEND_DIR} exists={FRONTEND_DIR.is_dir()}")
 if FRONTEND_DIR.is_dir():
-    app.mount("/assets", StaticFiles(directory=FRONTEND_DIR / "assets"), name="assets")
+    print(f"[startup] Frontend files: {os.listdir(FRONTEND_DIR)}")
 
+    # Mount /assets as static files for JS/CSS bundles
+    assets_dir = FRONTEND_DIR / "assets"
+    if assets_dir.is_dir():
+        app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
+        print(f"[startup] Mounted /assets -> {assets_dir}")
+
+    # SPA catch-all: serve index.html for all non-API, non-asset routes
     @app.get("/{full_path:path}")
-    async def serve_spa(request: Request, full_path: str):
-        """Serve index.html for all non-API routes (SPA fallback)."""
+    async def serve_spa(full_path: str):
         file_path = FRONTEND_DIR / full_path
-        if file_path.is_file():
-            return FileResponse(file_path)
-        return FileResponse(FRONTEND_DIR / "index.html")
+        if full_path and file_path.is_file():
+            return FileResponse(str(file_path))
+        return FileResponse(str(FRONTEND_DIR / "index.html"))
+else:
+    print(f"[startup] WARNING: Frontend dist not found at {FRONTEND_DIR}")
