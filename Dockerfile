@@ -1,25 +1,40 @@
+## ----- Stage 1: Build React frontend -----
+FROM node:20-alpine AS frontend-build
+WORKDIR /build
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
+COPY frontend/ ./
+RUN npm run build
+
+## ----- Stage 2: Production image -----
 FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install only runtime deps
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# System deps for scapy / lightgbm
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        libgomp1 curl && \
+    rm -rf /var/lib/apt/lists/*
 
-# Copy application code
-COPY dashboard/ ./dashboard/
+# Python deps
+COPY requirements.txt backend/requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt -r backend/requirements.txt
+
+# Application code
 COPY src/ ./src/
+COPY backend/ ./backend/
 COPY models/ ./models/
 COPY data/samples/ ./data/samples/
 COPY config.yaml .
-COPY .streamlit/ ./.streamlit/
 
-EXPOSE 4086
+# Built frontend static files
+COPY --from=frontend-build /build/dist ./frontend/dist
+
+EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-  CMD curl --fail http://localhost:4086/_stcore/health || exit 1
+  CMD curl --fail http://localhost:8000/api/health || exit 1
 
-CMD ["streamlit", "run", "dashboard/1_🏠_Home.py", \
-  "--server.port=4086", \
-  "--server.address=0.0.0.0", \
-  "--server.headless=true"]
+CMD ["python", "-m", "uvicorn", "backend.main:app", \
+     "--host", "0.0.0.0", "--port", "8000"]

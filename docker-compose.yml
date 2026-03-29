@@ -3,8 +3,10 @@ services:
     build: .
     container_name: anomaly-detection
     ports:
-      - "4086:4086"
+      - "8000:8000"
     restart: unless-stopped
+    volumes:
+      - ./data/samples:/app/data/samples:ro
+      - ./models:/app/models:ro
     environment:
-      - STREAMLIT_SERVER_HEADLESS=true
-      - STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+      - PYTHONUNBUFFERED=1

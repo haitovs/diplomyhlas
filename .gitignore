@@ -28,6 +28,13 @@ data/processed/
 # Docker
 .docker/
 
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Demo state
+data/.demo_state.json
+
 # Misc
 *.log
 .ipynb_checkpoints/
