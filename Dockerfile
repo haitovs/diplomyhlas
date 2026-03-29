@@ -18,8 +18,9 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Python deps
-COPY requirements.txt backend/requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt -r backend/requirements.txt
+COPY requirements.txt ./requirements.txt
+COPY backend/requirements.txt ./requirements-backend.txt
+RUN pip install --no-cache-dir -r requirements.txt -r requirements-backend.txt
 
 # Application code
 COPY src/ ./src/
