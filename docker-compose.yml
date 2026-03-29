@@ -3,7 +3,7 @@ services:
     build: .
     container_name: anomaly-detection
     ports:
-      - "8000:8000"
+      - "4086:4086"
     restart: unless-stopped
     volumes:
       - ./data/samples:/app/data/samples:ro

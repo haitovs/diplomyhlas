@@ -32,11 +32,11 @@ COPY config.yaml .
 # Built frontend static files
 COPY --from=frontend-build /build/dist ./frontend/dist
 
-EXPOSE 8000
+EXPOSE 4086
 
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-  CMD curl --fail http://localhost:8000/api/health || exit 1
+  CMD curl --fail http://localhost:4086/api/health || exit 1
 
 WORKDIR /app/backend
 CMD ["python", "-m", "uvicorn", "main:app", \
-     "--host", "0.0.0.0", "--port", "8000"]
+     "--host", "0.0.0.0", "--port", "4086"]
