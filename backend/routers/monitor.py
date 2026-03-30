@@ -219,17 +219,26 @@ async def ws_monitor(ws: WebSocket):
     try:
         while True:
             new_entries = []
-            if any_active():
-                new_entries = process_tick()
+            try:
+                if any_active():
+                    new_entries = process_tick()
+            except Exception as e:
+                print(f"[ws] process_tick error: {e}")
 
-            await ws.send_json({
-                "type": "tick",
-                "flows": new_entries,
-                "state": read_state(),
-                "active": any_active(),
-            })
-            await asyncio.sleep(1.5)
+            try:
+                demo = read_state()
+                await ws.send_json({
+                    "type": "tick",
+                    "flows": new_entries[-20:],  # cap payload size
+                    "state": demo,
+                    "active": any_active(),
+                })
+            except Exception as e:
+                print(f"[ws] send error: {e}")
+                break
+
+            await asyncio.sleep(2)
     except WebSocketDisconnect:
         pass
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"[ws] connection error: {e}")
