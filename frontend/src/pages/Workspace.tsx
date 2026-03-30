@@ -102,7 +102,9 @@ export default function Workspace() {
 
   const [state, setState] = useState<DemoState | null>(null)
   const [speed, setSpeed] = useState(1.0)
-  const [logs, setLogs] = useState<LogLine[]>([])
+  const [logs, setLogs] = useState<LogLine[]>(() => {
+    try { return JSON.parse(sessionStorage.getItem('ws_logs') ?? '[]') } catch { return [] }
+  })
   const [iface, setIface] = useState<(typeof INTERFACES)[number]>('eth0')
   const [ifaceOpen, setIfaceOpen] = useState(false)
   const [sys, setSys] = useState<SystemMetrics | null>(null)
@@ -142,9 +144,10 @@ export default function Workspace() {
     return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
   }, [isActive])
 
-  // Auto-scroll log
+  // Auto-scroll log + persist to sessionStorage
   useEffect(() => {
     if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight
+    try { sessionStorage.setItem('ws_logs', JSON.stringify(logs.slice(-100))) } catch {}
   }, [logs])
 
   const toggleTraffic = useCallback(() => {
