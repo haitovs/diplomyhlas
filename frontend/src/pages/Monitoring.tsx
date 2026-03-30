@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Label,
@@ -6,7 +6,7 @@ import {
 import {
   Activity, ShieldAlert, BarChart3, Ban,
   Wifi, WifiOff, Trash2, ShieldX, Monitor, ChevronRight,
-  Shield, AlertTriangle, Radio,
+  Shield, AlertTriangle, Radio, Download,
 } from 'lucide-react'
 import {
   getStats, getHistory, blockIp, unblockIp, clearHistory,
@@ -35,13 +35,13 @@ function ChartTooltip({ active, payload, label, isDark }: any) {
   )
 }
 
-function PieTooltip({ active, payload, isDark }: any) {
+function PieTooltip({ active, payload, isDark, t }: any) {
   if (!active || !payload?.length) return null
   const d = payload[0]
   return (
     <div className={`${isDark ? 'bg-[#0c1222] border-amber-500/20' : 'bg-white border-slate-200'} border rounded-lg px-4 py-3 shadow-xl ${isDark ? 'shadow-black/40' : 'shadow-slate-200/60'} backdrop-blur-sm`}>
       <p className={`text-xs font-semibold ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>{d.name}</p>
-      <p className="text-xs font-mono text-amber-500 mt-0.5">{d.value} flows</p>
+      <p className="text-xs font-mono text-amber-500 mt-0.5">{d.value} {t('common.flows')}</p>
     </div>
   )
 }
@@ -129,6 +129,12 @@ function SecureState({ t, isDark }: { t: (key: any) => string; isDark: boolean }
   )
 }
 
+/* ── Skeleton loader ────────────────────────────────────────────────── */
+
+function Skeleton({ className = '' }: { className?: string }) {
+  return <div className={`animate-pulse rounded bg-slate-700/30 ${className}`} />
+}
+
 /* ── Main component ─────────────────────────────────────────────────── */
 
 export default function Monitoring() {
@@ -139,6 +145,49 @@ export default function Monitoring() {
   const { flows: wsFlows, active, connected } = useMonitorWs()
   const [stats, setStats] = useState<Stats | null>(null)
   const [history, setHistory] = useState<FlowEntry[]>([])
+  const prevAnomalyCount = useRef(0)
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('detection_history')
+      if (saved) setHistory(JSON.parse(saved))
+    } catch {}
+  }, [])
+
+  // Save to localStorage when history changes (debounced)
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      try {
+        localStorage.setItem('detection_history', JSON.stringify(history.slice(-500)))
+      } catch {}
+    }, 1000)
+    return () => clearTimeout(timeout)
+  }, [history])
+
+  // Threat notification sound
+  const playAlertSound = useCallback(() => {
+    try {
+      const ctx = new AudioContext()
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.frequency.value = 800
+      gain.gain.value = 0.1
+      osc.start()
+      osc.stop(ctx.currentTime + 0.15)
+    } catch {}
+  }, [])
+
+  // Play alert when anomaly count increases
+  useEffect(() => {
+    const currentAnomalyCount = history.filter(f => f.is_anomaly).length
+    if (currentAnomalyCount > prevAnomalyCount.current && prevAnomalyCount.current > 0) {
+      playAlertSound()
+    }
+    prevAnomalyCount.current = currentAnomalyCount
+  }, [history, playAlertSound])
 
   // Poll stats every 2s
   useEffect(() => {
@@ -169,9 +218,25 @@ export default function Monitoring() {
   const handleClear = useCallback(() => {
     clearHistory().then(() => {
       setHistory([])
+      localStorage.removeItem('detection_history')
       getStats().then(setStats)
     })
   }, [])
+
+  // CSV Export
+  const exportCsv = useCallback(() => {
+    if (history.length === 0) return
+    const headers = ['timestamp','src_ip','dst_ip','dst_port','protocol','prediction','confidence','is_anomaly']
+    const rows = history.map(f => headers.map(h => String((f as any)[h] ?? '')).join(','))
+    const csv = [headers.join(','), ...rows].join('\n')
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `detection_report_${new Date().toISOString().slice(0,10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }, [history])
 
   // Timeline data: group by second
   const timelineData = (() => {
@@ -202,6 +267,14 @@ export default function Monitoring() {
 
   return (
     <div className="space-y-6">
+      {/* ── WebSocket reconnection banner ─────────────────────────── */}
+      {!connected && (
+        <div className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg text-sm text-amber-400">
+          <WifiOff className="w-4 h-4" />
+          {t('monitor.reconnecting')}
+        </div>
+      )}
+
       {/* ── Page Header with breadcrumb ───────────────────────────── */}
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-1">
@@ -239,6 +312,12 @@ export default function Monitoring() {
             </span>
           )}
           <button
+            onClick={exportCsv}
+            className={`flex items-center gap-1.5 text-xs ${isDark ? 'text-slate-400 bg-white/[0.03] border-white/5' : 'text-slate-500 bg-slate-100 border-slate-200'} hover:text-amber-400 hover:bg-amber-500/10 border hover:border-amber-500/20 px-3 py-1.5 rounded-lg transition-all duration-200`}
+          >
+            <Download className="w-3 h-3" /> {t('monitor.export_csv')}
+          </button>
+          <button
             onClick={handleClear}
             className={`flex items-center gap-1.5 text-xs ${isDark ? 'text-slate-400 bg-white/[0.03] border-white/5' : 'text-slate-500 bg-slate-100 border-slate-200'} hover:text-red-400 hover:bg-red-500/10 border hover:border-red-500/20 px-3 py-1.5 rounded-lg transition-all duration-200`}
           >
@@ -252,32 +331,36 @@ export default function Monitoring() {
         <MetricCard
           icon={<BarChart3 className="w-5 h-5 text-amber-500" />}
           label={t('monitor.total_flows')}
-          value={stats?.total_flows.toLocaleString() ?? '0'}
+          value={stats ? stats.total_flows.toLocaleString() : undefined}
           accent="amber"
           isDark={isDark}
+          loading={!stats}
         />
         <MetricCard
           icon={<ShieldAlert className="w-5 h-5 text-red-500" />}
           label={t('monitor.threats_detected')}
-          value={stats?.anomalies.toString() ?? '0'}
-          sub={`${stats?.threat_pct ?? 0}%`}
+          value={stats ? stats.anomalies.toString() : undefined}
+          sub={stats ? `${stats.threat_pct}%` : undefined}
           accent="red"
           danger
           isDark={isDark}
+          loading={!stats}
         />
         <MetricCard
           icon={<Activity className="w-5 h-5 text-cyan-400" />}
           label={t('monitor.avg_confidence')}
-          value={`${stats?.avg_confidence ?? 0}%`}
+          value={stats ? `${stats.avg_confidence}%` : undefined}
           accent="cyan"
           isDark={isDark}
+          loading={!stats}
         />
         <MetricCard
           icon={<Ban className="w-5 h-5 text-orange-400" />}
           label={t('monitor.blocked_ips')}
-          value={stats?.blocked_count.toString() ?? '0'}
+          value={stats ? stats.blocked_count.toString() : undefined}
           accent="orange"
           isDark={isDark}
+          loading={!stats}
         />
       </div>
 
@@ -327,7 +410,7 @@ export default function Monitoring() {
             <QuickStat label={t('monitor.flows_per_min')} value={stats ? Math.round(stats.total_flows / Math.max(1, history.length) * 60).toString() : '--'} color="text-amber-500" isDark={isDark} />
             <QuickStat label={t('monitor.anomaly_ratio')} value={`${stats?.threat_pct ?? 0}%`} color={stats && stats.threat_pct > 30 ? 'text-red-400' : stats && stats.threat_pct > 10 ? 'text-amber-400' : 'text-emerald-400'} isDark={isDark} />
             <QuickStat label={t('monitor.unique_protocols')} value={pieData.length.toString()} color="text-cyan-400" isDark={isDark} />
-            <QuickStat label={t('monitor.blocked')} value={`${stats?.blocked_count ?? 0} IPs`} color="text-orange-400" isDark={isDark} />
+            <QuickStat label={t('monitor.blocked')} value={`${stats?.blocked_count ?? 0} ${t('common.ips')}`} color="text-orange-400" isDark={isDark} />
           </div>
         </div>
       </div>
@@ -392,7 +475,7 @@ export default function Monitoring() {
                         <button
                           onClick={() => handleBlock(f.src_ip)}
                           className="text-red-400/60 hover:text-red-400 hover:scale-110 transition-all duration-150"
-                          title={`Block ${f.src_ip}`}
+                          title={`${t('common.block')} ${f.src_ip}`}
                         >
                           <ShieldX className="w-3.5 h-3.5" />
                         </button>
@@ -477,7 +560,7 @@ export default function Monitoring() {
                     fontFamily="JetBrains Mono, monospace"
                   />
                 </Pie>
-                <Tooltip content={<PieTooltip isDark={isDark} />} />
+                <Tooltip content={<PieTooltip isDark={isDark} t={t} />} />
               </PieChart>
             </ResponsiveContainer>
           ) : (
@@ -564,14 +647,15 @@ export default function Monitoring() {
 
 // ── Sub-components ──────────────────────────────────────────────────────
 
-function MetricCard({ icon, label, value, sub, danger, accent = 'amber', isDark }: {
+function MetricCard({ icon, label, value, sub, danger, accent = 'amber', isDark, loading }: {
   icon: React.ReactNode
   label: string
-  value: string
+  value?: string
   sub?: string
   danger?: boolean
   accent?: 'amber' | 'red' | 'cyan' | 'orange'
   isDark: boolean
+  loading?: boolean
 }) {
   const accentMap: Record<string, string> = {
     amber: 'border-l-amber-500 hover:shadow-amber-500/5',
@@ -586,8 +670,16 @@ function MetricCard({ icon, label, value, sub, danger, accent = 'amber', isDark 
       </div>
       <div className="transition-all duration-300">
         <div className={`text-[11px] ${isDark ? 'text-slate-500' : 'text-slate-500'} uppercase tracking-wider font-medium`}>{label}</div>
-        <div className={`text-2xl font-bold font-mono mt-0.5 transition-colors duration-300 ${danger ? 'text-red-400' : 'text-amber-500'}`}>{value}</div>
-        {sub && <div className={`text-xs ${isDark ? 'text-slate-500' : 'text-slate-500'} mt-0.5`}>{sub}</div>}
+        {loading ? (
+          <Skeleton className="h-7 w-20 mt-1" />
+        ) : (
+          <div className={`text-2xl font-bold font-mono mt-0.5 transition-colors duration-300 ${danger ? 'text-red-400' : 'text-amber-500'}`}>{value}</div>
+        )}
+        {loading ? (
+          sub !== undefined ? <Skeleton className="h-3 w-12 mt-1.5" /> : null
+        ) : (
+          sub && <div className={`text-xs ${isDark ? 'text-slate-500' : 'text-slate-500'} mt-0.5`}>{sub}</div>
+        )}
       </div>
     </div>
   )

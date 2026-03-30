@@ -106,6 +106,7 @@ export default function AttackSpace() {
   const [flashedCmd, setFlashedCmd] = useState<number | null>(null)
   const [bootDone, setBootDone] = useState(false)
   const [hasEverAttacked, setHasEverAttacked] = useState(false)
+  const [showHelp, setShowHelp] = useState(false)
   const termRef = useRef<HTMLDivElement>(null)
   const prevActiveCount = useRef(0)
 
@@ -237,6 +238,12 @@ export default function AttackSpace() {
         e.preventDefault()
         killAll()
       }
+      if (e.key === '?') {
+        setShowHelp(true)
+      }
+      if (e.key === 'Escape') {
+        setShowHelp(false)
+      }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
@@ -301,7 +308,7 @@ export default function AttackSpace() {
         <div className="relative inline-block mt-3 px-4 py-1 bg-[#0a0a0a] border border-red-500/20 rounded-sm font-['JetBrains_Mono',monospace] text-sm text-red-400 tracking-wide">
           <span className="text-slate-600">{t('attack.target')}:</span> {targetIp}
           &nbsp;&nbsp;<span className="text-slate-700">|</span>&nbsp;&nbsp;
-          <span className="text-slate-600">STATUS:</span>{' '}
+          <span className="text-slate-600">{t('attack.status_label')}:</span>{' '}
           {activeCount > 0
             ? <span className="text-red-500 animate-pulse">{t('attack.status_engaged')}</span>
             : <span className="text-slate-700">{t('attack.status_standby')}</span>}
@@ -384,8 +391,8 @@ export default function AttackSpace() {
                 </div>
                 <div className="text-[11px] text-slate-600 font-['JetBrains_Mono',monospace] mt-0.5 leading-snug">{desc}</div>
                 <div className="text-[10px] text-slate-700 font-['JetBrains_Mono',monospace] mt-1.5 flex items-center gap-1.5">
-                  PORT <span className="text-red-400 font-medium">{info.port}</span>
-                  {' \u00b7 '}TOOL <span className="text-red-400 font-medium">{info.tool}</span>
+                  {t('attack.port_label')} <span className="text-red-400 font-medium">{info.port}</span>
+                  {' \u00b7 '}{t('attack.tool_label')} <span className="text-red-400 font-medium">{info.tool}</span>
                   {' \u00b7 '}
                   <span className="inline-flex items-center gap-1">
                     <span className={`inline-block w-1.5 h-1.5 rounded-full ${sev.dot}`} />
@@ -395,7 +402,7 @@ export default function AttackSpace() {
                 <div className={`overflow-hidden transition-all duration-500 ${isOn ? 'max-h-10 opacity-100 mt-1.5' : 'max-h-0 opacity-0 mt-0'}`}>
                   <div className="text-xs text-red-500 font-['JetBrains_Mono',monospace]"
                     style={{ textShadow: '0 0 8px rgba(255,0,0,0.3)' }}>
-                    &#9658; {pktSent.toLocaleString()} packets sent &nbsp;|&nbsp; {rand(80, 600)} pkt/s
+                    &#9658; {pktSent.toLocaleString()} {t('attack.packets_sent')} &nbsp;|&nbsp; {rand(80, 600)} {t('attack.pkt_per_sec')}
                   </div>
                 </div>
               </div>
@@ -478,7 +485,7 @@ export default function AttackSpace() {
               attack_suite — {activeCount > 0 ? `${targetIp} — ${activeCount} ${t('attack.module')}` : t('attack.terminal_idle')}
             </span>
             {activeCount > 0 && (
-              <span className="ml-auto text-[10px] text-red-500/60 font-['JetBrains_Mono',monospace] animate-pulse">REC</span>
+              <span className="ml-auto text-[10px] text-red-500/60 font-['JetBrains_Mono',monospace] animate-pulse">{t('attack.rec')}</span>
             )}
           </div>
           {/* Body */}
@@ -504,6 +511,59 @@ export default function AttackSpace() {
         <div className="flex items-center gap-2 bg-sky-500/10 border border-sky-500/20 rounded-md px-4 py-3 text-sm text-sky-300 font-['JetBrains_Mono',monospace]">
           <Terminal className="w-4 h-4" />
           {t('attack.monitor_hint')}
+        </div>
+      )}
+
+      {/* Keyboard Shortcuts Modal */}
+      {showHelp && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+          onClick={() => setShowHelp(false)}
+        >
+          <div
+            className="relative w-full max-w-md mx-4 border border-red-500/30 rounded-sm overflow-hidden"
+            style={{
+              background: 'linear-gradient(180deg, #0a0505 0%, #0d0808 100%)',
+              boxShadow: '0 0 40px rgba(255,0,0,0.15), 0 0 80px rgba(255,0,0,0.05)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Scanline accent */}
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-500 to-transparent" />
+
+            <div className="p-6">
+              <h2
+                className="text-xl font-bold text-red-500 font-['Share_Tech_Mono',monospace] tracking-wider mb-1"
+                style={{ textShadow: '0 0 20px rgba(255,0,0,0.4)' }}
+              >
+                {t('attack.shortcuts_title')}
+              </h2>
+              <div className="h-px bg-gradient-to-r from-red-500/40 via-slate-700 to-transparent mb-5" />
+
+              <div className="space-y-3 font-['JetBrains_Mono',monospace] text-sm">
+                {[
+                  { keys: 'Ctrl + A', desc: t('attack.shortcut_launch') },
+                  { keys: 'Ctrl + K', desc: t('attack.shortcut_kill') },
+                  { keys: '?', desc: t('attack.shortcut_help') },
+                  { keys: 'Esc', desc: t('attack.shortcut_close') },
+                ].map(({ keys, desc }) => (
+                  <div key={keys} className="flex items-center justify-between">
+                    <kbd className="inline-block px-2.5 py-1 bg-[#151515] border border-red-500/20 rounded-sm text-green-400 text-xs tracking-wider min-w-[90px] text-center">
+                      {keys}
+                    </kbd>
+                    <span className="text-slate-400 text-xs">{desc}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="px-6 pb-4">
+              <div className="h-px bg-slate-800 mb-3" />
+              <div className="text-[10px] text-slate-700 font-['JetBrains_Mono',monospace] text-center">
+                press <span className="text-red-400">Esc</span> or click outside to close
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

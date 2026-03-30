@@ -85,6 +85,29 @@ export interface ModelInfo {
   classes: string[]
 }
 
+// System metrics
+export const getSystemMetrics = () => json<SystemMetrics>('/api/system')
+
+export interface SystemMetrics {
+  cpu_pct: number
+  mem_pct: number
+  mem_used_gb: number
+  mem_total_gb: number
+  disk_pct: number
+  disk_used_gb: number
+  disk_total_gb: number
+  net_down_mbps: number
+  net_up_mbps: number
+  net_total_recv_gb: number
+  net_total_sent_gb: number
+  connections: number
+  packets_recv: number
+  packets_sent: number
+  hostname: string
+  os: string
+  uptime: string
+}
+
 interface Ok {
   ok: boolean
 }

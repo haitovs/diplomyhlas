@@ -24,7 +24,7 @@ router = APIRouter()
 
 # ── Shared state ─────────────────────────────────────────────────────────
 
-predictor = RealtimePredictor()
+predictor = RealtimePredictor(model_path=str(PROJECT_ROOT / "models"))
 
 SAMPLES_DIR = PROJECT_ROOT / "data" / "samples"
 try:

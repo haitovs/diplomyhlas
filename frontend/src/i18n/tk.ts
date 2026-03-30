@@ -21,6 +21,11 @@ const tk = {
   'common.clear': 'Arassala',
   'common.block': 'Blokla',
   'common.entries': 'yazgy',
+  'common.conn': 'bag',
+  'common.mbps': 'MB/s',
+  'common.flows': 'akymlar',
+  'common.ips': 'IP-ler',
+  'common.benign': 'Adaty',
   'common.language': 'Dil',
   'common.theme': 'Tema',
   'common.dark': 'Garanky',
@@ -62,6 +67,8 @@ const tk = {
   'monitor.high_level': 'YOKARY',
   'monitor.moderate_level': 'ORTA',
   'monitor.low_level': 'PES',
+  'monitor.export_csv': 'CSV Eksport',
+  'monitor.reconnecting': 'Serwere birigyan...',
 
   // Severity
   'severity.critical': 'Kritiki',
@@ -79,6 +86,10 @@ const tk = {
   'table.action': 'Hereket',
 
   // Workspace page
+  'workspace.cpu': 'CPU',
+  'workspace.memory': 'Yat',
+  'workspace.net_down': 'Almak',
+  'workspace.net_up': 'Ibermek',
   'workspace.hostname': 'IS-STOL-01',
   'workspace.network_activity': 'Tor Aktiwligi',
   'workspace.system_info': 'Ulgam Maglumaty',
@@ -97,6 +108,12 @@ const tk = {
   'workspace.tip': 'ML model tarapyndan canly seljermeni gormek ucin **Monitoringi** acyn.',
 
   // Attack page
+  'attack.status_label': 'YAGDAY',
+  'attack.port_label': 'PORT',
+  'attack.tool_label': 'GURAL',
+  'attack.packets_sent': 'paket iberildi',
+  'attack.pkt_per_sec': 'paket/sek',
+  'attack.rec': 'YAZ',
   'attack.title': 'HUJUM KONSOLY',
   'attack.subtitle': '[ tor penetrasiya gurallary // bilim ucin ]',
   'attack.target': 'MAKSAT',
@@ -130,6 +147,48 @@ const tk = {
   'attack.ssh_desc': 'SSH-a garsy sozluk hujumy',
   'attack.ftp_name': 'FTP BRUTE FORCE',
   'attack.ftp_desc': 'Umumy parol sanawlary bilen FTP-a giris',
+
+  // Keyboard shortcuts
+  'attack.shortcuts_title': 'Klaviatura gysgaltmalary',
+  'attack.shortcut_launch': 'Ahli hujumlary baslat',
+  'attack.shortcut_kill': 'Ahli durdur',
+  'attack.shortcut_help': 'Bu komegi gorkezin',
+  'attack.shortcut_close': 'Bu pencireni yapin',
+
+  // Docs / How It Works
+  'sidebar.docs': 'Nadip Isleyar',
+  'sidebar.docs_desc': 'Ulgam dokumentasiyasy',
+
+  'docs.title': 'Nadip Isleyar',
+  'docs.subtitle': 'ML-esasly tor anomaliya anyklama pipeline',
+  'docs.tab_pipeline': 'ML Pipeline',
+  'docs.tab_dataset': 'CICIDS2017 Dataseti',
+  'docs.tab_attacks': 'Hujum Gornusleri',
+  'docs.tab_architecture': 'Arhitektura',
+
+  'docs.pipeline_title': 'Anyklama Pipeline',
+  'docs.step1_title': 'Maglumat Kabul Edis',
+  'docs.step1_desc': 'Tor interfeysinde canly paket tutmak. Paketler 74 CICIDS2017 alamatly iki taraply akymlara birikdirilyer.',
+  'docs.step2_title': 'ML Seljermesi',
+  'docs.step2_desc': '2.8M CICIDS2017 akymlarynda okadylan LightGBM klassifikatory hujum gornusini we ynam derejesini caklayar.',
+  'docs.step3_title': 'Howp Hasabaty',
+  'docs.step3_desc': 'Wizual dashboardlar, howplulyk boyunca duysduryslar, forensika cuktayslary we CSV hasabat eksporty.',
+
+  'docs.dataset_title': 'CICIDS2017 Dataseti',
+  'docs.dataset_desc': 'Kanada Kiberhowpsuzlyk Instituty Giris Anyklama dataseti. 5 gun dowamynda 80+ alamatly 2.8M tor akymy tutulypdyr.',
+  'docs.dataset_flows': '2.8M Akym',
+  'docs.dataset_features': '80+ Alamat',
+  'docs.dataset_days': '5 Gun Tutma',
+  'docs.dataset_classes': '15 Hujum Klasy',
+
+  'docs.model_title': 'Model Netijesi',
+  'docs.model_accuracy': 'Takyklyk',
+  'docs.model_precision': 'Anyklyk',
+  'docs.model_recall': 'Gaytadan tapma',
+  'docs.model_f1': 'F1-Bal',
+
+  'docs.attacks_title': 'Goldanylyan Hujum Gornusleri',
+  'docs.arch_title': 'Ulgam Arhitekturasy',
 } as const
 
 export default tk

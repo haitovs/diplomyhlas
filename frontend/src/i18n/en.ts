@@ -21,6 +21,11 @@ const en = {
   'common.clear': 'Clear',
   'common.block': 'Block',
   'common.entries': 'entries',
+  'common.conn': 'conn',
+  'common.mbps': 'MB/s',
+  'common.flows': 'flows',
+  'common.ips': 'IPs',
+  'common.benign': 'Benign',
   'common.language': 'Language',
   'common.theme': 'Theme',
   'common.dark': 'Dark',
@@ -62,6 +67,8 @@ const en = {
   'monitor.high_level': 'HIGH',
   'monitor.moderate_level': 'MODERATE',
   'monitor.low_level': 'LOW',
+  'monitor.export_csv': 'Export CSV',
+  'monitor.reconnecting': 'Reconnecting to server...',
 
   // Severity
   'severity.critical': 'Critical',
@@ -79,6 +86,10 @@ const en = {
   'table.action': 'Action',
 
   // Workspace page
+  'workspace.cpu': 'CPU',
+  'workspace.memory': 'Memory',
+  'workspace.net_down': 'Net Down',
+  'workspace.net_up': 'Net Up',
   'workspace.hostname': 'WORKSTATION-01',
   'workspace.network_activity': 'Network Activity',
   'workspace.system_info': 'System Info',
@@ -97,6 +108,12 @@ const en = {
   'workspace.tip': 'Open **Monitoring** to watch this traffic analyzed by the ML model in real time.',
 
   // Attack page
+  'attack.status_label': 'STATUS',
+  'attack.port_label': 'PORT',
+  'attack.tool_label': 'TOOL',
+  'attack.packets_sent': 'packets sent',
+  'attack.pkt_per_sec': 'pkt/s',
+  'attack.rec': 'REC',
   'attack.title': 'ATTACK CONSOLE',
   'attack.subtitle': '[ network penetration toolkit // educational use only ]',
   'attack.target': 'TARGET',
@@ -130,6 +147,48 @@ const en = {
   'attack.ssh_desc': 'Dictionary attack against SSH with credential stuffing',
   'attack.ftp_name': 'FTP BRUTE FORCE',
   'attack.ftp_desc': 'Brute-force FTP login with common password lists',
+
+  // Keyboard shortcuts
+  'attack.shortcuts_title': 'Keyboard Shortcuts',
+  'attack.shortcut_launch': 'Launch all attacks',
+  'attack.shortcut_kill': 'Kill all attacks',
+  'attack.shortcut_help': 'Show this help',
+  'attack.shortcut_close': 'Close this dialog',
+
+  // Docs / How It Works
+  'sidebar.docs': 'How It Works',
+  'sidebar.docs_desc': 'System documentation',
+
+  'docs.title': 'How It Works',
+  'docs.subtitle': 'ML-powered network anomaly detection pipeline',
+  'docs.tab_pipeline': 'ML Pipeline',
+  'docs.tab_dataset': 'CICIDS2017 Dataset',
+  'docs.tab_attacks': 'Attack Types',
+  'docs.tab_architecture': 'Architecture',
+
+  'docs.pipeline_title': 'Detection Pipeline',
+  'docs.step1_title': 'Data Ingestion',
+  'docs.step1_desc': 'Live packet capture on the network interface. Packets are aggregated into bidirectional flows with 74 CICIDS2017 features.',
+  'docs.step2_title': 'ML Analysis',
+  'docs.step2_desc': 'LightGBM classifier trained on 2.8M CICIDS2017 flows predicts attack type and confidence score.',
+  'docs.step3_title': 'Threat Report',
+  'docs.step3_desc': 'Visual dashboards, severity-based alerts, forensic details, and CSV report export.',
+
+  'docs.dataset_title': 'CICIDS2017 Dataset',
+  'docs.dataset_desc': 'Canadian Institute for Cybersecurity Intrusion Detection dataset. Contains 2.8M network flows captured over 5 days with 80+ features.',
+  'docs.dataset_flows': '2.8M Flows',
+  'docs.dataset_features': '80+ Features',
+  'docs.dataset_days': '5 Days Capture',
+  'docs.dataset_classes': '15 Attack Classes',
+
+  'docs.model_title': 'Model Performance',
+  'docs.model_accuracy': 'Accuracy',
+  'docs.model_precision': 'Precision',
+  'docs.model_recall': 'Recall',
+  'docs.model_f1': 'F1-Score',
+
+  'docs.attacks_title': 'Supported Attack Types',
+  'docs.arch_title': 'System Architecture',
 } as const
 
 export default en

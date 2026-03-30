@@ -17,7 +17,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from routers import state, inference, monitor
+from routers import state, inference, monitor, system
 
 app = FastAPI(title="ML Anomaly Detection API", version="1.0.0")
 
@@ -32,6 +32,7 @@ app.add_middleware(
 app.include_router(state.router, prefix="/api/state", tags=["state"])
 app.include_router(inference.router, prefix="/api/inference", tags=["inference"])
 app.include_router(monitor.router, prefix="/api/monitor", tags=["monitor"])
+app.include_router(system.router, prefix="/api/system", tags=["system"])
 
 
 @app.get("/api/health")

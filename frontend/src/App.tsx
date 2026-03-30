@@ -5,13 +5,14 @@ import Layout from './components/Layout'
 import Monitoring from './pages/Monitoring'
 import Workspace from './pages/Workspace'
 import AttackSpace from './pages/AttackSpace'
+import HowItWorks from './pages/HowItWorks'
 
 export default function App() {
   const [lang, setLang] = useState<Lang>(() =>
     (localStorage.getItem('lang') as Lang) || 'tk'
   )
   const [theme, setTheme] = useState<'dark' | 'light'>(() =>
-    (localStorage.getItem('theme') as 'dark' | 'light') || 'dark'
+    (localStorage.getItem('theme') as 'dark' | 'light') || 'light'
   )
 
   useEffect(() => { localStorage.setItem('lang', lang) }, [lang])
@@ -21,7 +22,7 @@ export default function App() {
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
     if (theme === 'light') {
-      document.body.className = 'bg-[#f0f2f5] text-slate-800 antialiased'
+      document.body.className = 'bg-[#f5f6f8] text-slate-800 antialiased'
     } else {
       document.body.className = 'bg-[#060b14] text-slate-200 antialiased'
     }
@@ -34,6 +35,7 @@ export default function App() {
           <Route path="/monitoring" element={<Monitoring />} />
           <Route path="/workspace" element={<Workspace />} />
           <Route path="/attack" element={<AttackSpace />} />
+          <Route path="/docs" element={<HowItWorks />} />
           <Route path="*" element={<Navigate to="/monitoring" replace />} />
         </Route>
       </Routes>

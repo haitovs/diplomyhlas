@@ -3,7 +3,7 @@ import {
   Play, Square, Cpu, HardDrive, Terminal, ChevronDown,
   Globe, Clock, Gauge, Server, Activity, ArrowDown, ArrowUp, Zap, Radio,
 } from 'lucide-react'
-import { getState, setBenign, type DemoState } from '../services/api'
+import { getState, setBenign, getSystemMetrics, type DemoState, type SystemMetrics } from '../services/api'
 import { useT, useSettings } from '../i18n'
 
 /* ------------------------------------------------------------------ */
@@ -105,6 +105,7 @@ export default function Workspace() {
   const [logs, setLogs] = useState<LogLine[]>([])
   const [iface, setIface] = useState<(typeof INTERFACES)[number]>('eth0')
   const [ifaceOpen, setIfaceOpen] = useState(false)
+  const [sys, setSys] = useState<SystemMetrics | null>(null)
   const logRef = useRef<HTMLDivElement>(null)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
@@ -113,12 +114,12 @@ export default function Workspace() {
   // Inject CSS keyframes
   useEffect(ensureStyles, [])
 
-  // Poll state
+  // Poll state + system metrics
   useEffect(() => {
-    const poll = () => getState().then((s) => {
-      setState(s)
-      setSpeed(s.benign_speed || 1.0)
-    }).catch(() => {})
+    const poll = () => {
+      getState().then((s) => { setState(s); setSpeed(s.benign_speed || 1.0) }).catch(() => {})
+      getSystemMetrics().then(setSys).catch(() => {})
+    }
     poll()
     const id = setInterval(poll, 2000)
     return () => clearInterval(id)
@@ -155,13 +156,13 @@ export default function Workspace() {
     if (isActive) setBenign(true, s)
   }, [isActive])
 
-  // System stats (simulated)
-  const cpu = isActive ? rand(12, 38) : rand(2, 6)
-  const mem = isActive ? rand(42, 61) : rand(35, 42)
-  const netDown = isActive ? (Math.random() * 7.3 + 1.2).toFixed(1) : '0.0'
-  const netUp = isActive ? (Math.random() * 2.1 + 0.3).toFixed(1) : '0.0'
-  const conns = isActive ? rand(6, 24) : 0
-  const packets = isActive ? rand(120, 480) : 0
+  // Real system stats from server
+  const cpu = sys?.cpu_pct ?? 0
+  const mem = sys?.mem_pct ?? 0
+  const netDown = sys?.net_down_mbps?.toFixed(2) ?? '0.0'
+  const netUp = sys?.net_up_mbps?.toFixed(2) ?? '0.0'
+  const conns = sys?.connections ?? 0
+  const packets = sys ? sys.packets_recv + sys.packets_sent : 0
 
   const now = new Date()
 
@@ -259,7 +260,7 @@ export default function Workspace() {
             <span className={`font-semibold transition-colors duration-500 ${conns > 0 ? 'text-emerald-400' : 'text-slate-500'}`}>
               {conns}
             </span>
-            <span className="text-slate-500">conn</span>
+            <span className="text-slate-500">{t('common.conn')}</span>
           </span>
 
           <span className={`text-xs font-medium transition-colors duration-500 ${
@@ -296,7 +297,7 @@ export default function Workspace() {
             {isActive && (
               <span className="text-[10px] font-mono text-emerald-500/70 flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" style={{ animation: 'ws-blink 1s steps(1) infinite' }} />
-                LIVE
+                {t('common.live')}
               </span>
             )}
           </div>
@@ -360,17 +361,17 @@ export default function Workspace() {
           </div>
 
           <div className="space-y-1">
-            <SysRow isDark={isDark} icon={<Cpu className="w-3.5 h-3.5 text-blue-400" />}   label="CPU"      value={`${cpu}%`}            pct={cpu}                                         color="bg-blue-500"    glow="shadow-[0_0_6px_rgba(59,130,246,0.3)]" />
-            <SysRow isDark={isDark} icon={<HardDrive className="w-3.5 h-3.5 text-amber-400" />} label="Memory"   value={`${mem}%`}            pct={mem}                                         color="bg-amber-500"   glow="shadow-[0_0_6px_rgba(245,158,11,0.3)]" />
-            <SysRow isDark={isDark} icon={<ArrowDown className="w-3.5 h-3.5 text-emerald-400" />} label="Net Down" value={`${netDown} MB/s`}    pct={Math.min(Number(netDown) / 10 * 100, 100)}  color="bg-emerald-500" glow="shadow-[0_0_6px_rgba(34,197,94,0.3)]" />
-            <SysRow isDark={isDark} icon={<ArrowUp className="w-3.5 h-3.5 text-emerald-400" />}   label="Net Up"   value={`${netUp} MB/s`}      pct={Math.min(Number(netUp) / 5 * 100, 100)}     color="bg-emerald-500" glow="shadow-[0_0_6px_rgba(34,197,94,0.3)]" />
+            <SysRow isDark={isDark} icon={<Cpu className="w-3.5 h-3.5 text-blue-400" />}   label={t('workspace.cpu')}      value={`${cpu}%`}            pct={cpu}                                         color="bg-blue-500"    glow="shadow-[0_0_6px_rgba(59,130,246,0.3)]" />
+            <SysRow isDark={isDark} icon={<HardDrive className="w-3.5 h-3.5 text-amber-400" />} label={t('workspace.memory')}   value={`${mem}%`}            pct={mem}                                         color="bg-amber-500"   glow="shadow-[0_0_6px_rgba(245,158,11,0.3)]" />
+            <SysRow isDark={isDark} icon={<ArrowDown className="w-3.5 h-3.5 text-emerald-400" />} label={t('workspace.net_down')} value={`${netDown} ${t('common.mbps')}`}    pct={Math.min(Number(netDown) / 10 * 100, 100)}  color="bg-emerald-500" glow="shadow-[0_0_6px_rgba(34,197,94,0.3)]" />
+            <SysRow isDark={isDark} icon={<ArrowUp className="w-3.5 h-3.5 text-emerald-400" />}   label={t('workspace.net_up')} value={`${netUp} ${t('common.mbps')}`}      pct={Math.min(Number(netUp) / 5 * 100, 100)}     color="bg-emerald-500" glow="shadow-[0_0_6px_rgba(34,197,94,0.3)]" />
 
             <div className={`pt-2 mt-2 border-t space-y-0 ${isDark ? 'border-[#334155]/60' : 'border-slate-200'}`}>
               <SysRowText isDark={isDark} icon={<Globe className="w-3.5 h-3.5 text-blue-400" />}    label={t('workspace.connections')}  value={String(conns)} highlight={conns > 0} />
               <SysRowText isDark={isDark} icon={<Zap className="w-3.5 h-3.5 text-amber-400" />}     label={t('workspace.packets_sec')} value={String(packets)} highlight={packets > 0} />
-              <SysRowText isDark={isDark} icon={<Terminal className="w-3.5 h-3.5 text-slate-500" />} label={t('workspace.hostname_label')}     value={t('workspace.hostname')} />
-              <SysRowText isDark={isDark} icon={<Server className="w-3.5 h-3.5 text-slate-500" />}   label={t('workspace.os')}           value="Ubuntu 22.04" />
-              <SysRowText isDark={isDark} icon={<Gauge className="w-3.5 h-3.5 text-slate-500" />}    label={t('workspace.uptime')}       value="3d 14h 22m" />
+              <SysRowText isDark={isDark} icon={<Terminal className="w-3.5 h-3.5 text-slate-500" />} label={t('workspace.hostname_label')}     value={sys?.hostname ?? '—'} />
+              <SysRowText isDark={isDark} icon={<Server className="w-3.5 h-3.5 text-slate-500" />}   label={t('workspace.os')}           value={sys?.os ?? '—'} />
+              <SysRowText isDark={isDark} icon={<Gauge className="w-3.5 h-3.5 text-slate-500" />}    label={t('workspace.uptime')}       value={sys?.uptime ?? '—'} />
             </div>
           </div>
         </div>
@@ -444,11 +445,11 @@ export default function Workspace() {
           <div className="ml-auto flex items-center gap-4 text-xs font-mono text-slate-500 transition-opacity duration-500">
             <span className="flex items-center gap-1">
               <ArrowDown className="w-3 h-3 text-emerald-500" />
-              <span className="text-emerald-400">{netDown}</span> MB/s
+              <span className="text-emerald-400">{netDown}</span> {t('common.mbps')}
             </span>
             <span className="flex items-center gap-1">
               <ArrowUp className="w-3 h-3 text-emerald-500" />
-              <span className="text-emerald-400">{netUp}</span> MB/s
+              <span className="text-emerald-400">{netUp}</span> {t('common.mbps')}
             </span>
           </div>
         )}
