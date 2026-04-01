@@ -6,6 +6,7 @@ import Monitoring from './pages/Monitoring'
 import Workspace from './pages/Workspace'
 import AttackSpace from './pages/AttackSpace'
 import HowItWorks from './pages/HowItWorks'
+import Report from './pages/Report'
 
 export default function App() {
   const [lang, setLang] = useState<Lang>(() =>
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="/monitoring" element={<Monitoring />} />
           <Route path="/workspace" element={<Workspace />} />
           <Route path="/attack" element={<AttackSpace />} />
+          <Route path="/report" element={<Report />} />
           <Route path="/docs" element={<HowItWorks />} />
           <Route path="*" element={<Navigate to="/monitoring" replace />} />
         </Route>

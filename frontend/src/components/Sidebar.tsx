@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { Activity, Monitor, Skull, BookOpen, Circle, Sun, Moon, Languages, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Activity, Monitor, Skull, FileBarChart, BookOpen, Circle, Sun, Moon, Languages, ChevronLeft, ChevronRight } from 'lucide-react'
 import { getState, type DemoState } from '../services/api'
 import { useSettings, useT, type Lang } from '../i18n'
 
@@ -8,6 +8,7 @@ const linkKeys = [
   { to: '/monitoring', icon: Activity, label: 'sidebar.monitoring' as const, desc: 'sidebar.monitoring_desc' as const },
   { to: '/workspace', icon: Monitor, label: 'sidebar.workspace' as const, desc: 'sidebar.workspace_desc' as const },
   { to: '/attack', icon: Skull, label: 'sidebar.attack' as const, desc: 'sidebar.attack_desc' as const },
+  { to: '/report', icon: FileBarChart, label: 'sidebar.report' as const, desc: 'sidebar.report_desc' as const },
   { to: '/docs', icon: BookOpen, label: 'sidebar.docs' as const, desc: 'sidebar.docs_desc' as const },
 ]
 

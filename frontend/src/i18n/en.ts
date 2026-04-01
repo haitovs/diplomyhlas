@@ -189,6 +189,41 @@ const en = {
 
   'docs.attacks_title': 'Supported Attack Types',
   'docs.arch_title': 'System Architecture',
+
+  // Report page
+  'sidebar.report': 'Detection Report',
+  'sidebar.report_desc': 'Threat forensics',
+
+  'report.title': 'Detection Report',
+  'report.subtitle': 'Threat forensics and incident log',
+  'report.breadcrumb': 'Intelligence',
+  'report.session_flows': 'Session Flows',
+  'report.session_threats': 'Session Threats',
+  'report.threat_rate': 'Threat Rate',
+  'report.critical_count': 'Critical Severity',
+  'report.no_threats_title': 'No Threats Detected Yet',
+  'report.no_threats_desc': 'Start the Traffic Simulator and launch attacks from the Attack Space to generate detection data.',
+  'report.attack_summary': 'Attack Summary',
+  'report.attack_vectors': 'Attack Type Vectors',
+  'report.temporal': 'Temporal Distribution',
+  'report.severity_breakdown': 'Severity Breakdown',
+  'report.event_log': 'Security Event Log',
+  'report.export_csv': 'Export Report (CSV)',
+  'report.clear_data': 'Clear Report Data',
+  'report.forensic': 'Forensic Workbench',
+  'report.select_event': 'Select an event from the log above for detailed forensics',
+  'report.event_id': 'Event ID',
+  'report.source_origin': 'Source Origin',
+  'report.target_vector': 'Target Vector',
+  'report.ai_confidence': 'AI Confidence',
+  'report.response': 'Auto Response Suggestion',
+  'report.col_id': 'ID',
+  'report.col_time': 'Timestamp',
+  'report.col_type': 'Type',
+  'report.col_src': 'Source IP',
+  'report.col_port': 'Port',
+  'report.col_severity': 'Severity',
+  'report.col_confidence': 'Confidence',
 } as const
 
 export default en

@@ -189,6 +189,41 @@ const tk = {
 
   'docs.attacks_title': 'Goldanylyan Hujum Gornusleri',
   'docs.arch_title': 'Ulgam Arhitekturasy',
+
+  // Report page
+  'sidebar.report': 'Anyklama Hasabaty',
+  'sidebar.report_desc': 'Howp forensikasy',
+
+  'report.title': 'Anyklama Hasabaty',
+  'report.subtitle': 'Howp forensikasy we hadysa logy',
+  'report.breadcrumb': 'Intellekt',
+  'report.session_flows': 'Sessiya Akymlary',
+  'report.session_threats': 'Sessiya Howplary',
+  'report.threat_rate': 'Howp Gatnasygy',
+  'report.critical_count': 'Kritiki Dereje',
+  'report.no_threats_title': 'Entak Howp Anyklanmady',
+  'report.no_threats_desc': 'Trafik Simulyatory basladin we Hujum Meydancasyndan hujumlary isledin.',
+  'report.attack_summary': 'Hujum Jemlemesi',
+  'report.attack_vectors': 'Hujum Gornus Vektorlary',
+  'report.temporal': 'Wagt Boyuncha Bolunme',
+  'report.severity_breakdown': 'Howplulyk Bolunmesi',
+  'report.event_log': 'Howpsuzlyk Hadysa Logy',
+  'report.export_csv': 'Hasabaty Eksport Et (CSV)',
+  'report.clear_data': 'Hasabat Maglumatyny Arassala',
+  'report.forensic': 'Forensik Dernew',
+  'report.select_event': 'Jikme-jik forensika ucin logdan hadysa saylan',
+  'report.event_id': 'Hadysa ID',
+  'report.source_origin': 'Cesme Gelysi',
+  'report.target_vector': 'Maksat Vektory',
+  'report.ai_confidence': 'AI Ynamy',
+  'report.response': 'Awto Jogap Teklibi',
+  'report.col_id': 'ID',
+  'report.col_time': 'Wagt Belgisi',
+  'report.col_type': 'Gornus',
+  'report.col_src': 'Cesme IP',
+  'report.col_port': 'Port',
+  'report.col_severity': 'Howplulyk',
+  'report.col_confidence': 'Ynam',
 } as const
 
 export default tk
