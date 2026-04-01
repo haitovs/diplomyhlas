@@ -27,21 +27,33 @@ router = APIRouter()
 predictor = RealtimePredictor(model_path=str(PROJECT_ROOT / "models"))
 
 SAMPLES_DIR = PROJECT_ROOT / "data" / "samples"
+from demo_state import STATE_FILE
+print(f"[monitor] PROJECT_ROOT={PROJECT_ROOT}")
+print(f"[monitor] STATE_FILE={STATE_FILE} writable={STATE_FILE.parent.exists()}")
+print(f"[monitor] SAMPLES_DIR={SAMPLES_DIR} exists={SAMPLES_DIR.is_dir()}")
+print(f"[monitor] Model loaded={predictor.loaded}")
+
 try:
     import joblib
     feature_columns = list(joblib.load(PROJECT_ROOT / "models" / "feature_columns.joblib"))
-except Exception:
+    print(f"[monitor] feature_columns: {len(feature_columns)} features")
+except Exception as e:
     feature_columns = []
+    print(f"[monitor] ERROR loading feature_columns: {e}")
 
 try:
     benign_data = pd.read_csv(SAMPLES_DIR / "benign_flows.csv")
-except Exception:
+    print(f"[monitor] benign_data: {len(benign_data)} rows, cols={list(benign_data.columns[:5])}")
+except Exception as e:
     benign_data = pd.DataFrame()
+    print(f"[monitor] ERROR loading benign_data: {e}")
 
 try:
     malicious_data = pd.read_csv(SAMPLES_DIR / "malicious_flows.csv")
-except Exception:
+    print(f"[monitor] malicious_data: {len(malicious_data)} rows, labels={malicious_data['_label'].unique().tolist() if '_label' in malicious_data.columns else 'NO _label COL'}")
+except Exception as e:
     malicious_data = pd.DataFrame()
+    print(f"[monitor] ERROR loading malicious_data: {e}")
 
 ATTACK_LABEL_MAP = {
     "ddos": ["DDoS"],
@@ -113,6 +125,9 @@ def process_tick() -> list[dict]:
 
     # Continuous attacks
     attacks = demo.get("attacks", {})
+    active_attacks = {k: v for k, v in attacks.items() if v}
+    if active_attacks:
+        print(f"[tick] Active attacks: {active_attacks}, malicious_data rows: {len(malicious_data)}")
     if len(malicious_data) > 0:
         for atk_key, is_on in attacks.items():
             if not is_on:
