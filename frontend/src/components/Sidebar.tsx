@@ -39,21 +39,21 @@ export default function Sidebar() {
   const anyActive = benignOn || attackCount > 0
 
   return (
-    <aside className={`${collapsed ? 'w-16' : 'w-[260px]'} shrink-0 flex flex-col border-r transition-all duration-300 ${
+    <aside className={`${collapsed ? 'w-18' : 'w-[280px]'} shrink-0 flex flex-col border-r transition-all duration-300 ${
       isDark ? 'bg-[#0a0f1a] border-white/[0.06]' : 'bg-[#f8f9fb] border-slate-200'
     }`}>
       {/* Collapse toggle + Brand */}
       <div className={`p-5 border-b ${isDark ? 'border-white/[0.06]' : 'border-slate-200'}`}>
         <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'}`}>
           {!collapsed && (
-            <img src="/oguzhan_logo.png" alt="Logo" className="w-10 h-10 rounded-xl object-contain" />
+            <img src="/oguzhan_logo.png" alt="Logo" className="w-11 h-11 rounded-xl object-contain" />
           )}
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <div className={`text-sm font-bold tracking-wide ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>
+              <div className={`text-[15px] font-bold tracking-wide ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>
                 {t('sidebar.brand')}
               </div>
-              <div className={`text-[10px] font-medium uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+              <div className={`text-[11px] font-medium uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
                 {t('sidebar.subtitle')}
               </div>
             </div>
@@ -131,17 +131,17 @@ export default function Sidebar() {
           >
             {({ isActive }) => (
               <>
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all shrink-0 ${
+                <div className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all shrink-0 ${
                   isActive
                     ? isDark ? 'bg-amber-500/15' : 'bg-amber-100'
                     : isDark ? 'bg-white/[0.03] group-hover:bg-white/[0.06]' : 'bg-slate-100 group-hover:bg-slate-200'
                 }`}>
-                  <Icon className="w-4 h-4" />
+                  <Icon className="w-[18px] h-[18px]" />
                 </div>
                 {!collapsed && (
                   <div>
-                    <div className="font-medium leading-tight">{t(label)}</div>
-                    <div className={`text-[10px] leading-tight mt-0.5 ${
+                    <div className="font-medium leading-tight text-[14px]">{t(label)}</div>
+                    <div className={`text-[11px] leading-tight mt-0.5 ${
                       isActive
                         ? isDark ? 'text-amber-500/60' : 'text-amber-500/70'
                         : isDark ? 'text-slate-600' : 'text-slate-400'
