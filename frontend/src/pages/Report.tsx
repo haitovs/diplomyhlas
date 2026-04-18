@@ -144,10 +144,15 @@ export default function Report() {
   // CSV export
   const exportCSV = () => {
     const header = 'id,timestamp,type,src_ip,dst_ip,port,severity,confidence,source'
-    const rows = threats.map((f, i) => {
-      const id = `ATK-${String(i + 1).padStart(5, '0')}`
+    const rows = threats.map((f) => {
+      const id = eventIdFor(f)
       const sev = getSeverity(f.confidence)
-      return `${id},${f.timestamp},${f.prediction},${f.src_ip},${f.dst_ip},${f.dst_port},${sev},${f.confidence.toFixed(4)},${f.source}`
+      // Escape commas in fields
+      const safe = (v: any) => {
+        const s = String(v ?? '')
+        return s.includes(',') ? `"${s.replace(/"/g, '""')}"` : s
+      }
+      return [id, f.timestamp, f.prediction, f.src_ip, f.dst_ip, f.dst_port, sev, f.confidence.toFixed(4), f.source].map(safe).join(',')
     })
     const csv = [header, ...rows].join('\n')
     const blob = new Blob([csv], { type: 'text/csv' })
@@ -169,9 +174,17 @@ export default function Report() {
   const cardClass = `rounded-xl border p-5 ${isDark ? 'bg-[#0a1020]/80 border-amber-500/10' : 'bg-white border-slate-200 shadow-sm'}`
   const headingClass = `text-[11px] uppercase tracking-widest font-semibold ${isDark ? 'text-slate-500' : 'text-slate-400'}`
 
+  // Sorted threats (newest first) with stable ID based on timestamp+src
+  const sortedThreats = [...threats].reverse()
+  const eventIdFor = (f: FlowEntry) => {
+    // Stable ID from timestamp hash — doesn't change on data refresh
+    const ts = new Date(f.timestamp).getTime()
+    const short = (ts % 100000).toString().padStart(5, '0')
+    return `ATK-${short}`
+  }
+
   return (
-    <div className="flex-1 overflow-y-auto">
-      <div className="max-w-[1600px] mx-auto px-6 py-6 space-y-6">
+    <div className="space-y-6">
 
         {/* ── Header ──────────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
@@ -361,9 +374,9 @@ export default function Report() {
                     </tr>
                   </thead>
                   <tbody>
-                    {threats.slice(0, 100).map((f, i) => {
-                      const eventId = `ATK-${String(i + 1).padStart(5, '0')}`
-                      const isSelected = selectedEvent === f
+                    {sortedThreats.slice(0, 100).map((f, i) => {
+                      const eventId = eventIdFor(f)
+                      const isSelected = selectedEvent?.timestamp === f.timestamp && selectedEvent?.src_ip === f.src_ip
                       return (
                         <tr
                           key={i}
@@ -409,7 +422,7 @@ export default function Report() {
                         {t('report.event_id')}
                       </span>
                       <p className={`text-sm font-mono font-bold mt-1 ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
-                        ATK-{String(threats.indexOf(selectedEvent) + 1).padStart(5, '0')}
+                        {eventIdFor(selectedEvent)}
                       </p>
                     </div>
                     {/* Timestamp */}
@@ -489,7 +502,6 @@ export default function Report() {
             </div>
           </>
         )}
-      </div>
     </div>
   )
 }

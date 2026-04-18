@@ -218,6 +218,7 @@ export default function Monitoring() {
   const handleClear = useCallback(() => {
     clearHistory().then(() => {
       setHistory([])
+      prevAnomalyCount.current = 0
       localStorage.removeItem('detection_history')
       getStats().then(setStats)
     })

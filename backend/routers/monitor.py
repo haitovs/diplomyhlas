@@ -70,35 +70,62 @@ benign_idx: int = 0
 
 # ── Helpers ──────────────────────────────────────────────────────────────
 
+def _safe_float(v, default=0.0) -> float:
+    """Convert to float, replacing NaN/Inf with default (for JSON safety)."""
+    try:
+        f = float(v)
+        if f != f or f == float("inf") or f == float("-inf"):  # NaN or Inf
+            return default
+        return f
+    except (TypeError, ValueError):
+        return default
+
+
+def _safe_int(v, default=0) -> int:
+    try:
+        return int(_safe_float(v, default))
+    except (TypeError, ValueError):
+        return default
+
+
 def ingest_flow(row: pd.Series, source: str) -> dict | None:
     global total_processed, benign_idx
     src_ip = row.get("_src_ip", "N/A")
+    if pd.isna(src_ip):
+        src_ip = "N/A"
     if src_ip in blocked_ips:
         return None
 
-    flow = {col: float(row.get(col, 0)) for col in feature_columns}
+    flow = {col: _safe_float(row.get(col, 0)) for col in feature_columns}
     result = predictor.predict(flow)
-    conf = result["confidence"]
+    conf = _safe_float(result["confidence"])
     is_anomaly = result["is_anomaly"] and conf >= 0.70
+
+    dst_ip = row.get("_dst_ip", "N/A")
+    if pd.isna(dst_ip):
+        dst_ip = "N/A"
+    protocol = row.get("_protocol", "TCP")
+    if pd.isna(protocol):
+        protocol = "TCP"
 
     entry = {
         "timestamp": datetime.now().isoformat(),
-        "src_ip": src_ip,
-        "dst_ip": row.get("_dst_ip", "N/A"),
+        "src_ip": str(src_ip),
+        "dst_ip": str(dst_ip),
         "src_port": random.randint(1024, 65535),
-        "dst_port": int(row.get("_dst_port", 0)),
-        "protocol": row.get("_protocol", "TCP"),
+        "dst_port": _safe_int(row.get("_dst_port", 0)),
+        "protocol": str(protocol),
         "prediction": result["prediction"],
         "confidence": conf,
-        "is_anomaly": is_anomaly,
-        "total_packets": int(
+        "is_anomaly": bool(is_anomaly),
+        "total_packets": _safe_int(
             flow.get("Total Fwd Packets", 0) + flow.get("Total Backward Packets", 0)
         ),
-        "total_bytes": int(
+        "total_bytes": _safe_int(
             flow.get("Total Length of Fwd Packets", 0)
             + flow.get("Total Length of Bwd Packets", 0)
         ),
-        "flow_bytes_per_s": flow.get("Flow Bytes/s", 0),
+        "flow_bytes_per_s": _safe_float(flow.get("Flow Bytes/s", 0)),
         "source": source,
     }
     history.append(entry)
