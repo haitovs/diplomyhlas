@@ -155,16 +155,82 @@ const tk = {
   'attack.shortcut_help': 'Bu komegi gorkezin',
   'attack.shortcut_close': 'Bu pencireni yapin',
 
-  // Docs / How It Works
-  'sidebar.docs': 'Nadip Isleyar',
-  'sidebar.docs_desc': 'Ulgam dokumentasiyasy',
+  // Docs / Guide Book
+  'sidebar.docs': 'Gollanma',
+  'sidebar.docs_desc': 'Dolyn ulgam gollanmasy',
 
-  'docs.title': 'Nadip Isleyar',
-  'docs.subtitle': 'ML-esasly tor anomaliya anyklama pipeline',
+  'docs.title': 'Gollanma',
+  'docs.subtitle': 'ML-esasly tor anomaliya anyklama ulgamynyn doly gollanmasy',
+  'docs.tab_overview': 'Umumy Syn',
+  'docs.tab_topology': 'Tor Topologiyasy',
   'docs.tab_pipeline': 'ML Pipeline',
   'docs.tab_dataset': 'CICIDS2017 Dataseti',
   'docs.tab_attacks': 'Hujum Gornusleri',
+  'docs.tab_tech': 'Tehnologiyalar',
+  'docs.tab_benefits': 'Artykmacylyklar',
   'docs.tab_architecture': 'Arhitektura',
+
+  // Overview tab
+  'docs.overview_title': 'Proyekt Umumy Syny',
+  'docs.overview_intro': 'Masyn okuwyna esaslanan hakykat wagtyndaky tor giris anyklama ulgamy (IDS). Tor trafik akymlaryny tutyar, CICIDS2017-de okadylan LightGBM klassifikatory bilen seljerip, 15-den gowrak kiber hujumy 99%+ takyklyk bilen anyklayar.',
+  'docs.overview_problem': 'Mesele',
+  'docs.overview_problem_desc': 'Adaty gol esasly firewalllar zero-day hujumlaryny ya-da taze howp gornuslerini anyklap bilmeyar. Howpsuzlyk toparlaryna adaty hereketi owrenyan we anomaliyalary hakykat wagtynda belleyan akylly ulgamlar gerek.',
+  'docs.overview_solution': 'Biznin Cozgudimiz',
+  'docs.overview_solution_desc': 'Canly monitoring paneli, hujum synagy ucin simulyasiya, forensika seljermesi bilen anyklama hasabatlary we 2.8M hakyky tor akymyna okadylan LightGBM model bilen uctma-uc ML-esasly IDS.',
+
+  // Topology tab
+  'docs.topology_title': 'Uc Kompyuterli Howpsuzlyk Topologiyasy',
+  'docs.topology_desc': 'Ulgam ucdan her biri dashboardda ayratyn sahypa bilen gorkezilyan tapawutly rolly hakyky tor howpsuzlyk sahnasyny simulyasiya edyar:',
+  'docs.topology_workstation': 'Is Stoly',
+  'docs.topology_workstation_role': 'Maksat Masyn',
+  'docs.topology_workstation_desc': 'Adaty HTTPS, DNS we API trafigini doredyan kanuny ulanyjy is stolyny (WORKSTATION-01) ayan edyar. Gor: /workspace',
+  'docs.topology_attacker': 'Hujumci',
+  'docs.topology_attacker_role': 'Howp Aktiwisti',
+  'docs.topology_attacker_desc': 'Maksada garsy DDoS, brute-force we port-scan hujumlaryny baslan Kali Linux penetrasiya synayjysyny simulyasiya edyar. Gor: /attack',
+  'docs.topology_ids': 'IDS Sensor',
+  'docs.topology_ids_role': 'Gorayjy',
+  'docs.topology_ids_desc': 'Ahli trafigi synlayan, ML klassifikasiyasyny ulanyp duysdurys berip, zyyanly IP-leri bloklayan giris anyklama sensory. Gor: /monitoring',
+
+  // Attack Types (detailed)
+  'docs.attack_ddos': 'DDoS SYN Gysyw',
+  'docs.attack_ddos_how': 'Nadip isleyar',
+  'docs.attack_ddos_how_desc': 'Hujumci uc tarapalayn ellesmesi tamamlaman mungden gowrak TCP SYN paketlerini iberyar we maksadyn birikme tablisasyny tukedyar.',
+  'docs.attack_ddos_detect': 'Nadip anyklayarys',
+  'docs.attack_ddos_detect_desc': 'ML model anomal Flow Packets/s, pes Total Bwd Packets bilen yokary Total Fwd Packets we gysga Flow Duration-y anyklayar.',
+
+  'docs.attack_portscan': 'Port Skaneri',
+  'docs.attack_portscan_how_desc': 'Hujumci ekspluatasiya ucin islenyan hyzmatlary anyklamak ucin nmap SYN skan bilen maksat portlary (adatca 1-1024) yzygiderli barlayar.',
+  'docs.attack_portscan_detect_desc': 'ML bir cesme IP-den durli portlara pes paket sanly kop gysga birikmeleri anyklayar.',
+
+  'docs.attack_ssh': 'SSH Brute Force',
+  'docs.attack_ssh_how_desc': 'Hydra ya-da Patator yaly gurallar bilen mungden gowrak ulanyjy ady/parol kombinasiyasyny synanysyp, SSH hyzmatyna (port 22) garsy sozluk hujumy.',
+  'docs.attack_ssh_detect_desc': 'ML gaytalanan sowsyz auth nusgalaryny, yzygider paket olcheglerini we port 22-a yokary birikme yygylygyny tanayar.',
+
+  'docs.attack_ftp': 'FTP Brute Force',
+  'docs.attack_ftp_how_desc': 'Ygtyyarsyz fayl elyeterliliigi ucin umumy parol sanawlary bilen FTP hyzmatyna (port 21) garsy awtomatlasdyrylan giris synanysyklary.',
+  'docs.attack_ftp_detect_desc': 'ML calt gaytalanan FTP gozegcilik buyruklaryny, yzygider akym nusgalaryny we anomal auth sowsuzlyklaryny anyklayar.',
+
+  // Technologies
+  'docs.tech_title': 'Tehnologiya Stegi',
+  'docs.tech_frontend': 'Frontend',
+  'docs.tech_backend': 'Backend',
+  'docs.tech_ml': 'Masyn Okuwy',
+  'docs.tech_deploy': 'Deployment',
+
+  // Benefits
+  'docs.benefits_title': 'Proyekt Artykmacylyklary',
+  'docs.benefit_accuracy': '99%+ Anyklama Takyklygy',
+  'docs.benefit_accuracy_desc': '2.8M hakyky tor akymyna doly alamat inzeneriyasy bilen okadyldy.',
+  'docs.benefit_realtime': 'Hakykat Wagtynda Seljerme',
+  'docs.benefit_realtime_desc': 'Paket tutusdan howp klassifikasiyasyna cenli sekuntdan az gijikme.',
+  'docs.benefit_educational': 'Bilim Gymmaty',
+  'docs.benefit_educational_desc': 'Interaktiw hujum simulyasiyasy kiberhowpsuzlyk dusunjelerini el bilen edip bolyan edyar.',
+  'docs.benefit_extensible': 'Ginelyar',
+  'docs.benefit_extensible_desc': 'Modul arhitektura taze hujum klaslaryny gosmaga we modelleri ansat gaytadan okatmaga mumkincilik beryar.',
+  'docs.benefit_openSource': 'Acyk Tehnologiyalar',
+  'docs.benefit_openSource_desc': 'Doly acyk gornusli gurallar bilen gurlan — deploya lisenziya cykdajysy yok.',
+  'docs.benefit_modern': 'Hazirki Zaman Stegi',
+  'docs.benefit_modern_desc': 'React 19, FastAPI, LightGBM — howpsuzlyk kompaniyalary tarapyndan ulanylyan pudak standart gurallary.',
 
   'docs.pipeline_title': 'Anyklama Pipeline',
   'docs.step1_title': 'Maglumat Kabul Edis',
@@ -224,6 +290,26 @@ const tk = {
   'report.col_port': 'Port',
   'report.col_severity': 'Howplulyk',
   'report.col_confidence': 'Ynam',
+
+  // Machine identity
+  'machine.role': 'Roly',
+  'machine.ip': 'IP Salgy',
+  'machine.os': 'OS',
+
+  'machine.ids_role': 'IDS Sensory',
+  'machine.ids_label': 'Giris Anyklama Ulgamy',
+  'machine.ids_ip': '192.168.1.1',
+  'machine.ids_os': 'Linux (Goraycy)',
+
+  'machine.workstation_role': 'Is Stoly',
+  'machine.workstation_label': 'Ulanyjy Mashyny',
+  'machine.workstation_ip': '192.168.1.10',
+  'machine.workstation_os': 'Ubuntu 22.04',
+
+  'machine.attacker_role': 'Hujumcy',
+  'machine.attacker_label': 'Penetrasiya Testcisi',
+  'machine.attacker_ip': '10.0.0.50',
+  'machine.attacker_os': 'Kali Linux',
 } as const
 
 export default tk

@@ -155,16 +155,82 @@ const en = {
   'attack.shortcut_help': 'Show this help',
   'attack.shortcut_close': 'Close this dialog',
 
-  // Docs / How It Works
-  'sidebar.docs': 'How It Works',
-  'sidebar.docs_desc': 'System documentation',
+  // Docs / Guide Book
+  'sidebar.docs': 'Guide Book',
+  'sidebar.docs_desc': 'Complete system guide',
 
-  'docs.title': 'How It Works',
-  'docs.subtitle': 'ML-powered network anomaly detection pipeline',
+  'docs.title': 'Guide Book',
+  'docs.subtitle': 'Complete walkthrough of the ML-powered network anomaly detection system',
+  'docs.tab_overview': 'Overview',
+  'docs.tab_topology': 'Network Topology',
   'docs.tab_pipeline': 'ML Pipeline',
   'docs.tab_dataset': 'CICIDS2017 Dataset',
   'docs.tab_attacks': 'Attack Types',
+  'docs.tab_tech': 'Technologies',
+  'docs.tab_benefits': 'Benefits',
   'docs.tab_architecture': 'Architecture',
+
+  // Overview tab
+  'docs.overview_title': 'Project Overview',
+  'docs.overview_intro': 'A real-time network intrusion detection system (IDS) powered by machine learning. It captures network traffic flows, analyzes them with a LightGBM classifier trained on CICIDS2017, and detects 15+ types of cyberattacks with 99%+ accuracy.',
+  'docs.overview_problem': 'The Problem',
+  'docs.overview_problem_desc': 'Traditional signature-based firewalls cannot detect zero-day attacks or novel threat variants. Security teams need intelligent systems that learn normal behavior and flag anomalies in real time.',
+  'docs.overview_solution': 'Our Solution',
+  'docs.overview_solution_desc': 'An end-to-end ML-powered IDS with live monitoring dashboard, attack simulation for testing, detection reports with forensic analysis, and a LightGBM model trained on 2.8M real network flows.',
+
+  // Topology tab
+  'docs.topology_title': 'Three-Computer Security Topology',
+  'docs.topology_desc': 'The system simulates a realistic network security scenario with three distinct machine roles, each represented by a dedicated page in the dashboard:',
+  'docs.topology_workstation': 'Workstation',
+  'docs.topology_workstation_role': 'Target Machine',
+  'docs.topology_workstation_desc': 'Represents a legitimate user workstation (WORKSTATION-01) generating normal HTTPS, DNS, and API traffic. View: /workspace',
+  'docs.topology_attacker': 'Attacker',
+  'docs.topology_attacker_role': 'Threat Actor',
+  'docs.topology_attacker_desc': 'Simulates a Kali Linux penetration tester launching DDoS, brute-force, and port-scan attacks against the target. View: /attack',
+  'docs.topology_ids': 'IDS Sensor',
+  'docs.topology_ids_role': 'Defender',
+  'docs.topology_ids_desc': 'Intrusion detection sensor monitoring all traffic, applying ML classification, generating alerts, and blocking malicious IPs. View: /monitoring',
+
+  // Attack Types (detailed)
+  'docs.attack_ddos': 'DDoS SYN Flood',
+  'docs.attack_ddos_how': 'How it works',
+  'docs.attack_ddos_how_desc': "Attacker sends thousands of TCP SYN packets without completing the three-way handshake, exhausting the target's connection table.",
+  'docs.attack_ddos_detect': 'How we detect it',
+  'docs.attack_ddos_detect_desc': 'ML model identifies abnormal Flow Packets/s, high Total Fwd Packets with low Total Bwd Packets, and short Flow Duration.',
+
+  'docs.attack_portscan': 'Port Scanner',
+  'docs.attack_portscan_how_desc': 'Attacker sequentially probes target ports (typically 1-1024) using nmap SYN scan to identify running services for exploitation.',
+  'docs.attack_portscan_detect_desc': 'ML detects many short-lived connections to different ports from the same source IP, with low packet counts per flow.',
+
+  'docs.attack_ssh': 'SSH Brute Force',
+  'docs.attack_ssh_how_desc': 'Dictionary attack against SSH service (port 22) trying thousands of username/password combinations using tools like Hydra or Patator.',
+  'docs.attack_ssh_detect_desc': 'ML recognizes repeated failed authentication patterns, consistent packet sizes, and high connection frequency to port 22.',
+
+  'docs.attack_ftp': 'FTP Brute Force',
+  'docs.attack_ftp_how_desc': 'Automated login attempts against FTP service (port 21) using common password lists to gain unauthorized file access.',
+  'docs.attack_ftp_detect_desc': 'ML identifies rapid repeated FTP control commands, consistent flow patterns, and abnormal authentication failures.',
+
+  // Technologies
+  'docs.tech_title': 'Technology Stack',
+  'docs.tech_frontend': 'Frontend',
+  'docs.tech_backend': 'Backend',
+  'docs.tech_ml': 'Machine Learning',
+  'docs.tech_deploy': 'Deployment',
+
+  // Benefits
+  'docs.benefits_title': 'Project Benefits',
+  'docs.benefit_accuracy': '99%+ Detection Accuracy',
+  'docs.benefit_accuracy_desc': 'Trained on 2.8M real network flows with comprehensive feature engineering.',
+  'docs.benefit_realtime': 'Real-Time Analysis',
+  'docs.benefit_realtime_desc': 'Sub-second latency from packet capture to threat classification.',
+  'docs.benefit_educational': 'Educational Value',
+  'docs.benefit_educational_desc': 'Interactive attack simulation makes cybersecurity concepts tangible and hands-on.',
+  'docs.benefit_extensible': 'Extensible',
+  'docs.benefit_extensible_desc': 'Modular architecture allows adding new attack classes and retraining models easily.',
+  'docs.benefit_openSource': 'Open Technologies',
+  'docs.benefit_openSource_desc': 'Built entirely with open-source tools — no licensing costs for deployment.',
+  'docs.benefit_modern': 'Modern Stack',
+  'docs.benefit_modern_desc': 'React 19, FastAPI, LightGBM — industry-standard tools used by security companies.',
 
   'docs.pipeline_title': 'Detection Pipeline',
   'docs.step1_title': 'Data Ingestion',
@@ -224,6 +290,26 @@ const en = {
   'report.col_port': 'Port',
   'report.col_severity': 'Severity',
   'report.col_confidence': 'Confidence',
+
+  // Machine identity
+  'machine.role': 'Role',
+  'machine.ip': 'IP Address',
+  'machine.os': 'OS',
+
+  'machine.ids_role': 'IDS Sensor',
+  'machine.ids_label': 'Intrusion Detection System',
+  'machine.ids_ip': '192.168.1.1',
+  'machine.ids_os': 'Linux (Defender)',
+
+  'machine.workstation_role': 'Workstation',
+  'machine.workstation_label': 'End User Machine',
+  'machine.workstation_ip': '192.168.1.10',
+  'machine.workstation_os': 'Ubuntu 22.04',
+
+  'machine.attacker_role': 'Attacker',
+  'machine.attacker_label': 'Penetration Tester',
+  'machine.attacker_ip': '10.0.0.50',
+  'machine.attacker_os': 'Kali Linux',
 } as const
 
 export default en

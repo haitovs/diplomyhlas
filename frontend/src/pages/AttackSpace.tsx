@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { Zap, X, Terminal } from 'lucide-react'
+import { Zap, X, Terminal, Skull } from 'lucide-react'
 import {
   getState, setAttack, setAllAttacks, stopAll, sendBurst,
   type DemoState,
@@ -280,6 +280,33 @@ export default function AttackSpace() {
         `,
       }}
     >
+      {/* Machine Identity Banner */}
+      <div className="rounded-xl p-4 flex items-center gap-4 border-2 bg-gradient-to-r from-red-500/10 to-transparent border-red-500/40"
+        style={{ background: 'linear-gradient(90deg, rgba(255,0,0,0.08) 0%, rgba(0,0,0,0.4) 100%)' }}>
+        <div className="w-14 h-14 rounded-xl flex items-center justify-center bg-red-500/15 border border-red-500/30">
+          <Skull className="w-7 h-7 text-red-500" />
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="text-lg font-bold text-red-400 font-['Share_Tech_Mono',monospace] tracking-wider"
+              style={{ textShadow: '0 0 12px rgba(255,0,0,0.4)' }}>
+              {t('machine.attacker_role')}
+            </span>
+            <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-red-500/20 text-red-400 border border-red-500/30">
+              {t('machine.attacker_label')}
+            </span>
+          </div>
+          <div className="flex items-center gap-4 mt-1 text-sm font-mono text-slate-400">
+            <span>{t('machine.ip')}: <span className="text-red-400">{t('machine.attacker_ip')}</span></span>
+            <span>{t('machine.os')}: <span className="text-slate-300">{t('machine.attacker_os')}</span></span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 text-sm">
+          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_6px_rgba(255,0,0,0.8)]"></span>
+          <span className="text-red-400 font-['JetBrains_Mono',monospace] font-semibold tracking-wider">ATTACK READY</span>
+        </div>
+      </div>
+
       {/* Header with dramatic scanlines */}
       <div className="relative text-center py-7 px-8 border border-red-500/15 rounded-sm overflow-hidden"
         style={{

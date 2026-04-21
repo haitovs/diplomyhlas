@@ -1,8 +1,14 @@
 import { useState } from 'react'
-import { Database, Brain, FileBarChart, ArrowRight, Shield, Globe, Cpu, Layers } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import {
+  Database, Brain, FileBarChart, ArrowRight, Shield, Globe, Cpu, Layers,
+  Monitor as MonitorIcon, Skull, Eye, Network, Zap, BookOpen, Target,
+  Server, Code2, Boxes, GraduationCap, Sparkles, Gauge, Lock,
+  AlertTriangle, CheckCircle2, KeyRound, FileCode2, Package,
+} from 'lucide-react'
 import { useT, useSettings } from '../i18n'
 
-type Tab = 'pipeline' | 'dataset' | 'attacks' | 'architecture'
+type Tab = 'overview' | 'topology' | 'pipeline' | 'dataset' | 'attacks' | 'tech' | 'benefits' | 'architecture'
 
 const ATTACK_TYPES = [
   { name: 'BENIGN', severity: 'safe', desc: 'Normal network traffic with no malicious intent' },
@@ -33,13 +39,17 @@ export default function HowItWorks() {
   const t = useT()
   const { theme } = useSettings()
   const isDark = theme === 'dark'
-  const [tab, setTab] = useState<Tab>('pipeline')
+  const [tab, setTab] = useState<Tab>('overview')
 
-  const tabs: { id: Tab; label: string }[] = [
-    { id: 'pipeline', label: t('docs.tab_pipeline') },
-    { id: 'dataset', label: t('docs.tab_dataset') },
-    { id: 'attacks', label: t('docs.tab_attacks') },
-    { id: 'architecture', label: t('docs.tab_architecture') },
+  const tabs: { id: Tab; label: string; icon: typeof BookOpen }[] = [
+    { id: 'overview', label: t('docs.tab_overview'), icon: BookOpen },
+    { id: 'topology', label: t('docs.tab_topology'), icon: Network },
+    { id: 'pipeline', label: t('docs.tab_pipeline'), icon: Brain },
+    { id: 'dataset', label: t('docs.tab_dataset'), icon: Database },
+    { id: 'attacks', label: t('docs.tab_attacks'), icon: Skull },
+    { id: 'tech', label: t('docs.tab_tech'), icon: Boxes },
+    { id: 'benefits', label: t('docs.tab_benefits'), icon: Sparkles },
+    { id: 'architecture', label: t('docs.tab_architecture'), icon: Layers },
   ]
 
   const severityColor = (sev: string) => {
@@ -52,26 +62,40 @@ export default function HowItWorks() {
     }
   }
 
+  const cardClass = isDark
+    ? 'bg-[#0a0f1a] border-amber-500/20'
+    : 'bg-white border-amber-200/60 shadow-sm'
+
+  const hoverCardClass = isDark
+    ? 'bg-[#0a0f1a] border-amber-500/20 hover:border-amber-500/40'
+    : 'bg-white border-amber-200/60 hover:border-amber-300 shadow-sm'
+
   return (
-    <div className={`flex-1 overflow-auto transition-colors duration-300 ${isDark ? 'bg-[#060b14]' : 'bg-[#f5f6f8]'}`}>
-      <div className="max-w-6xl mx-auto px-6 py-8">
+    <div className="space-y-6">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className={`text-2xl font-bold tracking-tight ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>
-            {t('docs.title')}
-          </h1>
-          <p className={`text-sm mt-1 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
-            {t('docs.subtitle')}
-          </p>
+        <div className="mb-8 flex items-center gap-3">
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+            isDark ? 'bg-amber-500/15 text-amber-400' : 'bg-amber-100 text-amber-600'
+          }`}>
+            <BookOpen className="w-6 h-6" />
+          </div>
+          <div>
+            <h1 className={`text-2xl font-bold tracking-tight ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>
+              {t('docs.title')}
+            </h1>
+            <p className={`text-sm mt-0.5 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
+              {t('docs.subtitle')}
+            </p>
+          </div>
         </div>
 
         {/* Tab navigation */}
-        <div className={`flex gap-1 p-1 rounded-xl mb-8 ${isDark ? 'bg-white/[0.03] border border-white/[0.06]' : 'bg-slate-100 border border-slate-200'}`}>
-          {tabs.map(({ id, label }) => (
+        <div className={`flex flex-wrap gap-1 p-1 rounded-xl mb-8 ${isDark ? 'bg-white/[0.03] border border-white/[0.06]' : 'bg-slate-100 border border-slate-200'}`}>
+          {tabs.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               onClick={() => setTab(id)}
-              className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+              className={`flex-1 min-w-[110px] flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium transition-all duration-200 ${
                 tab === id
                   ? isDark
                     ? 'bg-amber-500/15 text-amber-400 shadow-[inset_0_0_0_1px_rgba(245,158,11,0.2)]'
@@ -81,10 +105,236 @@ export default function HowItWorks() {
                     : 'text-slate-500 hover:text-slate-700'
               }`}
             >
+              <Icon className="w-3.5 h-3.5" />
               {label}
             </button>
           ))}
         </div>
+
+        {/* Overview tab */}
+        {tab === 'overview' && (
+          <div className="space-y-8">
+            <div>
+              <h2 className={`text-lg font-semibold mb-3 ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+                {t('docs.overview_title')}
+              </h2>
+              <p className={`text-sm leading-relaxed max-w-4xl ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                {t('docs.overview_intro')}
+              </p>
+            </div>
+
+            {/* Problem + Solution */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className={`rounded-xl border p-6 ${cardClass}`}>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${isDark ? 'bg-red-500/15 text-red-400' : 'bg-red-50 text-red-600'}`}>
+                    <AlertTriangle className="w-5 h-5" />
+                  </div>
+                  <h3 className={`text-base font-semibold ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+                    {t('docs.overview_problem')}
+                  </h3>
+                </div>
+                <p className={`text-sm leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  {t('docs.overview_problem_desc')}
+                </p>
+              </div>
+
+              <div className={`rounded-xl border p-6 ${cardClass}`}>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${isDark ? 'bg-emerald-500/15 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>
+                    <CheckCircle2 className="w-5 h-5" />
+                  </div>
+                  <h3 className={`text-base font-semibold ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+                    {t('docs.overview_solution')}
+                  </h3>
+                </div>
+                <p className={`text-sm leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  {t('docs.overview_solution_desc')}
+                </p>
+              </div>
+            </div>
+
+            {/* Key stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { val: '99.7%', label: 'Detection Accuracy', icon: Target },
+                { val: '2.8M', label: 'Training Flows', icon: Database },
+                { val: '15+', label: 'Attack Types', icon: Skull },
+                { val: '<15ms', label: 'Latency', icon: Zap },
+              ].map(({ val, label, icon: Icon }) => (
+                <div key={label} className={`rounded-xl border p-5 text-center ${cardClass}`}>
+                  <Icon className={`w-5 h-5 mx-auto mb-2 ${isDark ? 'text-amber-500/60' : 'text-amber-500'}`} />
+                  <div className={`text-2xl font-bold font-mono ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
+                    {val}
+                  </div>
+                  <div className={`text-[11px] mt-1 font-medium uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
+                    {label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Topology tab */}
+        {tab === 'topology' && (
+          <div className="space-y-8">
+            <div>
+              <h2 className={`text-lg font-semibold mb-3 ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+                {t('docs.topology_title')}
+              </h2>
+              <p className={`text-sm leading-relaxed max-w-4xl ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                {t('docs.topology_desc')}
+              </p>
+            </div>
+
+            {/* Network diagram */}
+            <div className={`rounded-xl border p-8 ${cardClass}`}>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center relative">
+                {/* Workstation */}
+                <div className={`relative rounded-xl border-2 p-6 text-center ${
+                  isDark ? 'border-blue-500/40 bg-blue-500/5' : 'border-blue-300 bg-blue-50/50'
+                }`}>
+                  <div className={`inline-flex w-14 h-14 rounded-xl items-center justify-center mb-3 ${
+                    isDark ? 'bg-blue-500/15 text-blue-400' : 'bg-blue-100 text-blue-600'
+                  }`}>
+                    <MonitorIcon className="w-7 h-7" />
+                  </div>
+                  <div className={`text-sm font-bold uppercase tracking-wider mb-1 ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>
+                    WORKSTATION
+                  </div>
+                  <div className={`text-xs font-mono mb-2 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
+                    192.168.1.10
+                  </div>
+                  <div className={`text-[10px] uppercase tracking-widest font-semibold px-2 py-0.5 inline-block rounded-full ${
+                    isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-100 text-blue-700'
+                  }`}>
+                    Normal User
+                  </div>
+                  <div className={`mt-3 text-[10px] ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>
+                    HTTPS · DNS · API
+                  </div>
+                </div>
+
+                {/* IDS Sensor (center) */}
+                <div className={`relative rounded-xl border-2 p-6 text-center ${
+                  isDark ? 'border-amber-500/50 bg-amber-500/5 shadow-[0_0_40px_rgba(245,158,11,0.15)]' : 'border-amber-300 bg-amber-50/70 shadow-[0_0_40px_rgba(245,158,11,0.15)]'
+                }`}>
+                  <div className="absolute -top-2 left-1/2 -translate-x-1/2">
+                    <div className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-widest ${
+                      isDark ? 'bg-amber-500 text-black' : 'bg-amber-500 text-white'
+                    }`}>
+                      Monitoring
+                    </div>
+                  </div>
+                  <div className={`inline-flex w-14 h-14 rounded-xl items-center justify-center mb-3 relative ${
+                    isDark ? 'bg-amber-500/15 text-amber-400' : 'bg-amber-100 text-amber-600'
+                  }`}>
+                    <Shield className="w-7 h-7" />
+                    <div className="absolute -right-1 -bottom-1">
+                      <Eye className={`w-4 h-4 ${isDark ? 'text-amber-300' : 'text-amber-600'}`} />
+                    </div>
+                  </div>
+                  <div className={`text-sm font-bold uppercase tracking-wider mb-1 ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
+                    IDS SENSOR
+                  </div>
+                  <div className={`text-xs font-mono mb-2 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
+                    192.168.1.1
+                  </div>
+                  <div className={`text-[10px] uppercase tracking-widest font-semibold px-2 py-0.5 inline-block rounded-full ${
+                    isDark ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-100 text-amber-700'
+                  }`}>
+                    Defender
+                  </div>
+                  <div className={`mt-3 text-[10px] ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>
+                    LightGBM · Alerts · Block
+                  </div>
+                </div>
+
+                {/* Attacker */}
+                <div className={`relative rounded-xl border-2 p-6 text-center ${
+                  isDark ? 'border-red-500/40 bg-red-500/5' : 'border-red-300 bg-red-50/50'
+                }`}>
+                  <div className={`inline-flex w-14 h-14 rounded-xl items-center justify-center mb-3 ${
+                    isDark ? 'bg-red-500/15 text-red-400' : 'bg-red-100 text-red-600'
+                  }`}>
+                    <Skull className="w-7 h-7" />
+                  </div>
+                  <div className={`text-sm font-bold uppercase tracking-wider mb-1 ${isDark ? 'text-red-400' : 'text-red-600'}`}>
+                    ATTACKER
+                  </div>
+                  <div className={`text-xs font-mono mb-2 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
+                    10.0.0.50
+                  </div>
+                  <div className={`text-[10px] uppercase tracking-widest font-semibold px-2 py-0.5 inline-block rounded-full ${
+                    isDark ? 'bg-red-500/10 text-red-400' : 'bg-red-100 text-red-700'
+                  }`}>
+                    Threat Actor
+                  </div>
+                  <div className={`mt-3 text-[10px] ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>
+                    Kali Linux · nmap · hydra
+                  </div>
+                </div>
+              </div>
+
+              {/* Traffic arrows */}
+              <div className="mt-8 pt-6 border-t border-dashed grid grid-cols-1 md:grid-cols-2 gap-4 text-xs"
+                style={{ borderColor: isDark ? 'rgba(245,158,11,0.15)' : 'rgba(245,158,11,0.3)' }}>
+                <div className={`flex items-center gap-2 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                  <div className="flex items-center gap-1">
+                    <div className={`w-3 h-3 rounded-full ${isDark ? 'bg-blue-400' : 'bg-blue-500'}`} />
+                    <ArrowRight className="w-3 h-3" />
+                    <div className={`w-3 h-3 rounded-full ${isDark ? 'bg-amber-400' : 'bg-amber-500'}`} />
+                  </div>
+                  <span>Workstation → IDS (legitimate traffic)</span>
+                </div>
+                <div className={`flex items-center gap-2 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                  <div className="flex items-center gap-1">
+                    <div className={`w-3 h-3 rounded-full ${isDark ? 'bg-red-400' : 'bg-red-500'}`} />
+                    <ArrowRight className="w-3 h-3" />
+                    <div className={`w-3 h-3 rounded-full ${isDark ? 'bg-amber-400' : 'bg-amber-500'}`} />
+                  </div>
+                  <span>Attacker → IDS (malicious traffic)</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Role cards with links */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[
+                { to: '/workspace', icon: MonitorIcon, title: t('docs.topology_workstation'), role: t('docs.topology_workstation_role'), desc: t('docs.topology_workstation_desc'), color: 'blue' as const },
+                { to: '/attack', icon: Skull, title: t('docs.topology_attacker'), role: t('docs.topology_attacker_role'), desc: t('docs.topology_attacker_desc'), color: 'red' as const },
+                { to: '/monitoring', icon: Shield, title: t('docs.topology_ids'), role: t('docs.topology_ids_role'), desc: t('docs.topology_ids_desc'), color: 'amber' as const },
+              ].map(({ to, icon: Icon, title, role, desc, color }) => {
+                const colorMap = {
+                  blue: isDark ? 'text-blue-400 bg-blue-500/15' : 'text-blue-600 bg-blue-50',
+                  red: isDark ? 'text-red-400 bg-red-500/15' : 'text-red-600 bg-red-50',
+                  amber: isDark ? 'text-amber-400 bg-amber-500/15' : 'text-amber-600 bg-amber-50',
+                }
+                return (
+                  <Link key={to} to={to} className={`rounded-xl border p-5 transition-colors block ${hoverCardClass}`}>
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${colorMap[color]}`}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <div className={`text-xs uppercase tracking-wider font-semibold mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                      {role}
+                    </div>
+                    <h3 className={`text-base font-semibold mb-2 ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+                      {title}
+                    </h3>
+                    <p className={`text-xs leading-relaxed mb-3 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                      {desc}
+                    </p>
+                    <div className={`flex items-center gap-1 text-xs font-mono font-semibold ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
+                      <span>Open {to}</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Pipeline tab */}
         {tab === 'pipeline' && (
@@ -95,16 +345,12 @@ export default function HowItWorks() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
-                { step: 1, icon: Database, title: t('docs.step1_title'), desc: t('docs.step1_desc'), color: 'cyan' },
-                { step: 2, icon: Brain, title: t('docs.step2_title'), desc: t('docs.step2_desc'), color: 'amber' },
-                { step: 3, icon: FileBarChart, title: t('docs.step3_title'), desc: t('docs.step3_desc'), color: 'emerald' },
+                { step: 1, icon: Database, title: t('docs.step1_title'), desc: t('docs.step1_desc') },
+                { step: 2, icon: Brain, title: t('docs.step2_title'), desc: t('docs.step2_desc') },
+                { step: 3, icon: FileBarChart, title: t('docs.step3_title'), desc: t('docs.step3_desc') },
               ].map(({ step, icon: Icon, title, desc }, idx) => (
                 <div key={step} className="relative">
-                  <div className={`rounded-xl border p-6 h-full transition-colors ${
-                    isDark
-                      ? 'bg-[#0a0f1a] border-amber-500/20 hover:border-amber-500/40'
-                      : 'bg-white border-amber-200/60 hover:border-amber-300 shadow-sm'
-                  }`}>
+                  <div className={`rounded-xl border p-6 h-full transition-colors ${hoverCardClass}`}>
                     <div className="flex items-center gap-3 mb-4">
                       <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold ${
                         isDark ? 'bg-amber-500/15 text-amber-400' : 'bg-amber-50 text-amber-600'
@@ -136,11 +382,7 @@ export default function HowItWorks() {
               </h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {MODEL_METRICS.map(({ key, value }) => (
-                  <div key={key} className={`rounded-xl border p-5 text-center transition-colors ${
-                    isDark
-                      ? 'bg-[#0a0f1a] border-amber-500/20'
-                      : 'bg-white border-amber-200/60 shadow-sm'
-                  }`}>
+                  <div key={key} className={`rounded-xl border p-5 text-center transition-colors ${cardClass}`}>
                     <div className={`text-2xl font-bold font-mono ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
                       {value}
                     </div>
@@ -165,7 +407,6 @@ export default function HowItWorks() {
               {t('docs.dataset_desc')}
             </p>
 
-            {/* Stat cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
                 { label: t('docs.dataset_flows'), icon: Layers },
@@ -173,11 +414,7 @@ export default function HowItWorks() {
                 { label: t('docs.dataset_days'), icon: Globe },
                 { label: t('docs.dataset_classes'), icon: Shield },
               ].map(({ label, icon: Icon }) => (
-                <div key={label} className={`rounded-xl border p-5 text-center transition-colors ${
-                  isDark
-                    ? 'bg-[#0a0f1a] border-amber-500/20'
-                    : 'bg-white border-amber-200/60 shadow-sm'
-                }`}>
+                <div key={label} className={`rounded-xl border p-5 text-center transition-colors ${cardClass}`}>
                   <Icon className={`w-6 h-6 mx-auto mb-2 ${isDark ? 'text-amber-500/60' : 'text-amber-500'}`} />
                   <div className={`text-sm font-semibold ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
                     {label}
@@ -186,10 +423,7 @@ export default function HowItWorks() {
               ))}
             </div>
 
-            {/* Dataset attack types table */}
-            <div className={`rounded-xl border overflow-hidden ${
-              isDark ? 'bg-[#0a0f1a] border-amber-500/20' : 'bg-white border-amber-200/60 shadow-sm'
-            }`}>
+            <div className={`rounded-xl border overflow-hidden ${cardClass}`}>
               <div className={`px-5 py-3 border-b ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`}>
                 <h3 className={`text-sm font-semibold ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
                   {t('docs.attacks_title')}
@@ -237,33 +471,260 @@ export default function HowItWorks() {
           </div>
         )}
 
-        {/* Attacks tab */}
+        {/* Attacks tab (detailed) */}
         {tab === 'attacks' && (
           <div className="space-y-6">
             <h2 className={`text-lg font-semibold ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
               {t('docs.attacks_title')}
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {ATTACK_TYPES.map(({ name, severity, desc }) => (
-                <div key={name} className={`rounded-xl border p-5 transition-colors ${
-                  isDark
-                    ? 'bg-[#0a0f1a] border-amber-500/20 hover:border-amber-500/40'
-                    : 'bg-white border-amber-200/60 hover:border-amber-300 shadow-sm'
-                }`}>
-                  <div className="flex items-start justify-between mb-3">
-                    <h3 className={`text-sm font-semibold font-mono ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
-                      {name}
-                    </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {[
+                {
+                  title: t('docs.attack_ddos'),
+                  severity: 'critical',
+                  icon: Zap,
+                  how: t('docs.attack_ddos_how_desc'),
+                  detect: t('docs.attack_ddos_detect_desc'),
+                  ports: ['Any TCP'],
+                  tools: ['hping3', 'LOIC', 'Scapy'],
+                },
+                {
+                  title: t('docs.attack_portscan'),
+                  severity: 'medium',
+                  icon: Target,
+                  how: t('docs.attack_portscan_how_desc'),
+                  detect: t('docs.attack_portscan_detect_desc'),
+                  ports: ['1-1024', '1-65535'],
+                  tools: ['nmap', 'masscan', 'unicornscan'],
+                },
+                {
+                  title: t('docs.attack_ssh'),
+                  severity: 'high',
+                  icon: KeyRound,
+                  how: t('docs.attack_ssh_how_desc'),
+                  detect: t('docs.attack_ssh_detect_desc'),
+                  ports: ['22 (SSH)'],
+                  tools: ['hydra', 'patator', 'medusa'],
+                },
+                {
+                  title: t('docs.attack_ftp'),
+                  severity: 'high',
+                  icon: Lock,
+                  how: t('docs.attack_ftp_how_desc'),
+                  detect: t('docs.attack_ftp_detect_desc'),
+                  ports: ['21 (FTP)'],
+                  tools: ['hydra', 'patator', 'ncrack'],
+                },
+              ].map(({ title, severity, icon: Icon, how, detect, ports, tools }) => (
+                <div key={title} className={`rounded-xl border p-6 ${hoverCardClass}`}>
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                        isDark ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600'
+                      }`}>
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <h3 className={`text-base font-semibold ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+                        {title}
+                      </h3>
+                    </div>
                     <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase border ${severityColor(severity)}`}>
                       {severity}
                     </span>
                   </div>
-                  <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                    {desc}
-                  </p>
+
+                  <div className="space-y-3">
+                    <div>
+                      <div className={`text-[11px] uppercase tracking-wider font-semibold mb-1 ${isDark ? 'text-red-400/80' : 'text-red-600/80'}`}>
+                        {t('docs.attack_ddos_how')}
+                      </div>
+                      <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                        {how}
+                      </p>
+                    </div>
+
+                    <div>
+                      <div className={`text-[11px] uppercase tracking-wider font-semibold mb-1 ${isDark ? 'text-emerald-400/80' : 'text-emerald-600/80'}`}>
+                        {t('docs.attack_ddos_detect')}
+                      </div>
+                      <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                        {detect}
+                      </p>
+                    </div>
+
+                    <div className={`pt-3 border-t grid grid-cols-2 gap-3 ${isDark ? 'border-white/[0.05]' : 'border-slate-100'}`}>
+                      <div>
+                        <div className={`text-[10px] uppercase tracking-wider font-semibold mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                          Ports
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {ports.map(p => (
+                            <span key={p} className={`inline-block px-2 py-0.5 text-[10px] font-mono rounded border ${
+                              isDark ? 'bg-white/[0.03] text-slate-300 border-white/[0.06]' : 'bg-slate-50 text-slate-700 border-slate-200'
+                            }`}>
+                              {p}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <div className={`text-[10px] uppercase tracking-wider font-semibold mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                          Tools
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {tools.map(tl => (
+                            <span key={tl} className={`inline-block px-2 py-0.5 text-[10px] font-mono rounded border ${
+                              isDark ? 'bg-amber-500/5 text-amber-400 border-amber-500/20' : 'bg-amber-50 text-amber-700 border-amber-200'
+                            }`}>
+                              {tl}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Technologies tab */}
+        {tab === 'tech' && (
+          <div className="space-y-8">
+            <h2 className={`text-lg font-semibold ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+              {t('docs.tech_title')}
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+              {[
+                {
+                  title: t('docs.tech_frontend'),
+                  icon: Code2,
+                  color: 'blue' as const,
+                  items: [
+                    { name: 'React 19', desc: 'UI library' },
+                    { name: 'TypeScript', desc: 'Type-safe JS' },
+                    { name: 'Vite', desc: 'Build tool' },
+                    { name: 'Tailwind CSS', desc: 'Styling' },
+                    { name: 'Recharts', desc: 'Visualization' },
+                    { name: 'Lucide Icons', desc: 'Icon set' },
+                  ],
+                },
+                {
+                  title: t('docs.tech_backend'),
+                  icon: Server,
+                  color: 'emerald' as const,
+                  items: [
+                    { name: 'FastAPI', desc: 'Web framework' },
+                    { name: 'Python 3.11', desc: 'Runtime' },
+                    { name: 'Uvicorn', desc: 'ASGI server' },
+                    { name: 'WebSockets', desc: 'Real-time' },
+                    { name: 'psutil', desc: 'Sys metrics' },
+                    { name: 'pandas', desc: 'Data ops' },
+                  ],
+                },
+                {
+                  title: t('docs.tech_ml'),
+                  icon: Brain,
+                  color: 'amber' as const,
+                  items: [
+                    { name: 'LightGBM', desc: 'Classifier' },
+                    { name: 'scikit-learn', desc: 'ML utils' },
+                    { name: 'joblib', desc: 'Model I/O' },
+                    { name: 'NumPy', desc: 'Numerics' },
+                    { name: 'PyTorch', desc: 'Autoencoder' },
+                    { name: 'CICIDS2017', desc: 'Dataset' },
+                  ],
+                },
+                {
+                  title: t('docs.tech_deploy'),
+                  icon: Package,
+                  color: 'purple' as const,
+                  items: [
+                    { name: 'Docker', desc: 'Containers' },
+                    { name: 'Compose', desc: 'Orchestration' },
+                    { name: 'Caddy', desc: 'Reverse proxy' },
+                    { name: 'Auto HTTPS', desc: 'TLS certs' },
+                    { name: 'Ubuntu', desc: 'Host OS' },
+                    { name: 'Linux', desc: 'Foundation' },
+                  ],
+                },
+              ].map(({ title, icon: Icon, color, items }) => {
+                const colorMap = {
+                  blue: isDark ? 'text-blue-400 bg-blue-500/15' : 'text-blue-600 bg-blue-50',
+                  emerald: isDark ? 'text-emerald-400 bg-emerald-500/15' : 'text-emerald-600 bg-emerald-50',
+                  amber: isDark ? 'text-amber-400 bg-amber-500/15' : 'text-amber-600 bg-amber-50',
+                  purple: isDark ? 'text-purple-400 bg-purple-500/15' : 'text-purple-600 bg-purple-50',
+                }
+                return (
+                  <div key={title} className={`rounded-xl border p-5 ${cardClass}`}>
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${colorMap[color]}`}>
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <h3 className={`text-base font-semibold ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+                        {title}
+                      </h3>
+                    </div>
+                    <div className="space-y-2">
+                      {items.map(({ name, desc }) => (
+                        <div key={name} className={`rounded-lg p-2 ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50/60'}`}>
+                          <div className={`text-xs font-mono font-semibold ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+                            {name}
+                          </div>
+                          <div className={`text-[10px] ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
+                            {desc}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Benefits tab */}
+        {tab === 'benefits' && (
+          <div className="space-y-8">
+            <h2 className={`text-lg font-semibold ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+              {t('docs.benefits_title')}
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {[
+                { title: t('docs.benefit_accuracy'), desc: t('docs.benefit_accuracy_desc'), icon: Target, color: 'emerald' as const },
+                { title: t('docs.benefit_realtime'), desc: t('docs.benefit_realtime_desc'), icon: Zap, color: 'amber' as const },
+                { title: t('docs.benefit_educational'), desc: t('docs.benefit_educational_desc'), icon: GraduationCap, color: 'blue' as const },
+                { title: t('docs.benefit_extensible'), desc: t('docs.benefit_extensible_desc'), icon: Boxes, color: 'purple' as const },
+                { title: t('docs.benefit_openSource'), desc: t('docs.benefit_openSource_desc'), icon: Gauge, color: 'cyan' as const },
+                { title: t('docs.benefit_modern'), desc: t('docs.benefit_modern_desc'), icon: Sparkles, color: 'rose' as const },
+              ].map(({ title, desc, icon: Icon, color }) => {
+                const colorMap = {
+                  emerald: isDark ? 'text-emerald-400 bg-emerald-500/15' : 'text-emerald-600 bg-emerald-50',
+                  amber: isDark ? 'text-amber-400 bg-amber-500/15' : 'text-amber-600 bg-amber-50',
+                  blue: isDark ? 'text-blue-400 bg-blue-500/15' : 'text-blue-600 bg-blue-50',
+                  purple: isDark ? 'text-purple-400 bg-purple-500/15' : 'text-purple-600 bg-purple-50',
+                  cyan: isDark ? 'text-cyan-400 bg-cyan-500/15' : 'text-cyan-600 bg-cyan-50',
+                  rose: isDark ? 'text-rose-400 bg-rose-500/15' : 'text-rose-600 bg-rose-50',
+                }
+                return (
+                  <div key={title} className={`rounded-xl border p-5 ${hoverCardClass}`}>
+                    <div className={`w-11 h-11 rounded-lg flex items-center justify-center mb-3 ${colorMap[color]}`}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <h3 className={`text-sm font-semibold mb-1.5 ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+                      {title}
+                    </h3>
+                    <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                      {desc}
+                    </p>
+                  </div>
+                )
+              })}
             </div>
           </div>
         )}
@@ -275,11 +736,7 @@ export default function HowItWorks() {
               {t('docs.arch_title')}
             </h2>
 
-            <div className={`rounded-xl border p-8 font-mono text-xs leading-relaxed overflow-x-auto ${
-              isDark
-                ? 'bg-[#0a0f1a] border-amber-500/20'
-                : 'bg-white border-amber-200/60 shadow-sm'
-            }`}>
+            <div className={`rounded-xl border p-8 font-mono text-xs leading-relaxed overflow-x-auto ${cardClass}`}>
               <pre className={`${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
 {`
   ┌─────────────────────────────────────────────────────────────────────┐
@@ -335,14 +792,32 @@ export default function HowItWorks() {
   │  ML Framework       │  LightGBM + scikit-learn                    │
   │  Dataset            │  CICIDS2017 (2.8M flows, 80+ features)      │
   │  Communication      │  REST API + WebSocket (real-time)           │
-  │  Deployment         │  Docker + Docker Compose                    │
+  │  Deployment         │  Docker + Docker Compose + Caddy            │
   └─────────────────────┴───────────────────────────────────────────────┘
 `}
               </pre>
             </div>
+
+            {/* Tech stack summary cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[
+                { label: 'Frontend Layer', value: 'React + TS + Tailwind', icon: FileCode2 },
+                { label: 'Backend Layer', value: 'FastAPI + WebSocket', icon: Server },
+                { label: 'ML Layer', value: 'LightGBM + sklearn', icon: Brain },
+              ].map(({ label, value, icon: Icon }) => (
+                <div key={label} className={`rounded-xl border p-5 ${cardClass}`}>
+                  <Icon className={`w-5 h-5 mb-2 ${isDark ? 'text-amber-500/60' : 'text-amber-500'}`} />
+                  <div className={`text-[10px] uppercase tracking-wider font-semibold mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                    {label}
+                  </div>
+                  <div className={`text-sm font-mono ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+                    {value}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
-      </div>
     </div>
   )
 }

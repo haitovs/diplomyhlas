@@ -13,29 +13,40 @@
 body {
   margin: 0;
   font-family: 'Inter', system-ui, sans-serif;
-  font-size: 16px;
-  line-height: 1.6;
+  font-size: 17px;
+  line-height: 1.65;
 }
 
 /* Scale up all dashboard content */
 #root {
-  font-size: 16px;
+  font-size: 17px;
 }
 
 /* Bigger headings */
-h1 { font-size: 1.75rem; }
-h2 { font-size: 1.4rem; }
-h3 { font-size: 1.15rem; }
+h1 { font-size: 2rem; line-height: 1.3; }
+h2 { font-size: 1.55rem; line-height: 1.35; }
+h3 { font-size: 1.25rem; line-height: 1.4; }
 
 /* Bigger table text */
-table { font-size: 0.9rem; }
-th, td { padding: 0.6rem 1rem; }
+table { font-size: 0.95rem; }
+th, td { padding: 0.75rem 1.15rem; }
 
 /* Bigger buttons */
-button { font-size: 0.9rem; }
+button { font-size: 0.95rem; }
 
 /* Bigger metric values */
 .font-mono { letter-spacing: 0.01em; }
+
+/* Light theme container shadows — make borders visible */
+[data-theme="light"] .shadow-card,
+[data-theme="light"] [class*="border-slate-200"],
+[data-theme="light"] [class*="bg-white"]:not(button):not([class*="bg-red"]):not([class*="bg-amber-500"]) {
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.05);
+}
+
+[data-theme="light"] .shadow-card:hover {
+  box-shadow: 0 4px 10px -2px rgba(15, 23, 42, 0.1), 0 2px 4px -2px rgba(15, 23, 42, 0.06);
+}
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; }

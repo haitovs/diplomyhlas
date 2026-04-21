@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import {
   Play, Square, Cpu, HardDrive, Terminal, ChevronDown,
-  Globe, Clock, Gauge, Server, Activity, ArrowDown, ArrowUp, Zap, Radio,
+  Globe, Clock, Gauge, Server, Activity, ArrowDown, ArrowUp, Zap, Radio, Monitor,
 } from 'lucide-react'
 import { getState, setBenign, getSystemMetrics, type DemoState, type SystemMetrics } from '../services/api'
 import { useT, useSettings } from '../i18n'
@@ -171,6 +171,39 @@ export default function Workspace() {
 
   return (
     <div className="space-y-4">
+      {/* ============ Machine Identity Banner ============ */}
+      <div className={`rounded-xl p-4 flex items-center gap-4 border-2 ${
+        isDark
+          ? 'bg-gradient-to-r from-blue-500/5 to-transparent border-blue-500/30'
+          : 'bg-gradient-to-r from-blue-50 to-white border-blue-300'
+      }`}>
+        <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${
+          isDark ? 'bg-blue-500/15' : 'bg-blue-100'
+        }`}>
+          <Monitor className="w-7 h-7 text-blue-500" />
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className={`text-lg font-bold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
+              {t('machine.workstation_role')}
+            </span>
+            <span className={`text-xs px-2 py-0.5 rounded-full font-semibold bg-blue-500/20 text-blue-600 border border-blue-500/30`}>
+              {t('machine.workstation_label')}
+            </span>
+          </div>
+          <div className={`flex items-center gap-4 mt-1 text-sm font-mono ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+            <span>{t('machine.ip')}: <span className={isDark ? 'text-blue-400' : 'text-blue-600'}>{t('machine.workstation_ip')}</span></span>
+            <span>{t('machine.os')}: <span className={isDark ? 'text-slate-300' : 'text-slate-700'}>{t('machine.workstation_os')}</span></span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 text-sm">
+          <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-blue-500 animate-pulse' : 'bg-slate-500'}`}></span>
+          <span className={isActive ? (isDark ? 'text-blue-400' : 'text-blue-600') : (isDark ? 'text-slate-500' : 'text-slate-500')}>
+            {isActive ? 'GENERATING TRAFFIC' : 'IDLE'}
+          </span>
+        </div>
+      </div>
+
       {/* ============ Taskbar ============ */}
       <div
         className={`relative flex items-center justify-between rounded-xl px-5 py-3 border overflow-hidden ${

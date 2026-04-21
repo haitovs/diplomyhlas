@@ -276,6 +276,37 @@ export default function Monitoring() {
         </div>
       )}
 
+      {/* ── Machine Identity Banner ───────────────────────────────── */}
+      <div className={`rounded-xl p-4 flex items-center gap-4 border-2 ${
+        isDark
+          ? 'bg-gradient-to-r from-amber-500/5 to-transparent border-amber-500/30'
+          : 'bg-gradient-to-r from-amber-50 to-white border-amber-300'
+      }`}>
+        <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${
+          isDark ? 'bg-amber-500/15' : 'bg-amber-100'
+        }`}>
+          <Shield className="w-7 h-7 text-amber-500" />
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className={`text-lg font-bold ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
+              {t('machine.ids_role')}
+            </span>
+            <span className={`text-xs px-2 py-0.5 rounded-full font-semibold bg-amber-500/20 text-amber-600 border border-amber-500/30`}>
+              {t('machine.ids_label')}
+            </span>
+          </div>
+          <div className={`flex items-center gap-4 mt-1 text-sm font-mono ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+            <span>{t('machine.ip')}: <span className={isDark ? 'text-amber-400' : 'text-amber-600'}>{t('machine.ids_ip')}</span></span>
+            <span>{t('machine.os')}: <span className={isDark ? 'text-slate-300' : 'text-slate-700'}>{t('machine.ids_os')}</span></span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 text-sm">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span className={isDark ? 'text-emerald-400' : 'text-emerald-600'}>MONITORING</span>
+        </div>
+      </div>
+
       {/* ── Page Header with breadcrumb ───────────────────────────── */}
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-1">
