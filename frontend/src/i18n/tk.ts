@@ -69,6 +69,11 @@ const tk = {
   'monitor.low_level': 'PES',
   'monitor.export_csv': 'CSV Eksport',
   'monitor.reconnecting': 'Serwere birigyan...',
+  'monitor.defender': 'Goraycy',
+  'monitor.defender_on': 'Goraycy Isjen',
+  'monitor.defender_off': 'Goraycy Ocuruk',
+  'monitor.defender_desc': 'Zyyanly hasaplanan her IP-i awtomatik blokla',
+  'monitor.auto_blocked': 'Awto-bloklanan',
 
   // Severity
   'severity.critical': 'Kritiki',
@@ -169,6 +174,25 @@ const tk = {
   'docs.tab_tech': 'Tehnologiyalar',
   'docs.tab_benefits': 'Artykmacylyklar',
   'docs.tab_architecture': 'Arhitektura',
+  'docs.tab_defender': 'Goraycy Rejim',
+  'docs.tab_realcases': 'Hakyky Wakalar',
+
+  // Defender Mode tab
+  'docs.defender_title': 'Goraycy Rejim — Awtomatik Howp Bloklamak',
+  'docs.defender_intro': 'Goraycy Rejim - Monitoring sahypasynda ayry acyp-ocurulyan ozbolusli funksiya. Ol IDS-i passiw gozegcilikden isjen gorag ulgamyna owurya. Acylanda, ML model tarapyndan zyyanly hasaplanan islendik IP awtomatik bloklanyar.',
+  'docs.defender_how_title': 'Nadip Isleyar',
+  'docs.defender_how_1': 'Monitoring sahypasynyn yokarsyndaky Goraycy duwmesine basyn — yasyl bolar we "ON" gorkezer.',
+  'docs.defender_how_2': 'Backend awto-bloklamany acar. Confidence >70% bolan anomaliya hokmunde hasaplanan her akym bada-bat bloklanar.',
+  'docs.defender_how_3': 'Bloklanan IP-ler ingestion-da ret edilyar — olaryn sonraky akymlary hic wagt ML modelimize gelmez, CPU-ny tygsytlap.',
+  'docs.defender_how_4': 'Hujum Meydancasy paket ibermegini dowam etdirer, yone IDS olary dym etmezden yok eder. Siz "awto-bloklanan" sanawyn artyanyny gorersiniz, yone logdaky howplar artmaz.',
+  'docs.defender_ids_vs_ips': 'IDS vs IPS',
+  'docs.defender_ids_vs_ips_desc': 'Adaty IDS (Girisi Anyklamak) dine synlayar we duysduryar. Adaty IPS (Girisi Onlemek) bolsa inline bloklayar. Biznin ulgamymyz ikisini hem edip biler — adaty yagdayda passiw gozegcilikde isleyar, Goraycy Rejim acylanda bolsa isjen gorag bilen isleyar.',
+  'docs.defender_note': 'Name ucin acyp-ocurulyar? Hakyky ulanysda yalnys onyn kanuny ulanyjylary bloklap biler. Goraycy Rejim adatca belli hujumlar mahalynda ya-da is sagatlaryndan son acylyar, operator akymlary el bilen barlamak zerurlygynda bolsa ocurulyar.',
+
+  // Real-World Cases
+  'docs.realcases_title': 'Hakyky Durmuşdaky Hujum Wakalary',
+  'docs.realcases_intro': 'Bu ulgam tarapyndan anyklanyan hujum gornusleri nazary dal — olar sonky yyllardaky in ullakan kiber hadysalary gorkezyar. Ine, sho tehnikalaryn uly zyyan yetiren hakyky wakalary:',
+  'docs.realcases_footer': 'Bu sanawdaky her hujumy seyle ML-esasly IDS anyklap bilerdi we goraycylar dennestik etmek ucin gerekli wagty gazanyardylar.',
 
   // Overview tab
   'docs.overview_title': 'Proyekt Umumy Syny',

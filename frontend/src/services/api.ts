@@ -35,6 +35,9 @@ export const blockIp = (ip: string) =>
 export const unblockIp = (ip: string) =>
   post<{ ok: boolean; blocked: string[] }>('/api/monitor/unblock', { ip })
 export const clearHistory = () => post<Ok>('/api/monitor/clear', {})
+export const getDefender = () => json<DefenderState>('/api/monitor/defender')
+export const setDefender = (enabled: boolean) =>
+  post<{ ok: boolean; enabled: boolean }>('/api/monitor/defender', { enabled })
 
 // Inference
 export const getModelInfo = () => json<ModelInfo>('/api/inference/model')
@@ -71,11 +74,19 @@ export interface Stats {
   avg_confidence: number
   blocked_count: number
   blocked_ips: string[]
+  defender_enabled: boolean
+  auto_blocked_count: number
   distribution: Record<string, number>
   unique_src: number
   unique_dst: number
   top_port: string
   avg_throughput: number
+}
+
+export interface DefenderState {
+  enabled: boolean
+  auto_blocked_count: number
+  blocked_count: number
 }
 
 export interface ModelInfo {

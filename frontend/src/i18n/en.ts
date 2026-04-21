@@ -69,6 +69,11 @@ const en = {
   'monitor.low_level': 'LOW',
   'monitor.export_csv': 'Export CSV',
   'monitor.reconnecting': 'Reconnecting to server...',
+  'monitor.defender': 'Defender',
+  'monitor.defender_on': 'Defender Active',
+  'monitor.defender_off': 'Defender Off',
+  'monitor.defender_desc': 'Automatically block any source IP flagged as malicious',
+  'monitor.auto_blocked': 'Auto-blocked',
 
   // Severity
   'severity.critical': 'Critical',
@@ -169,6 +174,25 @@ const en = {
   'docs.tab_tech': 'Technologies',
   'docs.tab_benefits': 'Benefits',
   'docs.tab_architecture': 'Architecture',
+  'docs.tab_defender': 'Defender Mode',
+  'docs.tab_realcases': 'Real-World Cases',
+
+  // Defender Mode tab
+  'docs.defender_title': 'Defender Mode — Automatic Threat Blocking',
+  'docs.defender_intro': 'Defender Mode is a separate, toggleable feature on the Monitoring page that transforms the IDS from passive detection into active defense. When enabled, any source IP whose traffic is classified as malicious by the ML model is automatically added to the block list.',
+  'docs.defender_how_title': 'How It Works',
+  'docs.defender_how_1': 'Toggle the Defender button (top right of Monitoring page) — it switches to green and shows "ON".',
+  'docs.defender_how_2': 'The backend enables auto-blocking. Every incoming flow classified as anomaly with >70% confidence triggers an immediate block.',
+  'docs.defender_how_3': 'Blocked IPs are rejected at ingestion — their subsequent flows never reach the ML model, saving CPU.',
+  'docs.defender_how_4': 'The Attack Space continues sending packets, but the IDS silently drops them. You see "auto-blocked" counter climb while threats in the log stop growing.',
+  'docs.defender_ids_vs_ips': 'IDS vs IPS',
+  'docs.defender_ids_vs_ips_desc': 'Traditional IDS (Intrusion Detection) only observes and alerts. Traditional IPS (Intrusion Prevention) also blocks inline. Our system operates as both — passively monitoring by default, and actively defending when Defender Mode is enabled.',
+  'docs.defender_note': 'Why toggleable? In real deployments, false positives could block legitimate users. Defender Mode is typically turned on during known attacks or after business hours, and turned off when operators need to verify flows manually.',
+
+  // Real-World Cases
+  'docs.realcases_title': 'Real-World Attack Cases',
+  'docs.realcases_intro': 'The attack types detected by this system are not theoretical — they represent some of the most costly cyber incidents in recent history. Here are real events where the same techniques caused massive damage:',
+  'docs.realcases_footer': 'Every attack in this list would have been detected by an ML-powered IDS like this one, giving defenders crucial minutes or hours to respond before the breach escalated.',
 
   // Overview tab
   'docs.overview_title': 'Project Overview',

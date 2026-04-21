@@ -4,7 +4,7 @@ import {
   getState, setAttack, setAllAttacks, stopAll, sendBurst,
   type DemoState,
 } from '../services/api'
-import { useT } from '../i18n'
+import { useT, useSettings } from '../i18n'
 
 type AttackInfoStatic = {
   port: string; tool: string; severity: 'CRITICAL' | 'HIGH'
@@ -99,6 +99,8 @@ const SEVERITY_COLORS: Record<string, { dot: string; text: string; bg: string }>
 
 export default function AttackSpace() {
   const t = useT()
+  const { theme } = useSettings()
+  const isDark = theme === 'dark'
   const [state, setState] = useState<DemoState | null>(null)
   const [targetIp, setTargetIp] = useState('127.0.0.1')
   const [pktCount, setPktCount] = useState('100')
@@ -272,47 +274,58 @@ export default function AttackSpace() {
     <div
       className="space-y-4 min-h-full"
       style={{
-        background: `
+        background: isDark ? `
           repeating-linear-gradient(0deg, rgba(0,255,0,0.008) 0px, rgba(0,255,0,0.008) 1px, transparent 1px, transparent 3px),
           radial-gradient(ellipse at 20% 30%, rgba(255,0,0,0.04) 0%, transparent 60%),
           radial-gradient(ellipse at 80% 70%, rgba(0,255,0,0.025) 0%, transparent 60%),
           #000000
+        ` : `
+          radial-gradient(ellipse at 20% 30%, rgba(239,68,68,0.04) 0%, transparent 60%),
+          radial-gradient(ellipse at 80% 70%, rgba(239,68,68,0.02) 0%, transparent 60%),
+          #ffffff
         `,
       }}
     >
       {/* Machine Identity Banner */}
-      <div className="rounded-xl p-4 flex items-center gap-4 border-2 bg-gradient-to-r from-red-500/10 to-transparent border-red-500/40"
-        style={{ background: 'linear-gradient(90deg, rgba(255,0,0,0.08) 0%, rgba(0,0,0,0.4) 100%)' }}>
-        <div className="w-14 h-14 rounded-xl flex items-center justify-center bg-red-500/15 border border-red-500/30">
-          <Skull className="w-7 h-7 text-red-500" />
+      <div className={`rounded-xl p-4 flex items-center gap-4 border-2 ${isDark ? 'border-red-500/40' : 'border-red-300'}`}
+        style={{
+          background: isDark
+            ? 'linear-gradient(90deg, rgba(255,0,0,0.08) 0%, rgba(0,0,0,0.4) 100%)'
+            : 'linear-gradient(90deg, rgba(239,68,68,0.08) 0%, rgba(248,250,252,0.8) 100%)',
+        }}>
+        <div className={`w-14 h-14 rounded-xl flex items-center justify-center border ${isDark ? 'bg-red-500/15 border-red-500/30' : 'bg-red-50 border-red-200'}`}>
+          <Skull className={`w-7 h-7 ${isDark ? 'text-red-500' : 'text-red-600'}`} />
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-3 flex-wrap">
-            <span className="text-lg font-bold text-red-400 font-['Share_Tech_Mono',monospace] tracking-wider"
-              style={{ textShadow: '0 0 12px rgba(255,0,0,0.4)' }}>
+            <span className={`text-lg font-bold font-['Share_Tech_Mono',monospace] tracking-wider ${isDark ? 'text-red-400' : 'text-red-600'}`}
+              style={{ textShadow: isDark ? '0 0 12px rgba(255,0,0,0.4)' : '0 0 8px rgba(239,68,68,0.25)' }}>
               {t('machine.attacker_role')}
             </span>
-            <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-red-500/20 text-red-400 border border-red-500/30">
+            <span className={`text-xs px-2 py-0.5 rounded-full font-semibold border ${isDark ? 'bg-red-500/20 text-red-400 border-red-500/30' : 'bg-red-50 text-red-700 border-red-200'}`}>
               {t('machine.attacker_label')}
             </span>
           </div>
-          <div className="flex items-center gap-4 mt-1 text-sm font-mono text-slate-400">
-            <span>{t('machine.ip')}: <span className="text-red-400">{t('machine.attacker_ip')}</span></span>
-            <span>{t('machine.os')}: <span className="text-slate-300">{t('machine.attacker_os')}</span></span>
+          <div className={`flex items-center gap-4 mt-1 text-sm font-mono ${isDark ? 'text-slate-400' : 'text-slate-700'}`}>
+            <span>{t('machine.ip')}: <span className={isDark ? 'text-red-400' : 'text-red-600'}>{t('machine.attacker_ip')}</span></span>
+            <span>{t('machine.os')}: <span className={isDark ? 'text-slate-300' : 'text-slate-800'}>{t('machine.attacker_os')}</span></span>
           </div>
         </div>
         <div className="flex items-center gap-2 text-sm">
           <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_6px_rgba(255,0,0,0.8)]"></span>
-          <span className="text-red-400 font-['JetBrains_Mono',monospace] font-semibold tracking-wider">ATTACK READY</span>
+          <span className={`font-['JetBrains_Mono',monospace] font-semibold tracking-wider ${isDark ? 'text-red-400' : 'text-red-600'}`}>ATTACK READY</span>
         </div>
       </div>
 
       {/* Header with dramatic scanlines */}
-      <div className="relative text-center py-7 px-8 border border-red-500/15 rounded-sm overflow-hidden"
+      <div className={`relative text-center py-7 px-8 border rounded-sm overflow-hidden ${isDark ? 'border-red-500/15' : 'border-red-200'}`}
         style={{
-          background: `
+          background: isDark ? `
             repeating-linear-gradient(0deg, transparent 0px, transparent 2px, rgba(255,0,0,0.03) 2px, rgba(255,0,0,0.03) 4px),
             linear-gradient(180deg, #0a0000 0%, #0d0505 100%)
+          ` : `
+            repeating-linear-gradient(0deg, transparent 0px, transparent 2px, rgba(239,68,68,0.025) 2px, rgba(239,68,68,0.025) 4px),
+            linear-gradient(180deg, #fff5f5 0%, #ffffff 100%)
           `,
         }}>
         {/* Dual scanlines — top fast, bottom slow */}
@@ -322,43 +335,47 @@ export default function AttackSpace() {
 
         {/* CRT vignette */}
         <div className="absolute inset-0 pointer-events-none" style={{
-          background: 'radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.4) 100%)',
+          background: isDark
+            ? 'radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.4) 100%)'
+            : 'radial-gradient(ellipse at center, transparent 60%, rgba(239,68,68,0.05) 100%)',
         }} />
 
         <h1 className="relative text-4xl font-extrabold text-red-500 tracking-[0.15em] font-['Share_Tech_Mono',monospace]"
-          style={{ textShadow: '0 0 30px rgba(255,0,0,0.45), 0 0 60px rgba(255,0,0,0.15), 0 0 100px rgba(255,0,0,0.08)' }}>
+          style={{ textShadow: isDark
+            ? '0 0 30px rgba(255,0,0,0.45), 0 0 60px rgba(255,0,0,0.15), 0 0 100px rgba(255,0,0,0.08)'
+            : '0 0 18px rgba(239,68,68,0.35), 0 0 40px rgba(239,68,68,0.12)' }}>
           &#9760; {t('attack.title')}
         </h1>
-        <div className="relative text-xs text-slate-700 mt-1 tracking-wider font-['JetBrains_Mono',monospace]">
+        <div className={`relative text-xs mt-1 tracking-wider font-['JetBrains_Mono',monospace] ${isDark ? 'text-slate-700' : 'text-slate-500'}`}>
           {t('attack.subtitle')}
         </div>
-        <div className="relative inline-block mt-3 px-4 py-1 bg-[#0a0a0a] border border-red-500/20 rounded-sm font-['JetBrains_Mono',monospace] text-sm text-red-400 tracking-wide">
-          <span className="text-slate-600">{t('attack.target')}:</span> {targetIp}
-          &nbsp;&nbsp;<span className="text-slate-700">|</span>&nbsp;&nbsp;
-          <span className="text-slate-600">{t('attack.status_label')}:</span>{' '}
+        <div className={`relative inline-block mt-3 px-4 py-1 border rounded-sm font-['JetBrains_Mono',monospace] text-sm tracking-wide ${isDark ? 'bg-[#0a0a0a] border-red-500/20 text-red-400' : 'bg-white border-red-200 text-red-600'}`}>
+          <span className={isDark ? 'text-slate-600' : 'text-slate-500'}>{t('attack.target')}:</span> {targetIp}
+          &nbsp;&nbsp;<span className={isDark ? 'text-slate-700' : 'text-slate-400'}>|</span>&nbsp;&nbsp;
+          <span className={isDark ? 'text-slate-600' : 'text-slate-500'}>{t('attack.status_label')}:</span>{' '}
           {activeCount > 0
-            ? <span className="text-red-500 animate-pulse">{t('attack.status_engaged')}</span>
-            : <span className="text-slate-700">{t('attack.status_standby')}</span>}
+            ? <span className={`animate-pulse ${isDark ? 'text-red-500' : 'text-red-600'}`}>{t('attack.status_engaged')}</span>
+            : <span className={isDark ? 'text-slate-700' : 'text-slate-500'}>{t('attack.status_standby')}</span>}
         </div>
       </div>
 
       {/* Config bar */}
       <div className="grid grid-cols-3 gap-4">
         <div>
-          <label className="block text-[11px] text-slate-600 font-['JetBrains_Mono',monospace] mb-1 uppercase tracking-wider">{t('attack.target_ip')}</label>
+          <label className={`block text-[11px] font-['JetBrains_Mono',monospace] mb-1 uppercase tracking-wider ${isDark ? 'text-slate-600' : 'text-slate-500'}`}>{t('attack.target_ip')}</label>
           <input
             value={targetIp}
             onChange={(e) => setTargetIp(e.target.value)}
-            className="w-full bg-[#0a0a0a] text-red-400 border border-[#1a1a1a] rounded-sm px-3 py-2 font-['JetBrains_Mono',monospace] text-sm transition-all duration-300 focus:outline-none focus:border-red-500/60 focus:shadow-[0_0_12px_rgba(255,0,0,0.15),inset_0_0_12px_rgba(255,0,0,0.05)]"
+            className={`w-full rounded-sm px-3 py-2 font-['JetBrains_Mono',monospace] text-sm transition-all duration-300 focus:outline-none focus:border-red-500/60 focus:shadow-[0_0_12px_rgba(255,0,0,0.15),inset_0_0_12px_rgba(255,0,0,0.05)] border ${isDark ? 'bg-[#0a0a0a] text-red-400 border-[#1a1a1a]' : 'bg-white text-red-700 border-slate-200'}`}
             placeholder="e.g. 192.168.1.100"
           />
         </div>
         <div>
-          <label className="block text-[11px] text-slate-600 font-['JetBrains_Mono',monospace] mb-1 uppercase tracking-wider">{t('attack.packet_count')}</label>
+          <label className={`block text-[11px] font-['JetBrains_Mono',monospace] mb-1 uppercase tracking-wider ${isDark ? 'text-slate-600' : 'text-slate-500'}`}>{t('attack.packet_count')}</label>
           <select
             value={pktCount}
             onChange={(e) => setPktCount(e.target.value)}
-            className="w-full bg-[#0a0a0a] text-red-400 border border-[#1a1a1a] rounded-sm px-3 py-2 font-['JetBrains_Mono',monospace] text-sm appearance-none transition-all duration-300 focus:outline-none focus:border-red-500/60 focus:shadow-[0_0_12px_rgba(255,0,0,0.15),inset_0_0_12px_rgba(255,0,0,0.05)]"
+            className={`w-full rounded-sm px-3 py-2 font-['JetBrains_Mono',monospace] text-sm appearance-none transition-all duration-300 focus:outline-none focus:border-red-500/60 focus:shadow-[0_0_12px_rgba(255,0,0,0.15),inset_0_0_12px_rgba(255,0,0,0.05)] border ${isDark ? 'bg-[#0a0a0a] text-red-400 border-[#1a1a1a]' : 'bg-white text-red-700 border-slate-200'}`}
           >
             {['10', '50', '100', '500', '1000'].map((v) => (
               <option key={v} value={v}>{v}</option>
@@ -366,8 +383,8 @@ export default function AttackSpace() {
           </select>
         </div>
         <div className="flex items-end">
-          <div className="text-xs text-slate-700 font-['JetBrains_Mono',monospace] pb-2.5">
-            {t('attack.active_vectors')}: <span className="text-red-400 font-bold">{activeCount}/4</span>
+          <div className={`text-xs font-['JetBrains_Mono',monospace] pb-2.5 ${isDark ? 'text-slate-700' : 'text-slate-500'}`}>
+            {t('attack.active_vectors')}: <span className={`font-bold ${isDark ? 'text-red-400' : 'text-red-600'}`}>{activeCount}/4</span>
           </div>
         </div>
       </div>
@@ -386,40 +403,56 @@ export default function AttackSpace() {
                 className={`relative p-4 rounded-sm border transition-all duration-500 overflow-hidden ${
                   isOn
                     ? 'border-transparent animate-pulse-glow-border'
-                    : 'border-[#1a1a1a] hover:border-red-500/20'
+                    : isDark
+                      ? 'border-[#1a1a1a] hover:border-red-500/20'
+                      : 'border-slate-200 hover:border-red-300'
                 }`}
                 style={{
                   background: isOn
-                    ? 'linear-gradient(135deg, #0f0505 0%, #120808 100%)'
-                    : 'linear-gradient(135deg, #0a0a0a 0%, #0f0f0f 100%)',
+                    ? isDark
+                      ? 'linear-gradient(135deg, #0f0505 0%, #120808 100%)'
+                      : 'linear-gradient(135deg, #fff5f5 0%, #ffeaea 100%)'
+                    : isDark
+                      ? 'linear-gradient(135deg, #0a0a0a 0%, #0f0f0f 100%)'
+                      : 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
                   ...(isOn ? {
                     borderImage: 'linear-gradient(135deg, #ff0000, #ff4444, #ff0000) 1',
-                    boxShadow: '0 0 25px rgba(255,0,0,0.12), 0 0 50px rgba(255,0,0,0.05), inset 0 0 30px rgba(255,0,0,0.04)',
+                    boxShadow: isDark
+                      ? '0 0 25px rgba(255,0,0,0.12), 0 0 50px rgba(255,0,0,0.05), inset 0 0 30px rgba(255,0,0,0.04)'
+                      : '0 0 20px rgba(239,68,68,0.15), 0 0 40px rgba(239,68,68,0.06), inset 0 0 20px rgba(239,68,68,0.04)',
                   } : {}),
                 }}
               >
                 {/* Left accent bar */}
                 <div className={`absolute top-0 left-0 w-[3px] h-full transition-all duration-500 ${
-                  isOn ? 'bg-red-500 shadow-[0_0_10px_rgba(255,0,0,0.8)]' : 'bg-[#1a1a1a]'
+                  isOn
+                    ? 'bg-red-500 shadow-[0_0_10px_rgba(255,0,0,0.8)]'
+                    : isDark ? 'bg-[#1a1a1a]' : 'bg-slate-200'
                 }`} />
 
                 {/* Badge */}
                 <span className={`absolute top-2.5 right-3 text-[10px] font-bold tracking-wider font-['JetBrains_Mono',monospace] px-2 py-0.5 rounded-sm border transition-all duration-500 ${
                   isOn
-                    ? 'text-red-500 bg-red-500/10 border-red-500/30 animate-pulse-glow'
-                    : 'text-slate-700 border-[#1a1a1a]'
+                    ? isDark
+                      ? 'text-red-500 bg-red-500/10 border-red-500/30 animate-pulse-glow'
+                      : 'text-red-600 bg-red-50 border-red-300 animate-pulse-glow'
+                    : isDark
+                      ? 'text-slate-700 border-[#1a1a1a]'
+                      : 'text-slate-500 border-slate-200'
                 }`}>
                   {isOn ? `\u25cf ${t('attack.active')}` : `\u25cb ${t('attack.idle')}`}
                 </span>
 
-                <div className="font-['Share_Tech_Mono',monospace] text-base font-bold text-red-400 flex items-center gap-2"
-                  style={{ textShadow: isOn ? '0 0 12px rgba(255,68,68,0.3)' : '0 0 8px rgba(255,68,68,0.15)' }}>
+                <div className={`font-['Share_Tech_Mono',monospace] text-base font-bold flex items-center gap-2 ${isDark ? 'text-red-400' : 'text-red-600'}`}
+                  style={{ textShadow: isDark
+                    ? (isOn ? '0 0 12px rgba(255,68,68,0.3)' : '0 0 8px rgba(255,68,68,0.15)')
+                    : (isOn ? '0 0 10px rgba(239,68,68,0.25)' : 'none') }}>
                   {name}
                 </div>
-                <div className="text-[11px] text-slate-600 font-['JetBrains_Mono',monospace] mt-0.5 leading-snug">{desc}</div>
-                <div className="text-[10px] text-slate-700 font-['JetBrains_Mono',monospace] mt-1.5 flex items-center gap-1.5">
-                  {t('attack.port_label')} <span className="text-red-400 font-medium">{info.port}</span>
-                  {' \u00b7 '}{t('attack.tool_label')} <span className="text-red-400 font-medium">{info.tool}</span>
+                <div className={`text-[11px] font-['JetBrains_Mono',monospace] mt-0.5 leading-snug ${isDark ? 'text-slate-600' : 'text-slate-500'}`}>{desc}</div>
+                <div className={`text-[10px] font-['JetBrains_Mono',monospace] mt-1.5 flex items-center gap-1.5 ${isDark ? 'text-slate-700' : 'text-slate-500'}`}>
+                  {t('attack.port_label')} <span className={`font-medium ${isDark ? 'text-red-400' : 'text-red-600'}`}>{info.port}</span>
+                  {' \u00b7 '}{t('attack.tool_label')} <span className={`font-medium ${isDark ? 'text-red-400' : 'text-red-600'}`}>{info.tool}</span>
                   {' \u00b7 '}
                   <span className="inline-flex items-center gap-1">
                     <span className={`inline-block w-1.5 h-1.5 rounded-full ${sev.dot}`} />
@@ -427,8 +460,8 @@ export default function AttackSpace() {
                   </span>
                 </div>
                 <div className={`overflow-hidden transition-all duration-500 ${isOn ? 'max-h-10 opacity-100 mt-1.5' : 'max-h-0 opacity-0 mt-0'}`}>
-                  <div className="text-xs text-red-500 font-['JetBrains_Mono',monospace]"
-                    style={{ textShadow: '0 0 8px rgba(255,0,0,0.3)' }}>
+                  <div className={`text-xs font-['JetBrains_Mono',monospace] ${isDark ? 'text-red-500' : 'text-red-600'}`}
+                    style={{ textShadow: isDark ? '0 0 8px rgba(255,0,0,0.3)' : '0 0 6px rgba(239,68,68,0.2)' }}>
                     &#9658; {pktSent.toLocaleString()} {t('attack.packets_sent')} &nbsp;|&nbsp; {rand(80, 600)} {t('attack.pkt_per_sec')}
                   </div>
                 </div>
@@ -437,8 +470,12 @@ export default function AttackSpace() {
                 onClick={() => toggleAttack(key)}
                 className={`w-full py-2 rounded-sm text-xs font-['JetBrains_Mono',monospace] font-semibold tracking-wider transition-all duration-300 ${
                   isOn
-                    ? 'bg-slate-800/50 text-slate-400 border border-slate-700 hover:bg-slate-700/50 hover:text-slate-300'
-                    : 'bg-red-600/80 text-white border border-red-500 hover:bg-red-500 hover:shadow-[0_0_20px_rgba(255,0,0,0.3)]'
+                    ? isDark
+                      ? 'bg-slate-800/50 text-slate-400 border border-slate-700 hover:bg-slate-700/50 hover:text-slate-300'
+                      : 'bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200 hover:text-slate-800'
+                    : isDark
+                      ? 'bg-red-600/80 text-white border border-red-500 hover:bg-red-500 hover:shadow-[0_0_20px_rgba(255,0,0,0.3)]'
+                      : 'bg-red-600 text-white border border-red-500 hover:bg-red-700 hover:shadow-[0_0_16px_rgba(239,68,68,0.3)]'
                 }`}
               >
                 {isOn ? `\u25a0 ${t('attack.stop')} ${name}` : `\u25b6 ${t('attack.launch')} ${name}`}
@@ -450,23 +487,27 @@ export default function AttackSpace() {
 
       {/* Quick commands */}
       <div>
-        <h4 className="text-xs text-red-400 font-['Share_Tech_Mono',monospace] tracking-wider mb-2">&gt; {t('attack.quick_commands')}</h4>
-        <div className="bg-[#060606] border border-[#151515] rounded-sm p-3">
-          <div className="text-[11px] text-red-400 font-['JetBrains_Mono',monospace] mb-2">$ {t('attack.fire_forget')}</div>
+        <h4 className={`text-xs font-['Share_Tech_Mono',monospace] tracking-wider mb-2 ${isDark ? 'text-red-400' : 'text-red-600'}`}>&gt; {t('attack.quick_commands')}</h4>
+        <div className={`rounded-sm p-3 border ${isDark ? 'bg-[#060606] border-[#151515]' : 'bg-slate-50 border-slate-200'}`}>
+          <div className={`text-[11px] font-['JetBrains_Mono',monospace] mb-2 ${isDark ? 'text-red-400' : 'text-red-600'}`}>$ {t('attack.fire_forget')}</div>
           <div className="grid grid-cols-5 gap-2">
             {QUICK_CMDS.map((cmd, i) => (
               <div key={i} className="text-center">
                 <button
                   onClick={() => quickCmd(cmd.attack, cmd.count, i)}
-                  className={`w-full py-2 bg-[#0a0a0a] border rounded-sm text-xs font-['JetBrains_Mono',monospace] transition-all duration-150 ${
+                  className={`w-full py-2 border rounded-sm text-xs font-['JetBrains_Mono',monospace] transition-all duration-150 ${
                     flashedCmd === i
-                      ? 'border-red-500 text-red-400 bg-red-500/10 shadow-[0_0_12px_rgba(255,0,0,0.3)]'
-                      : 'border-[#1a1a1a] text-slate-400 hover:border-red-500/40 hover:text-red-400 hover:bg-red-500/5 hover:shadow-[0_0_8px_rgba(255,0,0,0.1)]'
+                      ? isDark
+                        ? 'border-red-500 text-red-400 bg-red-500/10 shadow-[0_0_12px_rgba(255,0,0,0.3)]'
+                        : 'border-red-500 text-red-700 bg-red-50 shadow-[0_0_10px_rgba(239,68,68,0.25)]'
+                      : isDark
+                        ? 'bg-[#0a0a0a] border-[#1a1a1a] text-slate-400 hover:border-red-500/40 hover:text-red-400 hover:bg-red-500/5 hover:shadow-[0_0_8px_rgba(255,0,0,0.1)]'
+                        : 'bg-white border-slate-200 text-slate-700 hover:border-red-300 hover:text-red-700 hover:bg-red-50 hover:shadow-[0_0_8px_rgba(239,68,68,0.1)]'
                   } active:scale-95`}
                 >
                   {cmd.label}
                 </button>
-                <div className="text-[10px] text-slate-700 mt-1 font-['JetBrains_Mono',monospace]">{cmd.desc}</div>
+                <div className={`text-[10px] mt-1 font-['JetBrains_Mono',monospace] ${isDark ? 'text-slate-700' : 'text-slate-500'}`}>{cmd.desc}</div>
               </div>
             ))}
           </div>
@@ -477,14 +518,22 @@ export default function AttackSpace() {
       <div className="grid grid-cols-2 gap-3">
         <button
           onClick={launchAll}
-          className="group relative flex items-center justify-center gap-2 py-3 bg-red-600/80 hover:bg-red-500 text-white border border-red-500 rounded-sm font-['JetBrains_Mono',monospace] text-sm font-semibold tracking-wider transition-all duration-300 hover:shadow-[0_0_25px_rgba(255,0,0,0.3)] active:scale-[0.98]"
+          className={`group relative flex items-center justify-center gap-2 py-3 text-white border border-red-500 rounded-sm font-['JetBrains_Mono',monospace] text-sm font-semibold tracking-wider transition-all duration-300 active:scale-[0.98] ${
+            isDark
+              ? 'bg-red-600/80 hover:bg-red-500 hover:shadow-[0_0_25px_rgba(255,0,0,0.3)]'
+              : 'bg-red-600 hover:bg-red-700 hover:shadow-[0_0_18px_rgba(239,68,68,0.35)]'
+          }`}
         >
           <Zap className="w-4 h-4" /> {t('attack.launch_all')}
           <span className="absolute right-3 text-[9px] text-red-300/40 font-normal tracking-normal opacity-0 group-hover:opacity-100 transition-opacity">Ctrl+A</span>
         </button>
         <button
           onClick={killAll}
-          className="group relative flex items-center justify-center gap-2 py-3 bg-slate-800/50 hover:bg-slate-700/50 text-slate-300 border border-slate-700 rounded-sm font-['JetBrains_Mono',monospace] text-sm font-semibold tracking-wider transition-all duration-300 hover:shadow-[0_0_15px_rgba(100,116,139,0.1)] active:scale-[0.98]"
+          className={`group relative flex items-center justify-center gap-2 py-3 rounded-sm font-['JetBrains_Mono',monospace] text-sm font-semibold tracking-wider transition-all duration-300 active:scale-[0.98] border ${
+            isDark
+              ? 'bg-slate-800/50 hover:bg-slate-700/50 text-slate-300 border-slate-700 hover:shadow-[0_0_15px_rgba(100,116,139,0.1)]'
+              : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-300 hover:shadow-[0_0_10px_rgba(100,116,139,0.12)]'
+          }`}
         >
           <X className="w-4 h-4" /> {t('attack.kill_all')}
           <span className="absolute right-3 text-[9px] text-slate-500/40 font-normal tracking-normal opacity-0 group-hover:opacity-100 transition-opacity">Ctrl+K</span>
@@ -493,7 +542,7 @@ export default function AttackSpace() {
 
       {activeCount > 0 && (
         <div className="text-center">
-          <span className="text-xs font-['JetBrains_Mono',monospace] text-red-500 animate-pulse-glow">
+          <span className={`text-xs font-['JetBrains_Mono',monospace] animate-pulse-glow ${isDark ? 'text-red-500' : 'text-red-600'}`}>
             &#9888; {activeCount} {t('attack.attacks_running')}
           </span>
         </div>
@@ -501,18 +550,18 @@ export default function AttackSpace() {
 
       {/* Terminal */}
       <div>
-        <h4 className="text-xs text-red-400 font-['Share_Tech_Mono',monospace] tracking-wider mb-2">&gt; {t('attack.live_terminal')}</h4>
-        <div className="border border-[#1a1a1a] rounded-sm overflow-hidden" style={{ background: '#030303' }}>
+        <h4 className={`text-xs font-['Share_Tech_Mono',monospace] tracking-wider mb-2 ${isDark ? 'text-red-400' : 'text-red-600'}`}>&gt; {t('attack.live_terminal')}</h4>
+        <div className={`border rounded-sm overflow-hidden ${isDark ? 'border-[#1a1a1a]' : 'border-slate-200'}`} style={{ background: isDark ? '#030303' : '#030303' }}>
           {/* Title bar */}
-          <div className="flex items-center gap-2 px-3 py-2 bg-[#0a0a0a] border-b border-[#1a1a1a]">
+          <div className={`flex items-center gap-2 px-3 py-2 border-b ${isDark ? 'bg-[#0a0a0a] border-[#1a1a1a]' : 'bg-slate-100 border-slate-200'}`}>
             <span className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_4px_rgba(255,0,0,0.5)]" />
             <span className="w-2.5 h-2.5 rounded-full bg-yellow-500 shadow-[0_0_4px_rgba(234,179,8,0.5)]" />
             <span className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_4px_rgba(34,197,94,0.5)]" />
-            <span className="text-[11px] text-slate-700 font-['JetBrains_Mono',monospace] ml-2">
+            <span className={`text-[11px] font-['JetBrains_Mono',monospace] ml-2 ${isDark ? 'text-slate-700' : 'text-slate-500'}`}>
               attack_suite — {activeCount > 0 ? `${targetIp} — ${activeCount} ${t('attack.module')}` : t('attack.terminal_idle')}
             </span>
             {activeCount > 0 && (
-              <span className="ml-auto text-[10px] text-red-500/60 font-['JetBrains_Mono',monospace] animate-pulse">{t('attack.rec')}</span>
+              <span className={`ml-auto text-[10px] font-['JetBrains_Mono',monospace] animate-pulse ${isDark ? 'text-red-500/60' : 'text-red-600/80'}`}>{t('attack.rec')}</span>
             )}
           </div>
           {/* Body */}
@@ -535,7 +584,7 @@ export default function AttackSpace() {
       </div>
 
       {activeCount > 0 && (
-        <div className="flex items-center gap-2 bg-sky-500/10 border border-sky-500/20 rounded-md px-4 py-3 text-sm text-sky-300 font-['JetBrains_Mono',monospace]">
+        <div className={`flex items-center gap-2 rounded-md px-4 py-3 text-sm font-['JetBrains_Mono',monospace] border ${isDark ? 'bg-sky-500/10 border-sky-500/20 text-sky-300' : 'bg-sky-50 border-sky-200 text-sky-700'}`}>
           <Terminal className="w-4 h-4" />
           {t('attack.monitor_hint')}
         </div>

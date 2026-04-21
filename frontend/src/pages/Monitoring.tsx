@@ -9,7 +9,7 @@ import {
   Shield, AlertTriangle, Radio, Download,
 } from 'lucide-react'
 import {
-  getStats, getHistory, blockIp, unblockIp, clearHistory,
+  getStats, getHistory, blockIp, unblockIp, clearHistory, setDefender,
   type Stats, type FlowEntry,
 } from '../services/api'
 import { useMonitorWs } from '../hooks/useWebSocket'
@@ -224,6 +224,11 @@ export default function Monitoring() {
     })
   }, [])
 
+  const toggleDefender = useCallback(() => {
+    const next = !(stats?.defender_enabled ?? false)
+    setDefender(next).then(() => getStats().then(setStats)).catch(() => {})
+  }, [stats])
+
   // CSV Export
   const exportCsv = useCallback(() => {
     if (history.length === 0) return
@@ -343,6 +348,28 @@ export default function Monitoring() {
               {t('common.live')}
             </span>
           )}
+          {/* Defender Mode toggle */}
+          <button
+            onClick={toggleDefender}
+            className={`flex items-center gap-1.5 text-xs font-semibold border px-3 py-1.5 rounded-lg transition-all duration-200 ${
+              stats?.defender_enabled
+                ? 'text-emerald-600 bg-emerald-500/15 border-emerald-500/40 shadow-sm shadow-emerald-500/10'
+                : isDark
+                  ? 'text-slate-400 bg-white/[0.03] border-white/5 hover:text-emerald-400 hover:bg-emerald-500/10 hover:border-emerald-500/20'
+                  : 'text-slate-500 bg-slate-100 border-slate-200 hover:text-emerald-600 hover:bg-emerald-50 hover:border-emerald-300'
+            }`}
+            title={t('monitor.defender_desc')}
+          >
+            <Shield className="w-3.5 h-3.5" />
+            {t('monitor.defender')}
+            <span className={`ml-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded ${
+              stats?.defender_enabled
+                ? 'bg-emerald-500 text-white'
+                : isDark ? 'bg-slate-700 text-slate-400' : 'bg-slate-300 text-slate-600'
+            }`}>
+              {stats?.defender_enabled ? 'ON' : 'OFF'}
+            </span>
+          </button>
           <button
             onClick={exportCsv}
             className={`flex items-center gap-1.5 text-xs ${isDark ? 'text-slate-400 bg-white/[0.03] border-white/5' : 'text-slate-500 bg-slate-100 border-slate-200'} hover:text-amber-400 hover:bg-amber-500/10 border hover:border-amber-500/20 px-3 py-1.5 rounded-lg transition-all duration-200`}

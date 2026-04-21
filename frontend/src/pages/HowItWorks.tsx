@@ -8,7 +8,64 @@ import {
 } from 'lucide-react'
 import { useT, useSettings } from '../i18n'
 
-type Tab = 'overview' | 'topology' | 'pipeline' | 'dataset' | 'attacks' | 'tech' | 'benefits' | 'architecture'
+type Tab = 'overview' | 'topology' | 'defender' | 'pipeline' | 'dataset' | 'attacks' | 'realcases' | 'tech' | 'benefits' | 'architecture'
+
+const REAL_CASES = [
+  {
+    name: 'Dyn DNS DDoS (2016)',
+    attack: 'DDoS',
+    desc: 'Mirai botnet hijacked 100,000+ IoT devices (cameras, routers) to flood Dyn\'s DNS servers with SYN packets, knocking Twitter, Netflix, Reddit, and Spotify offline for hours across the US East Coast.',
+    impact: '~$110M in losses; largest DDoS attack of its era (1.2 Tbps)',
+  },
+  {
+    name: 'GitHub Memcached DDoS (2018)',
+    attack: 'DDoS',
+    desc: 'Attackers exploited exposed Memcached servers to amplify traffic 51,000× and hit GitHub with a 1.35 Tbps UDP flood — the largest DDoS ever recorded at the time.',
+    impact: 'GitHub mitigated within 10 minutes using Akamai Prolexic',
+  },
+  {
+    name: 'Equifax Breach (2017)',
+    attack: 'Web Attack / Infiltration',
+    desc: 'Attackers exploited an unpatched Apache Struts vulnerability (CVE-2017-5638) to infiltrate Equifax systems. They then ran port scans and lateral movement to exfiltrate 147M Americans\' Social Security numbers and credit data.',
+    impact: '$1.4B+ in penalties; CEO resigned',
+  },
+  {
+    name: 'Colonial Pipeline Ransomware (2021)',
+    attack: 'SSH Brute / Credential Stuffing',
+    desc: 'DarkSide gang obtained a leaked VPN password (no MFA) and gained remote access. They moved laterally via SSH, stole 100 GB of data, and encrypted systems — forcing a 5-day fuel pipeline shutdown across the US East Coast.',
+    impact: '$4.4M ransom paid (half later recovered by FBI)',
+  },
+  {
+    name: 'SolarWinds Supply Chain (2020)',
+    attack: 'Infiltration / Bot',
+    desc: 'Russian SVR hackers planted the "Sunburst" backdoor in SolarWinds Orion updates. 18,000+ organizations including US Treasury, DHS, and Microsoft were compromised. The malware communicated with C2 servers using DNS-like patterns.',
+    impact: '$100B+ in global cleanup costs; reshaped US cyber policy',
+  },
+  {
+    name: 'Mariposa Botnet (2008-2010)',
+    attack: 'Bot',
+    desc: 'Spanish "Mariposa" (butterfly) botnet infected 12M+ computers across 190 countries via IM and USB spreading. It stole banking credentials and generated massive DDoS-for-hire services through C2 beaconing.',
+    impact: 'Spanish police arrested 3 operators in 2010',
+  },
+  {
+    name: 'Heartbleed (CVE-2014-0160)',
+    attack: 'Heartbleed',
+    desc: 'OpenSSL TLS heartbeat extension leaked 64 KB of server memory per request — exposing private keys, passwords, and session cookies for 2 years before discovery. Affected two-thirds of all HTTPS servers worldwide.',
+    impact: 'Yahoo, Canada Revenue Agency, and Mumsnet all breached',
+  },
+  {
+    name: 'Shodan Port Scanning Threats',
+    attack: 'PortScan',
+    desc: 'Shodan continuously scans all 4 billion IPv4 addresses, indexing open ports and services. Attackers use Shodan to find exposed databases, industrial control systems (SCADA), and webcams — often the first step before exploitation.',
+    impact: 'Millions of MongoDB/ElasticSearch dumps leaked via exposed ports',
+  },
+  {
+    name: 'SQL Injection — Heartland (2008)',
+    attack: 'Web Attack - SQL Injection',
+    desc: 'Albert Gonzalez used SQL injection on Heartland Payment Systems\' web application to deploy malware and steal 134M credit card records. The breach persisted undetected for months.',
+    impact: '$140M settlement; Heartland stock dropped 77%',
+  },
+]
 
 const ATTACK_TYPES = [
   { name: 'BENIGN', severity: 'safe', desc: 'Normal network traffic with no malicious intent' },
@@ -44,9 +101,11 @@ export default function HowItWorks() {
   const tabs: { id: Tab; label: string; icon: typeof BookOpen }[] = [
     { id: 'overview', label: t('docs.tab_overview'), icon: BookOpen },
     { id: 'topology', label: t('docs.tab_topology'), icon: Network },
+    { id: 'defender', label: t('docs.tab_defender'), icon: Shield },
     { id: 'pipeline', label: t('docs.tab_pipeline'), icon: Brain },
     { id: 'dataset', label: t('docs.tab_dataset'), icon: Database },
     { id: 'attacks', label: t('docs.tab_attacks'), icon: Skull },
+    { id: 'realcases', label: t('docs.tab_realcases'), icon: AlertTriangle },
     { id: 'tech', label: t('docs.tab_tech'), icon: Boxes },
     { id: 'benefits', label: t('docs.tab_benefits'), icon: Sparkles },
     { id: 'architecture', label: t('docs.tab_architecture'), icon: Layers },
@@ -332,6 +391,117 @@ export default function HowItWorks() {
                   </Link>
                 )
               })}
+            </div>
+          </div>
+        )}
+
+        {/* Defender Mode tab */}
+        {tab === 'defender' && (
+          <div className="space-y-8">
+            <div>
+              <div className="flex items-center gap-3 mb-3">
+                <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${isDark ? 'bg-emerald-500/15 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>
+                  <Shield className="w-6 h-6" />
+                </div>
+                <h2 className={`text-xl font-semibold ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+                  {t('docs.defender_title')}
+                </h2>
+              </div>
+              <p className={`text-sm leading-relaxed max-w-4xl ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                {t('docs.defender_intro')}
+              </p>
+            </div>
+
+            {/* How it works steps */}
+            <div className={`rounded-xl border p-6 ${cardClass}`}>
+              <h3 className={`text-base font-semibold mb-4 ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+                {t('docs.defender_how_title')}
+              </h3>
+              <ol className="space-y-3">
+                {[1, 2, 3, 4].map((n) => (
+                  <li key={n} className="flex gap-3">
+                    <span className={`shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                      isDark ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-100 text-emerald-700'
+                    }`}>{n}</span>
+                    <p className={`text-sm leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                      {t(`docs.defender_how_${n}` as any)}
+                    </p>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            {/* IDS vs IPS */}
+            <div className={`rounded-xl border p-6 ${cardClass}`}>
+              <h3 className={`text-base font-semibold mb-3 ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+                {t('docs.defender_ids_vs_ips')}
+              </h3>
+              <p className={`text-sm leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                {t('docs.defender_ids_vs_ips_desc')}
+              </p>
+            </div>
+
+            {/* Note */}
+            <div className={`rounded-xl border-l-4 p-5 ${
+              isDark ? 'bg-amber-500/5 border-amber-500/60 border-l-amber-500' : 'bg-amber-50 border-amber-200 border-l-amber-500'
+            } border`}>
+              <div className="flex gap-3">
+                <AlertTriangle className={`w-5 h-5 shrink-0 ${isDark ? 'text-amber-400' : 'text-amber-600'}`} />
+                <p className={`text-sm leading-relaxed ${isDark ? 'text-amber-100/80' : 'text-amber-900/80'}`}>
+                  {t('docs.defender_note')}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Real-World Cases tab */}
+        {tab === 'realcases' && (
+          <div className="space-y-6">
+            <div>
+              <h2 className={`text-lg font-semibold mb-3 ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+                {t('docs.realcases_title')}
+              </h2>
+              <p className={`text-sm leading-relaxed max-w-4xl ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                {t('docs.realcases_intro')}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {REAL_CASES.map((c) => (
+                <div key={c.name} className={`rounded-xl border p-5 ${hoverCardClass} transition-colors`}>
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <h3 className={`text-base font-semibold ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>
+                      {c.name}
+                    </h3>
+                    <span className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide border ${
+                      isDark ? 'bg-red-500/10 text-red-400 border-red-500/25' : 'bg-red-50 text-red-600 border-red-200'
+                    }`}>
+                      {c.attack}
+                    </span>
+                  </div>
+                  <p className={`text-sm leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                    {c.desc}
+                  </p>
+                  <div className={`mt-3 pt-3 border-t flex items-start gap-2 text-xs ${
+                    isDark ? 'border-white/[0.05] text-amber-400' : 'border-slate-100 text-amber-700'
+                  }`}>
+                    <Zap className="w-3.5 h-3.5 shrink-0 mt-px" />
+                    <span className="leading-relaxed">{c.impact}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className={`rounded-xl border-l-4 p-5 ${
+              isDark ? 'bg-emerald-500/5 border-emerald-500/60 border-l-emerald-500' : 'bg-emerald-50 border-emerald-200 border-l-emerald-500'
+            } border`}>
+              <div className="flex gap-3">
+                <CheckCircle2 className={`w-5 h-5 shrink-0 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
+                <p className={`text-sm leading-relaxed ${isDark ? 'text-emerald-100/80' : 'text-emerald-900/80'}`}>
+                  {t('docs.realcases_footer')}
+                </p>
+              </div>
             </div>
           </div>
         )}

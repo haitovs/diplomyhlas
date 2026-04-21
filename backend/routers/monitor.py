@@ -66,6 +66,8 @@ history: list[dict] = []
 total_processed: int = 0
 blocked_ips: set[str] = set()
 benign_idx: int = 0
+defender_enabled: bool = False
+auto_blocked_count: int = 0
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────
@@ -131,6 +133,13 @@ def ingest_flow(row: pd.Series, source: str) -> dict | None:
     history.append(entry)
     if len(history) > 2000:
         del history[: len(history) - 2000]
+
+    # Defender mode: auto-block any anomalous source IP
+    global auto_blocked_count
+    if defender_enabled and is_anomaly and src_ip not in blocked_ips and src_ip != "N/A":
+        blocked_ips.add(str(src_ip))
+        auto_blocked_count += 1
+        entry["auto_blocked"] = True
     total_processed += 1
     return entry
 
@@ -225,6 +234,8 @@ def get_stats():
         "avg_confidence": round(avg_conf, 1),
         "blocked_count": len(blocked_ips),
         "blocked_ips": list(blocked_ips),
+        "defender_enabled": defender_enabled,
+        "auto_blocked_count": auto_blocked_count,
         "distribution": distribution,
         "unique_src": unique_src,
         "unique_dst": unique_dst,
@@ -251,6 +262,22 @@ def clear_history():
     history.clear()
     total_processed = 0
     return {"ok": True}
+
+
+@router.get("/defender")
+def get_defender():
+    return {
+        "enabled": defender_enabled,
+        "auto_blocked_count": auto_blocked_count,
+        "blocked_count": len(blocked_ips),
+    }
+
+
+@router.post("/defender")
+def toggle_defender(body: dict):
+    global defender_enabled
+    defender_enabled = bool(body.get("enabled", False))
+    return {"ok": True, "enabled": defender_enabled}
 
 
 # ── WebSocket — real-time feed ───────────────────────────────────────────
