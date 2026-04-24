@@ -334,6 +334,30 @@ const en = {
   'machine.attacker_label': 'Penetration Tester',
   'machine.attacker_ip': '10.0.0.50',
   'machine.attacker_os': 'Kali Linux',
+
+  // Virtual Machine gate
+  'vm.virtual_machine': 'Virtual Machine',
+  'vm.hostname': 'Hostname',
+  'vm.os': 'Operating System',
+  'vm.ip': 'IP Address',
+  'vm.start_vm': 'Power On Virtual Machine',
+  'vm.boot_hint': 'Boot sequence takes about 60 seconds — just like a real Linux VM.',
+  'vm.booting': 'Booting',
+  'vm.running': 'Running',
+  'vm.shutdown': 'Power Off',
+  'vm.shutdown_confirm': 'Shut down this virtual machine? You will need to boot it again to use this page.',
+
+  'vm.ids_title': 'IDS Sensor',
+  'vm.ids_desc': 'This virtual machine runs the intrusion detection service. Power it on to begin capturing packets and classifying flows with the LightGBM model.',
+  'vm.ids_off': 'ids-node is powered off',
+
+  'vm.traffic_title': 'Workstation VM',
+  'vm.traffic_desc': 'This is the employee workstation used for generating normal HTTP / DNS / TLS traffic. Power it on to simulate a user browsing the web.',
+  'vm.traffic_off': 'ws-client is powered off',
+
+  'vm.attacker_title': 'Adversary Lab',
+  'vm.attacker_desc': 'This virtual machine is an offensive Kali Linux host loaded with nmap, hydra, hping3 and Metasploit. Power it on before launching attacks.',
+  'vm.attacker_off': 'adversary is powered off',
 } as const
 
 export default en

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { SettingsContext, type Lang } from './i18n'
+import { VMProvider } from './contexts/VMContext'
+import VMGate from './components/VMGate'
 import Layout from './components/Layout'
 import Monitoring from './pages/Monitoring'
 import Workspace from './pages/Workspace'
@@ -31,16 +33,18 @@ export default function App() {
 
   return (
     <SettingsContext.Provider value={{ lang, theme, setLang, setTheme }}>
-      <Routes>
-        <Route element={<Layout />}>
-          <Route path="/monitoring" element={<Monitoring />} />
-          <Route path="/workspace" element={<Workspace />} />
-          <Route path="/attack" element={<AttackSpace />} />
-          <Route path="/report" element={<Report />} />
-          <Route path="/docs" element={<HowItWorks />} />
-          <Route path="*" element={<Navigate to="/monitoring" replace />} />
-        </Route>
-      </Routes>
+      <VMProvider>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="/monitoring" element={<VMGate vmId="ids"><Monitoring /></VMGate>} />
+            <Route path="/workspace" element={<VMGate vmId="traffic"><Workspace /></VMGate>} />
+            <Route path="/attack" element={<VMGate vmId="attacker"><AttackSpace /></VMGate>} />
+            <Route path="/report" element={<Report />} />
+            <Route path="/docs" element={<HowItWorks />} />
+            <Route path="*" element={<Navigate to="/monitoring" replace />} />
+          </Route>
+        </Routes>
+      </VMProvider>
     </SettingsContext.Provider>
   )
 }

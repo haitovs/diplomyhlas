@@ -334,6 +334,30 @@ const tk = {
   'machine.attacker_label': 'Penetrasiya Testcisi',
   'machine.attacker_ip': '10.0.0.50',
   'machine.attacker_os': 'Kali Linux',
+
+  // Virtual Machine gate
+  'vm.virtual_machine': 'Wirtual Mashyn',
+  'vm.hostname': 'Host at',
+  'vm.os': 'Operasion Ulgamy',
+  'vm.ip': 'IP Salgysy',
+  'vm.start_vm': 'Wirtual Mashyny Isle',
+  'vm.boot_hint': 'Yukleme tertibi takmynan 60 sekunt dowam eder — hakyky Linux VM yaly.',
+  'vm.booting': 'Yuklenyar',
+  'vm.running': 'Islap Dur',
+  'vm.shutdown': 'Ocur',
+  'vm.shutdown_confirm': 'Bu wirtual mashyny ocurmek isleyarsinizmi? Bu sahypany yene ulanmak ucin ony gaytadan isletmeli bolarsynyz.',
+
+  'vm.ids_title': 'IDS Sensor',
+  'vm.ids_desc': 'Bu wirtual mashynda giris anyklama hyzmaty isleýär. Paketleri yygnap, LightGBM modeli bilen akymlary klassifikasiya etmek ucin ony isle.',
+  'vm.ids_off': 'ids-node ocurulen',
+
+  'vm.traffic_title': 'Is Stoly VM',
+  'vm.traffic_desc': 'Bu adaty HTTP / DNS / TLS traffigini doretmek ucin ulanylan isgaryn is stoly. Ulanyjynyn web tejribesini simule etmek ucin ony isle.',
+  'vm.traffic_off': 'ws-client ocurulen',
+
+  'vm.attacker_title': 'Hujum Laboratoriyasy',
+  'vm.attacker_desc': 'Bu wirtual mashyn nmap, hydra, hping3 we Metasploit bilen yuklenen hujumcy Kali Linux host. Hujumlary baslatmazdan on ony isle.',
+  'vm.attacker_off': 'adversary ocurulen',
 } as const
 
 export default tk
