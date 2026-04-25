@@ -280,6 +280,89 @@ const tk = {
   'docs.attacks_title': 'Goldanylýan Hujum Görnüşleri',
   'docs.arch_title': 'Ulgam Arhitekturasy',
 
+  // Real-Case entries (Turkmen)
+  'rc.dyn.name': 'Dyn DNS DDoS (2016)',
+  'rc.dyn.attack': 'DDoS',
+  'rc.dyn.desc': 'Mirai botneti 100 000+ IoT enjamyny (kameralar, routerlar) ele geçirip, Dyn DNS serverlerine SYN paketlerini akdyrdy — Twitter, Netflix, Reddit we Spotify birnäçe sagat elýetersiz boldy.',
+  'rc.dyn.impact': '~$110M zyýan; 1,2 Tbps pik — öz döwrüniň iň uly DDoS hujumy',
+  'rc.dyn.detail': 'Mirai botneti IoT enjamlarynda zawod parollaryny ulanyp, äpet bot goşunyny döretdi. Hujum bir DNS üpjünçisiniň näsazlygynyň onlarça uly hyzmatyň durumagyna sebäp bolup biljekdigini görkezdi. Howpsuzlyk barlagçylary Mirai-nyň çeşme kodyny çap etdi, bu bolsa meňzeş botnetleriň döremegine ýol açdy. ML-esasly IDS ilkinji SYN paketlerden sekuntlaryň içinde anyklap bilerdi.',
+
+  'rc.github.name': 'GitHub Memcached DDoS (2018)',
+  'rc.github.attack': 'DDoS',
+  'rc.github.desc': 'Hujumçylar açyk Memcached serwerlerini ulanyp traffigi 51 000 esse güýçlendirdiler we GitHub-a 1,35 Tbps UDP seli bilen urdy — şol döwrüň iň uly DDoS-y.',
+  'rc.github.impact': 'GitHub ~10 minut elýetersiz boldy; Akamai Prolexic traffigi sorup aýyrdy',
+  'rc.github.detail': 'Her 203 baýtlyk Memcached soragynyň 100 KB jogap döretmegi — 51 000 esse güýçlendiriş mümkin boldy. UDP 11211 portunda tassyklama talap edilmeýär, şonuň üçin açyk islendik serwer ýarag hökmünde ulanyldy. GitHub-yň halas bolmagy Akamai-nyň global filtrasiýa infrastrukturasyna bagly boldy. Akym derejeli anomaliýa anyklamasy ses güýçlenmesini dessine anyklap bilerdi.',
+
+  'rc.equifax.name': 'Equifax Maglumat Syzyşy (2017)',
+  'rc.equifax.attack': 'Web Hujumy / Port Skaneri',
+  'rc.equifax.desc': 'Hujumçylar ýamalmadyk Apache Struts açygyny (CVE-2017-5638) ulanyp Equifax ulgamlaryna girdi, soňra 147M amerikalynyň SSN-lerini we kredit maglumatlaryny çykarmak üçin port skanlary geçirdi.',
+  'rc.equifax.impact': '147M ýazgy ogurlandy; $1,4B+ jerime; baş ýolbaşçy işden aýryldy',
+  'rc.equifax.detail': 'CVE-2017-5638 üçin ýamalama syzyk başlanmadan 2 aý öň elýeterlidi, emma hiç wagt ulanylmady. Ilkinji giriş alandan soň hujumçylar içki ulgamlary port skanlary bilen kartalaşdyryp, 76 gün anyklanmazdan hereket etdi. Içki trafige ML esasly anomaliýa anyklamagy olaryň adaty däl port skan nusgalaryny ertirinden flaglap bilerdi.',
+
+  'rc.colonial.name': 'Colonial Pipeline Ransomware (2021)',
+  'rc.colonial.attack': 'SSH Brute Force / Ynanç Zäherlenmesi',
+  'rc.colonial.desc': 'DarkSide topary syzan VPN parolyny (MFA ýok) aldy we uzakdan girdi. SSH arkaly ýanlara geçdi, 100 GB maglumat ogurlandy we ulgamlary şifrläp, ABŞ-nyň Gündogar kenaryndaky ýangyç geçirijisini 5 gün ýapdy.',
+  'rc.colonial.impact': '$4,4M töleg tölenildi; 17 ABŞ ştatynda ýangyç ýetmezçiligi; ýarysy FBI tarapyndan yzyna alyndy',
+  'rc.colonial.detail': 'Ele geçirilen ýeke-täk VPN ynanmasy dark webde tapyldy. DarkSide SSH-ny ýanlara geçiş üçin ulanyp, anyklanylýan nusgalary döretdi — adatdan daşary çeşme IP-lerinden we gijelerine gaýtalanan auth synanyşyklary. Ransomware ýaýramanka SSH baglanyşyk ýygylygyny we geografik anomaliýalary synlaýan IDS duýduryş berip bilerdi.',
+
+  'rc.solarwinds.name': 'SolarWinds Üpjünçilik Zynjyry (2020)',
+  'rc.solarwinds.attack': 'Üpjünçilik Zynjyry / Bot C2',
+  'rc.solarwinds.desc': 'Rus SVR häkerleri SolarWinds Orion täzelemelerine "Sunburst" arkaçysynы oturtdy. ABŞ Hazna Ministrligini we DHS-i hem öz içine alýan 18 000+ gurama DNS-meňzeş C2 signal ibermesi arkaly bozuldy.',
+  'rc.solarwinds.impact': '18 000+ gurama bozuldy; $100B+ global arassalama; ABŞ kiber syýasaty üýtgedi',
+  'rc.solarwinds.detail': 'Sunburst, C2 signaly üçin avsvmcloud.com subdomainlerini ulanyp kanuny DNS traffigine meňzedi. ML esasly akym seljermesi DNS soragynyň entropiyasyndaky, wagt kadalaşygyndaky we domen gurluşyndaky inçe anomaliýalary adamlar görmän geçýän ýerde anyklap biler. Bu hujum "howpsuz programma üpjünçiligi zynjyry" düşünjesini döretti.',
+
+  'rc.mariposa.name': 'Mariposa Botneti (2008–2010)',
+  'rc.mariposa.attack': 'Botnet / C2 Signal Iberme',
+  'rc.mariposa.desc': 'Ispan "Mariposa" botneti habar iberme baglanyşyklary we USB arkaly 190 ýurtdaky 12M+ kompýuteri şifrläp, bank ynanmasyny ogurlamak we şifrlenilen C2 kanallary arkaly DDoS-for-hire hyzmatlary ýerine ýetirdi.',
+  'rc.mariposa.impact': '12M+ kompýuter; 3 operator 2010-njy ýylda ispan polisiýasy tarapyndan tussag edildi',
+  'rc.mariposa.detail': 'Mariposa gol esasly antiwirusy aldatmak üçin peer-to-peer C2 kanallaryny we polimorfik kody ulanypdyr. Botnet traffigi aýratyn hereket nusgalaryna eýedi — kadaly ýürek urma aralyklary, adatdan daşary paket ölçegleri, belli IP diapazzonlaryna baglanyşyklar. Häzirki zaman ML IDS ulgamlary programma kody üýtgese-de bu statistik goluny anyklap bilýär.',
+
+  'rc.heartbleed.name': 'Heartbleed (CVE-2014-0160)',
+  'rc.heartbleed.attack': 'Heartbleed / Ýat Syzyşy',
+  'rc.heartbleed.desc': 'OpenSSL TLS ýürek urma giňeltmesi soraga görä serwer ýadynyň 64 KB-a çenli syzmagyna — açyk açarlaryň, parollaryň we seans tokenleriniň açyk bolmagyna — 2 ýyl dowamly mümkinçilik berdi. Dünýädäki HTTPS serwerleriniň üçden iki bölegi täsir altyna düşdi.',
+  'rc.heartbleed.impact': 'Yahoo, Kanada Girdejiler Agentligi bozuldy; ~500 000 serwer howp astynda',
+  'rc.heartbleed.detail': 'heartbeat.c-däki ýitirilen serhet barlagy islendik TLS müşderisine tassyklama bolmazdan islendik serwer ýadyny okamaga mümkinçilik berdi. Ulanmak serwer tarapynda hiç hili log ýazgylary galdyrmady. Ulgam derejesindäki anyklamak uly TLS ýürek urma jogaplaryny (>16 KB) syn etmek bilen mümkindi — ML klassifikatorlary CICIDS2017 Heartbleed synpy üçin bu anomaliýany anyklap bilýär.',
+
+  'rc.shodan.name': 'Shodan Açygyşy we Port Skanlary',
+  'rc.shodan.attack': 'Port Skaner / Gözleg',
+  'rc.shodan.desc': 'Shodan ähli 4 milliard IPv4 salgylaryny yzygiderli skanlap, açyk portlary we hyzmatlary indeksleýär. Hujumçylar Shodan-y açyk maglumat bazalaryny, SCADA ulgamlaryny we kameralary tapmak üçin ulanýarlar — bu niýetli ulanmakdan öňki aňtaw tapgyrydyr.',
+  'rc.shodan.impact': 'Millionlarça MongoDB/ElasticSearch maglumat bazasy açyk portlar arkaly syzypdyr',
+  'rc.shodan.detail': 'Port skanlamak hemen hemmeler tarapyndan ulanylýan ýewropa hujumynyň aňtaw tapgyry. CICIDS2017 dataseti LightGBM-nyň >99% takyklyk bilen klassifikasiya edýän nmap SYN skan trafigini öz içine alýar. Anyklanan port skannerlerini irki döwürde blokladygyňyzda, soňraky ulanyş tapgyryny düýbünden ýok edýärsiňiz.',
+
+  'rc.heartland.name': 'Heartland SQL Injeksion (2008)',
+  'rc.heartland.attack': 'SQL Injeksion / Web Hujumy',
+  'rc.heartland.desc': 'Albert Gonzalez Heartland Payment Systems-yň web programmasyna SQL injeksion ulanyp ýat syzdyryjy programma goşdy we 134M kredit kartoçkasy ýazgysyny aýlar boýy anyklanmazdan ogurlandy.',
+  'rc.heartland.impact': '$140M ylalaşyk; 250 maliýe guramasy täsirlendi; paý bahasy 77% düşdi',
+  'rc.heartland.detail': 'Gonzalez SQL injeksion açygyny awtomatlaşdyrylan web skanlaşdyrma arkaly tapdy, soňra tranzit maglumatlaryny tutmak üçin torçy syzdyryjylary oturtdy. C2 signal iberme, içki port skan we maglumat eksport akymlary anomaliýa hökmünde anyklanylýardy. Ulgamyň içki traffic-nyň hereketçil ML syn etmegi tapylmakdan aýlar öň adatdan daşary içki işjeňligi flaglar boldy.',
+
+  // Attack type descriptions (Turkmen)
+  'at.benign': 'Zyýanly maksat bolmazdan adaty ulgam traffigi',
+  'at.ddos': 'Paýlanan hyzmat bes etme sil hujumy',
+  'at.portscan': 'Hyzmat tapmak üçin yzygiderli port barlama',
+  'at.ssh': 'SSH brute-force ynanma doldurma hujumy',
+  'at.ftp': 'FTP brute-force giriş synanyşygy',
+  'at.bot': 'Botnet buýruk-we-dolandyryş trafik nusgalary',
+  'at.infiltration': 'Ulgama aralaşmak we ýanlardan geçmek',
+  'at.web_brute': 'HTTP tassyklamasy brute-force hujumy',
+  'at.web_xss': 'HTTP arkaly saýtlar arasy skript goşmak',
+  'at.web_sql': 'Ýörite HTTP parametrleri arkaly SQL injeksion',
+  'at.heartbleed': 'OpenSSL TLS ýürek urma buferi aşa okamak açygy',
+  'at.dos_hulk': 'Unikal URL parametrleri arkaly HTTP seli',
+  'at.dos_goldeneye': 'HTTP Sakla-Diri baglanyşyk hyzmat bes etme hujumy',
+  'at.dos_slowloris': 'Baglanyşyklary tüketmek üçin haýal HTTP sözbaşylary',
+  'at.dos_slowhttp': 'Haýal HTTP POST göwresi hyzmat bes etme hujumy',
+
+  // Overview stats labels
+  'stats.detection_accuracy': 'Anyklama Takyklygy',
+  'stats.training_flows': 'Okuw Akymlary',
+  'stats.attack_types': 'Hujum Görnüşleri',
+  'stats.latency': 'Gijikme',
+
+  // Architecture layers
+  'arch.frontend_layer': 'Frontend Gatlagy',
+  'arch.backend_layer': 'Backend Gatlagy',
+  'arch.ml_layer': 'ML Hereketlendirijisi Gatlagy',
+
   // Report page
   'sidebar.report': 'Anyklama Hasabaty',
   'sidebar.report_desc': 'Howp forensikasy',

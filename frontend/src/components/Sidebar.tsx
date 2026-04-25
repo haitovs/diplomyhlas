@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { Activity, Monitor, Skull, FileBarChart, BookOpen, Circle, Sun, Moon, Languages, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Activity, Monitor, Skull, FileBarChart, BookOpen, Circle, Sun, Moon, Languages, ChevronLeft, ChevronRight, Terminal, ChevronDown, ChevronUp } from 'lucide-react'
 import { getState, type DemoState } from '../services/api'
 import { useSettings, useT, type Lang } from '../i18n'
 
@@ -33,6 +33,8 @@ export default function Sidebar() {
     const id = setInterval(poll, 3000)
     return () => clearInterval(id)
   }, [])
+
+  const [hintsOpen, setHintsOpen] = useState(false)
 
   const benignOn = state?.benign_active ?? false
   const attackCount = state ? Object.values(state.attacks).filter(Boolean).length : 0
@@ -200,6 +202,59 @@ export default function Sidebar() {
               }`} />
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Quick Start hints — hidden when collapsed */}
+      {!collapsed && (
+        <div className={`px-3 pb-1 border-t ${isDark ? 'border-white/[0.06]' : 'border-slate-200'}`}>
+          <button
+            onClick={() => setHintsOpen(o => !o)}
+            className={`w-full flex items-center gap-2 py-2.5 text-[11px] font-medium transition-colors ${
+              isDark ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'
+            }`}
+          >
+            <Terminal className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="flex-1 text-left uppercase tracking-wider text-[10px]">Quick Start</span>
+            {hintsOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          </button>
+
+          {hintsOpen && (
+            <div className={`mb-2 rounded-lg border overflow-hidden text-[11px] font-mono ${
+              isDark ? 'border-white/[0.06] bg-[#050810]' : 'border-slate-200 bg-slate-50'
+            }`}>
+              {/* Dev mode */}
+              <div className={`px-3 py-2 border-b ${isDark ? 'border-white/[0.05]' : 'border-slate-200'}`}>
+                <div className={`text-[9px] uppercase tracking-wider mb-1.5 ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>
+                  Dev mode
+                </div>
+                <div className={`${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>./run_app.sh</div>
+                <div className={`text-[10px] mt-0.5 ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>
+                  → localhost:<span className={isDark ? 'text-amber-500' : 'text-amber-600'}>5173</span>
+                  <span className="ml-2 opacity-60">(api :8000)</span>
+                </div>
+              </div>
+
+              {/* Docker */}
+              <div className={`px-3 py-2 border-b ${isDark ? 'border-white/[0.05]' : 'border-slate-200'}`}>
+                <div className={`text-[9px] uppercase tracking-wider mb-1.5 ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>
+                  Docker / Production
+                </div>
+                <div className={`${isDark ? 'text-cyan-400' : 'text-cyan-600'}`}>make build && make run</div>
+                <div className={`text-[10px] mt-0.5 ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>
+                  → localhost:<span className={isDark ? 'text-amber-500' : 'text-amber-600'}>4086</span>
+                </div>
+              </div>
+
+              {/* Stop */}
+              <div className="px-3 py-2">
+                <div className={`text-[9px] uppercase tracking-wider mb-1.5 ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>
+                  Stop Docker
+                </div>
+                <div className={`${isDark ? 'text-red-400' : 'text-red-600'}`}>make stop</div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

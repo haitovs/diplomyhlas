@@ -280,6 +280,89 @@ const en = {
   'docs.attacks_title': 'Supported Attack Types',
   'docs.arch_title': 'System Architecture',
 
+  // Real-Case entries (per incident)
+  'rc.dyn.name': 'Dyn DNS DDoS (2016)',
+  'rc.dyn.attack': 'DDoS',
+  'rc.dyn.desc': 'Mirai botnet hijacked 100,000+ IoT devices (cameras, routers) to flood Dyn\'s DNS servers with SYN packets, knocking Twitter, Netflix, Reddit, and Spotify offline for hours across the US East Coast.',
+  'rc.dyn.impact': '~$110M in losses; 1.2 Tbps peak — largest DDoS of its era',
+  'rc.dyn.detail': 'The Mirai botnet exploited factory-default credentials on IoT devices. The attack demonstrated how a single DNS provider\'s failure can cascade to dozens of major services. Security researchers published Mirai\'s source code, enabling copycat botnets. This event directly inspired new IoT security regulations in several countries. An ML-based IDS would have detected the abnormal SYN flood signature within seconds of the first packets.',
+
+  'rc.github.name': 'GitHub Memcached DDoS (2018)',
+  'rc.github.attack': 'DDoS',
+  'rc.github.desc': 'Attackers exploited exposed Memcached servers to amplify traffic 51,000× and hit GitHub with a 1.35 Tbps UDP flood — the largest recorded DDoS at the time.',
+  'rc.github.impact': 'GitHub offline ~10 minutes; mitigated via Akamai Prolexic scrubbing',
+  'rc.github.detail': 'Each 203-byte Memcached request generated up to 100 KB of response — a 51,000× amplification factor. No authentication is required on UDP port 11211, so any exposed server could be weaponized. GitHub\'s survival depended on Akamai\'s global scrubbing infrastructure absorbing the traffic. The incident led to RFC 8085 guidance and mass efforts to firewall public Memcached servers. Flow-level anomaly detection would identify the volumetric spike immediately.',
+
+  'rc.equifax.name': 'Equifax Data Breach (2017)',
+  'rc.equifax.attack': 'Web Attack / Port Scan',
+  'rc.equifax.desc': 'Attackers exploited an unpatched Apache Struts vulnerability (CVE-2017-5638) to infiltrate Equifax systems, then used port scans and lateral movement to exfiltrate 147M Americans\' SSNs and credit records.',
+  'rc.equifax.impact': '147M records stolen; $1.4B+ in penalties; CEO resigned',
+  'rc.equifax.detail': 'A patch for CVE-2017-5638 was available 2 months before the breach but was never applied. After initial access, attackers mapped internal networks with port scans and moved laterally for 76 days undetected. ML-based anomaly detection on internal network flows would flag the unusual port scan patterns. This breach reshaped US data breach notification laws and made unpatched servers a board-level risk.',
+
+  'rc.colonial.name': 'Colonial Pipeline Ransomware (2021)',
+  'rc.colonial.attack': 'SSH Brute Force / Credential Stuffing',
+  'rc.colonial.desc': 'DarkSide gang obtained a leaked VPN password (no MFA) and gained remote access. They moved laterally via SSH, stole 100 GB of data, and encrypted systems — forcing a 5-day fuel pipeline shutdown across the US East Coast.',
+  'rc.colonial.impact': '$4.4M ransom paid; fuel shortages in 17 US states; half recovered by FBI',
+  'rc.colonial.detail': 'The single compromised VPN credential was found on the dark web. DarkSide used SSH for lateral movement, which generated detectable patterns — repeated auth attempts from unusual source IPs at odd hours. An IDS monitoring SSH connection frequency and geographic anomalies could have raised alarms before ransomware deployed. The attack revealed critical infrastructure\'s overreliance on perimeter security without behavioral monitoring.',
+
+  'rc.solarwinds.name': 'SolarWinds Supply Chain (2020)',
+  'rc.solarwinds.attack': 'Supply Chain / Bot C2',
+  'rc.solarwinds.desc': 'Russian SVR hackers planted the "Sunburst" backdoor in SolarWinds Orion updates. 18,000+ organizations including US Treasury and DHS were compromised via DNS-like C2 beaconing.',
+  'rc.solarwinds.impact': '18,000+ orgs compromised; $100B+ global cleanup; US cyber policy reshaped',
+  'rc.solarwinds.detail': 'Sunburst mimicked legitimate DNS traffic by using subdomains of avsvmcloud.com for C2 beaconing, blending with normal DNS queries. ML-based flow analysis can detect subtle anomalies in DNS query entropy, timing regularity, and domain structure that human analysts miss. The attack created the concept of "secure software supply chain" and directly led to US Executive Order 14028 on cybersecurity.',
+
+  'rc.mariposa.name': 'Mariposa Botnet (2008–2010)',
+  'rc.mariposa.attack': 'Botnet / C2 Beaconing',
+  'rc.mariposa.desc': 'Spanish "Mariposa" botnet infected 12M+ computers across 190 countries via IM links and USB spreading, stealing banking credentials and running DDoS-for-hire through encrypted C2 channels.',
+  'rc.mariposa.impact': '12M+ computers infected; operators arrested by Spanish police in 2010',
+  'rc.mariposa.detail': 'Mariposa used peer-to-peer C2 channels and polymorphic code to evade signature-based AV. The botnet traffic had distinctive behavioral patterns — regular heartbeat intervals, unusual packet sizes, connections to specific IP ranges. Modern ML IDS systems detect these statistical signatures even when the malware binary changes. The CICIDS2017 "Bot" class captures exactly these network-level behavioral fingerprints.',
+
+  'rc.heartbleed.name': 'Heartbleed (CVE-2014-0160)',
+  'rc.heartbleed.attack': 'Heartbleed / Memory Leak',
+  'rc.heartbleed.desc': 'OpenSSL TLS heartbeat extension leaked up to 64 KB of server memory per request — exposing private keys, passwords, and session tokens — for 2 years before discovery. Two-thirds of all HTTPS servers worldwide were affected.',
+  'rc.heartbleed.impact': 'Yahoo, Canada Revenue Agency breached; ~500,000 servers vulnerable',
+  'rc.heartbleed.detail': 'A missing bounds check in heartbeat.c allowed any TLS client to read arbitrary server memory with zero authentication. Exploitation left no server-side log entries. Network-level detection was possible by monitoring for oversized TLS heartbeat responses (>16 KB) — an anomaly that ML classifiers trained on flow-level feature distributions can identify as the CICIDS2017 Heartbleed class.',
+
+  'rc.shodan.name': 'Shodan Exposure & Port Scans',
+  'rc.shodan.attack': 'Port Scan / Enumeration',
+  'rc.shodan.desc': 'Shodan continuously scans all 4 billion IPv4 addresses, indexing open ports. Attackers use Shodan to identify exposed databases, SCADA systems, and webcams — the reconnaissance step before targeted exploitation.',
+  'rc.shodan.impact': 'Millions of MongoDB/ElasticSearch databases leaked via exposed ports',
+  'rc.shodan.detail': 'Port scanning is the reconnaissance phase for nearly every targeted attack. The CICIDS2017 dataset includes nmap SYN scan traffic which LightGBM classifies with >99% accuracy by detecting high connection rates to diverse ports from a single source. Blocking detected port scanners early eliminates the subsequent exploitation phase entirely — turning a critical vulnerability into a non-event.',
+
+  'rc.heartland.name': 'Heartland Payment SQL Injection (2008)',
+  'rc.heartland.attack': 'SQL Injection / Web Attack',
+  'rc.heartland.desc': 'Albert Gonzalez used SQL injection on Heartland Payment Systems\' web application to deploy memory-scraping malware and steal 134M credit card records over months — undetected.',
+  'rc.heartland.impact': '$140M settlement; 250 financial institutions affected; stock dropped 77%',
+  'rc.heartland.detail': 'Gonzalez discovered the SQL injection vulnerability through automated scanning, then installed network sniffers to capture card data in transit. While the web-layer injection is outside network IDS scope, the subsequent C2 beaconing, internal port scanning, and data exfiltration flows were all detectable as anomalies. Behavioral ML monitoring of east-west traffic would have flagged the unusual internal activity months before discovery.',
+
+  // Attack type descriptions (localized)
+  'at.benign': 'Normal network traffic with no malicious intent',
+  'at.ddos': 'Distributed Denial of Service flood attack',
+  'at.portscan': 'Sequential port probing for service discovery',
+  'at.ssh': 'SSH brute-force credential stuffing attack',
+  'at.ftp': 'FTP brute-force login attempt',
+  'at.bot': 'Botnet command-and-control traffic patterns',
+  'at.infiltration': 'Network infiltration and lateral movement',
+  'at.web_brute': 'HTTP authentication brute-force attack',
+  'at.web_xss': 'Cross-site scripting injection via HTTP',
+  'at.web_sql': 'SQL injection via crafted HTTP parameters',
+  'at.heartbleed': 'OpenSSL TLS heartbeat buffer over-read exploit',
+  'at.dos_hulk': 'HTTP flood using unique URL parameters',
+  'at.dos_goldeneye': 'HTTP Keep-Alive denial of service attack',
+  'at.dos_slowloris': 'Slow HTTP headers to exhaust connections',
+  'at.dos_slowhttp': 'Slow HTTP POST body denial of service',
+
+  // Overview stats labels
+  'stats.detection_accuracy': 'Detection Accuracy',
+  'stats.training_flows': 'Training Flows',
+  'stats.attack_types': 'Attack Types',
+  'stats.latency': 'Latency',
+
+  // Architecture layers
+  'arch.frontend_layer': 'Frontend Layer',
+  'arch.backend_layer': 'Backend Layer',
+  'arch.ml_layer': 'ML Engine Layer',
+
   // Report page
   'sidebar.report': 'Detection Report',
   'sidebar.report_desc': 'Threat forensics',
