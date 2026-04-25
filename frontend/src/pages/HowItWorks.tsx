@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Database, Brain, FileBarChart, ArrowRight, Shield, Globe, Cpu, Layers,
   Monitor as MonitorIcon, Skull, Eye, Network, Zap, BookOpen, Target,
   Server, Code2, Boxes, GraduationCap, Sparkles, Gauge, Lock,
-  AlertTriangle, CheckCircle2, KeyRound, FileCode2, Package,
+  AlertTriangle, CheckCircle2, KeyRound, Package,
   ExternalLink, X, TrendingUp, Calendar, DollarSign,
 } from 'lucide-react'
 import { useT, useSettings } from '../i18n'
@@ -126,22 +126,6 @@ function ensureStyles() {
 /* ─────────────────────────────────────────────────────────── */
 /*  Hooks                                                      */
 /* ─────────────────────────────────────────────────────────── */
-
-function useCountUp(target: number, active: boolean, duration = 1200) {
-  const [val, setVal] = useState(0)
-  useEffect(() => {
-    if (!active) { setVal(0); return }
-    let start = 0
-    const inc = target / (duration / 16)
-    const id = setInterval(() => {
-      start += inc
-      if (start >= target) { setVal(target); clearInterval(id) }
-      else setVal(Math.round(start))
-    }, 16)
-    return () => clearInterval(id)
-  }, [active, target, duration])
-  return val
-}
 
 /* ─────────────────────────────────────────────────────────── */
 /*  Case Modal                                                 */
